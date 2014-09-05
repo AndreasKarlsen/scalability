@@ -1,0 +1,29 @@
+*.fuse_hidden*
+*.acn
+*.acr
+*.alg
+*.aux
+*.bbl
+*.blg
+*.dvi
+*.fdb_latexmk
+*.glg
+*.glo
+*.gls
+*.idx
+*.ilg
+*.ind
+*.ist
+*.lof
+*.log
+*.lot
+*.maf
+*.mtc
+*.mtc0
+*.nav
+*.nlo
+*.toc
+## No mac shit
+*.DS_STORE
+## We do not want any compiled stuff
+*build/
