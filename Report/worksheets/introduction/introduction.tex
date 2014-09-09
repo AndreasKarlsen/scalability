@@ -1,4 +1,17 @@
 \makeatletter \@ifundefined{rootpath}{\input{../../setup/preamble.tex}}\makeatother
-\worksheetstart{Project Introduction}{1}{September 5, 2014}{Andreas}{../../}
-Scalable webservices
+\worksheetstart{Project Introduction}{1}{September 5, 2014}{Kasper}{../../}
+For many years moore's law\cite{moore1965cramming} seemed to be true, more and more transistors where placed into the hardware, resulting in increasing processing speed. This increase has however stagnated and processing power is how mainly increased in the form of additional processing cores, as opposed to the speed of each of these processing cores. That is, computers have moved from having a \ac{CPU} consisting of one single core to one having multiple cores. In order for programs to scale over such multi-core processors, a lot of effort has been invested into identifying suitable ways of programming against such architectures. As of yet, no standard has been established.
+
+With the rise of the internet, the number of very large services supporting millions of users has increased. Furthermore many of these services present each user with dynamically generated content limiting the usefulness of caching. This presents the challenge of scaling such such system. Previously, when scalability issues arose a company might invest in a new machine capable of handling the load, effectively discarding the investment of purchasing the old machine\cite[p. 2]{haller2007actors}. A more modern approach entails scaling the service over a set of low end machines, adding and removing machines as needed. Frameworks for scaling in this fashion have been created\cite{haller2007actors}\cite{krohn2004building}.
+
+%Possibly something about the actor model
+
+This project seeks to investigate different programming language constructs and technique, that seek to assist in scaling applications over multiple cores and preferable multiple machines.
+%more stuff here
+
+%Sprog
+%Skrives som simpelt imperativt
+
+
+ 
 \worksheetend
