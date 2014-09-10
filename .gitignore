@@ -1,4 +1,5 @@
 *.fuse_hidden*
+*.DS_STORE
 *.acn
 *.acr
 *.alg
