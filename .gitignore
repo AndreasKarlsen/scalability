@@ -24,6 +24,7 @@
 *.nav
 *.nlo
 *.out
+*.class
 *.pdfsync
 *.ps
 *.snm
