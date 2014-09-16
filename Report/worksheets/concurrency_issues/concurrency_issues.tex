@@ -1,0 +1,60 @@
+\makeatletter \@ifundefined{rootpath}{\input{../../setup/preamble.tex}}\makeatother
+\worksheetstart{Concurrency Issues}{1}{September 16, 2014}{Kasper}{../../}
+In this we chapter a overview of some known issues related to concurrency will be presented. Some of the issues are related mainly to shared memory concurrency while others apply to a broader spectrum, including asynchronous message passing.
+\section{Race Conditions}
+One issue that can arise in concurrent applications, is that the result of a computation, consisting of two or more concurrent tasks, that share data, depends on how the concurrent tasks are scheduled. This issue is called a \emph{race condition}
+\cite[p. 983]{bryant2011computer}\cite[p. 115]{tanenbaum2008modern}. Consider the example presented in \bsref{lst:racecondition} using Java threads. Here we see a small Java program that starts two threads and waits for each of them to finish, printing out the result of their computations before exiting. The first thread check if the static variable \bscode{number} is equal to ten (which is its initial value) and sets the \bscode{result} variable to \bscode{number} times three if it is true. The second thread simply sets the value of \bscode{number} to 20. It is clear that, if the \bscode{t1} was executed before \bscode{t2} the result would look as follows:
+\begin{verbatim}
+Result is: 30
+\end{verbatim}
+If however \bscode{t2} was executed before \bscode{t1} the result would be:
+\begin{verbatim}
+Result is: 0
+\end{verbatim}
+The result depends on the order of execution. In reality the two threads are not necessarily executed one after another, but instead concurrently, and it is the operating system that schedules when each tread gets to run. Because the operating system might pause a thread multiple times before it finishes, the execution of \bscode{t1} and \bscode{t2} might overlap. Imagine that \bscode{t1} runs just until its about to compute the result, at which point it is paused by the operating system and \bscode{t2} get to run instead. \bscode{t2} now sets the value of \bscode{number} to 20 after which it exits causing \bscode{t1} to be resumed. \bscode{t1} then computes the result based on the new \bscode{number} value of 20, causing the result to be:
+\begin{verbatim}
+Result is: 60
+\end{verbatim}
+instead of 30 as expected. Race conditions can be very hard to find and remove, but can be avoided using a form of mutual exclusion.
+\begin{lstlisting}[float,label=lst:racecondition,
+  caption={Race condition example},
+  language=Java,  
+  showspaces=false,
+  showtabs=false,
+  breaklines=true,
+  showstringspaces=false,
+  breakatwhitespace=true,
+  commentstyle=\color{greencomments},
+  keywordstyle=\color{bluekeywords},
+  stringstyle=\color{redstrings}]  % Start your code-block
+public class Main {
+    public static int number = 10;
+    public static int result = 0;
+    
+    public static void main(String[] args) throws InterruptedException {
+        Thread t1 = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                if (number == 10){
+                    result = number * 3;
+                }
+            }
+        });
+        Thread t2 = new Thread(new Runnable() {
+            @Override
+            public void run() {
+               number = 20;
+            }
+        });
+        t1.start(); t2.start();
+        t1.join(); t2.join();
+        System.out.println("Result is: "+result);
+    }
+}
+\end{lstlisting}
+
+ 
+\section{Deadlocks}
+\section{Mutual exclusion}
+ 
+\worksheetend
