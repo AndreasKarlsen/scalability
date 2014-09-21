@@ -11,6 +11,8 @@ namespace DataGenerator
     {
         public static string path = @"..\..\..\..\Data";
         public static string extension = ".testdata";
+        private static readonly object lock_obj = new object();
+
         static void Main(string[] args)
         {
             Random random = new Random((int)DateTime.Now.Ticks);
@@ -29,45 +31,48 @@ namespace DataGenerator
                 }
             }
 
-            File.WriteAllLines(Path.Combine(path,"Data"+extension), lines);
-
-            Console.WriteLine("Creation partition:");
-            for (int i = 2; i <= 10; i++)
+            if (!Directory.Exists(path))
             {
-                Partition(lines, i);
-                Console.WriteLine("Partition "+i+" done.");
+                Directory.CreateDirectory(path);
             }
 
+            
+            File.WriteAllLines(Path.Combine(path,"Data"+extension), lines);
+            List<Partitioning> partitionings = new List<Partitioning>();
+            Console.WriteLine("Creating partitionings:");
+            Parallel.For(2, 11, i =>
+            {
+                Partitioning partitioning =  Partition(lines, i);
+                lock (lock_obj)
+                {
+                    partitionings.Add(partitioning);
+                }
+                Console.WriteLine("Partition " + i + " done.");
+            });
+
+            Console.WriteLine("Writing partitionings to disk:");
+            for (int i = 0; i < partitionings.Count; i++)
+            {
+                Partitioning partitioning = partitionings[i];
+                partitioning.WriteToDisk(path, extension);
+                Console.WriteLine((i+1)+"/"+partitionings.Count+" done.");
+            }
+            Console.WriteLine("Done. Press any key to exit.");
+            Console.ReadKey();
         }
 
 
-        private static void Partition(string[] lines, int nrPartitions)
+        public static Partitioning Partition(string[] lines, int nrPartitions)
         {
-            List<List<string>> partitions = new List<List<string>>(nrPartitions);
-            for (int i = 0; i < nrPartitions; i++)
-            {
-                partitions.Add(new List<string>());
-            }
+            Partitioning partitioning = new Partitioning(nrPartitions);
 
             for (int i = 0; i < lines.Length; i++)
             {
                 int partitionIndex = i % nrPartitions;
-                partitions[partitionIndex].Add(lines[i]);
+                partitioning.Partitions[partitionIndex].Add(lines[i]);
             }
 
-            string folderPath = Path.Combine(path, "P" + nrPartitions);
-
-            if (!Directory.Exists(folderPath))
-            {
-                Directory.CreateDirectory(folderPath);
-            }
-
-            for (int i = 0; i < partitions.Count; i++)
-			{
-                List<string> partition = partitions[i];
-                string filePath = Path.Combine(folderPath, "P" + i+extension);
-                File.WriteAllLines(filePath, partition.ToArray());
-			}
+            return partitioning;
         }
     }
 }
