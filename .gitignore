@@ -37,3 +37,25 @@
 *.orig
 *~
 build*
+
+*.class
+
+# Temp Files
+*~
+
+# Package Files #
+*.jar
+*.war
+*.ear
+
+# Local Visual Studio Files
+*.suo
+*.userprefs
+TestResults
+
+# Compiled dirs
+bin
+obj
+Executable/*
+Executable
+
