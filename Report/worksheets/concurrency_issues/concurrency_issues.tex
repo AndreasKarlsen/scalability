@@ -1,7 +1,7 @@
 \makeatletter \@ifundefined{rootpath}{\input{../../setup/preamble.tex}}\makeatother
 \worksheetstart{Concurrency Issues}{1}{September 16, 2014}{Kasper}{../../}
 This chapter presents an overview of known issues related to concurrency. Some of the issues are related mainly to shared memory concurrency while others apply to a broader spectrum, including asynchronous message passing.
-\section{Race Conditions}
+\section{Race Conditions}\kasper{Time line of how threads execute}
 One issue that can arise in concurrent applications, is that the result of a computation, consisting of two or more concurrent tasks, that share data, depends on how the concurrent tasks are scheduled. This issue is called a \emph{race condition}
 \cite[p. 983]{bryant2011computer}\cite[p. 115]{tanenbaum2008modern}. Consider the example presented in \bsref{lst:racecondition} using Java threads. Here we see a small Java program that starts two threads and waits for each of them to finish, printing out the result of their computations before exiting. The first thread check if the static variable \bscode{number} is equal to ten (which is its initial value) and sets the \bscode{result} variable to \bscode{number} times three if it is true. The second thread simply sets the value of \bscode{number} to 20. It is clear that, if the \bscode{t1} was executed before \bscode{t2} the result would look as follows:
 \begin{verbatim}
