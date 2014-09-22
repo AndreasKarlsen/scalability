@@ -1,9 +1,9 @@
 \makeatletter \@ifundefined{rootpath}{\input{../../setup/preamble.tex}}\makeatother
 \worksheetstart{Problem Statement}{1}{22. September, 2014}{Andreas}{../../}
 %
-In order to structure our investigation, we have extracted four questions. The questions are based on problems found in our preliminary investigation, which is described in the \bsref{chap:intro}. These questions will serve as a guideline of the main focus of our investigation, and will be used to conclude the degree of success of the investigation at \bsref{chap:conclusion}.
+In order to structure our investigation, we have extracted four questions. The questions are based on problems found in our preliminary investigation, which is described in the \bsref{chap:intro}. These questions will serve as a guideline our further investigation, and will be used to conclude upon the project in \bsref{chap:conclusion}.
 
-The questions we search to answer in our investigation are:
+The questions we search to answer are:
 \begin{enumerate}
 \item Which problems exists with concurrency in a multithreaded environment? 
 \item What are the approaches for handling concurrency?
@@ -11,5 +11,7 @@ The questions we search to answer in our investigation are:
 \item How is the approaches performance comparatively?
 \item How can the approaches be applied to a distributed environment?
 \end{enumerate}
+
+In our preliminary investigation, we discovered the traditional threads and locks approach, and the more modern actor model, event-driven, and software transactional memory approaches. Threads and locks have been selected based on its widespread use and historical significance, while the remaining models have been chosen based on their more modern and widely different approaches to concurrency. It was deemed that these remaining models provide a broad enough view of what is currently state of the art concurrency models. 
 
 \worksheetend
