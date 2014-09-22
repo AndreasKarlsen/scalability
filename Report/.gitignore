@@ -1,4 +1,5 @@
 *.fuse_hidden*
+*.db
 *.acn
 *.acr
 *.alg
