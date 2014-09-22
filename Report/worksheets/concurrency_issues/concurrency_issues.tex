@@ -53,6 +53,17 @@ public class Main {
 
  
 \section{Deadlocks}
+A \emph{deadlock} occurs when all concurrent tasks in a set are waiting on some event, that can only be caused by another task in the set\cite[p. 435]{tanenbaum2008modern}. Because all the concurrent tasks are blocked and waiting on one of the other tasks, none of them will ever continue and they will block indefinitely.
+
+\kasper[inline]{Deadlock example}
+
+Deadlocks occur for different reasons in different concurrency models.
+%threads and lock = resource aqusision
+%async message passing = wating on messages as with resources
+
+\kasper[inline]{Deadlock detection}
+\kasper[inline]{Deadlock recovery}
+\kasper[inline]{Livelocks} 
 \section{Mutual exclusion}
  
 \worksheetend
