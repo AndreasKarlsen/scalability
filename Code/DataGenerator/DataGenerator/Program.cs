@@ -38,6 +38,7 @@ namespace DataGenerator
 
             
             File.WriteAllLines(Path.Combine(path,"Data"+extension), lines);
+            /*
             List<Partitioning> partitionings = new List<Partitioning>();
             Console.WriteLine("Creating partitionings:");
             Parallel.For(2, 11, i =>
@@ -57,6 +58,7 @@ namespace DataGenerator
                 partitioning.WriteToDisk(path, extension);
                 Console.WriteLine((i+1)+"/"+partitionings.Count+" done.");
             }
+            */
             Console.WriteLine("Done. Press any key to exit.");
             Console.ReadKey();
         }
