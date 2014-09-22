@@ -1,6 +1,6 @@
 \makeatletter \@ifundefined{rootpath}{\input{../../setup/preamble.tex}}\makeatother
 \worksheetstart{Concurrency Issues}{1}{September 16, 2014}{Kasper}{../../}
-In this we chapter a overview of some known issues related to concurrency will be presented. Some of the issues are related mainly to shared memory concurrency while others apply to a broader spectrum, including asynchronous message passing.
+This chapter presents an overview of known issues related to concurrency. Some of the issues are related mainly to shared memory concurrency while others apply to a broader spectrum, including asynchronous message passing.
 \section{Race Conditions}
 One issue that can arise in concurrent applications, is that the result of a computation, consisting of two or more concurrent tasks, that share data, depends on how the concurrent tasks are scheduled. This issue is called a \emph{race condition}
 \cite[p. 983]{bryant2011computer}\cite[p. 115]{tanenbaum2008modern}. Consider the example presented in \bsref{lst:racecondition} using Java threads. Here we see a small Java program that starts two threads and waits for each of them to finish, printing out the result of their computations before exiting. The first thread check if the static variable \bscode{number} is equal to ten (which is its initial value) and sets the \bscode{result} variable to \bscode{number} times three if it is true. The second thread simply sets the value of \bscode{number} to 20. It is clear that, if the \bscode{t1} was executed before \bscode{t2} the result would look as follows:
@@ -33,16 +33,14 @@ public class Main {
     
     public static void main(String[] args) throws InterruptedException {
         Thread t1 = new Thread(new Runnable() {
-            @Override
-            public void run() {
+            @Override public void run() {
                 if (number == 10){
                     result = number * 3;
                 }
             }
         });
         Thread t2 = new Thread(new Runnable() {
-            @Override
-            public void run() {
+            @Override public void run() {
                number = 20;
             }
         });
@@ -50,7 +48,7 @@ public class Main {
         t1.join(); t2.join();
         System.out.println("Result is: "+result);
     }
-}
+  }
 \end{lstlisting}
 
  
