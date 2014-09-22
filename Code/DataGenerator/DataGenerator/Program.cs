@@ -16,8 +16,8 @@ namespace DataGenerator
         static void Main(string[] args)
         {
             Random random = new Random((int)DateTime.Now.Ticks);
-            string[] lines = new string[1000000];
-            for (int i = 0; i < 1000000; i++)
+            string[] lines = new string[500000];
+            for (int i = 0; i < 500000; i++)
             {
                 string[] lineList = new string[100];
                 for (int j = 0; j < 100; j++)

@@ -2,9 +2,7 @@ package kmeans.parsing;
 
 import kmeans.model.Vector;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.nio.file.*;
@@ -29,19 +27,23 @@ public class DataParser {
     }
 
 
-    public static List<Vector> ParseData() throws IOException {
+    public static List<Vector> parseData() throws IOException {
 
-        Path p = Paths.get(getPath());
         File f = new File(getPath());
         if(!f.exists())
         {
             throw new IOException("The data is not present");
         }
 
-        List<String> lines = Files.readAllLines(p, Charset.defaultCharset());
         List<Vector> vectors = new ArrayList<Vector>();
 
-        for (String line: lines){
+        InputStream fis;
+        BufferedReader br;
+        String         line;
+
+        fis = new FileInputStream(f);
+        br = new BufferedReader(new InputStreamReader(fis, Charset.forName("UTF-8")));
+        while ((line = br.readLine()) != null) {
             List<Integer> items = new ArrayList<Integer>();
             String[] splits = line.split(",");
             for (String item : splits)
@@ -50,6 +52,11 @@ public class DataParser {
             }
             vectors.add(new Vector(items));
         }
+
+// Done with the file
+        br.close();
+        br = null;
+        fis = null;
 
         return vectors;
     }
