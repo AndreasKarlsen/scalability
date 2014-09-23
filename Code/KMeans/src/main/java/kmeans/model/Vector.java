@@ -86,7 +86,7 @@ public class Vector {
         return standardDeviation(average());
     }
 
-    private double standardDeviation(double avg){
+    private double standardDeviation(final double avg){
         double sum = sum(new ITransformation() {
             @Override
             public double Transform(int i) {
