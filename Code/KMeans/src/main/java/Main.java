@@ -5,6 +5,7 @@ import kmeans.partitioning.Partitioner;
 import kmeans.partitioning.Partitioning;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -34,7 +35,6 @@ public class Main {
             double covariance = v1.covarianceWith(v2);
             double sdv = v1.standardDeviation();
             double pearsons = v1.pearsonCorrelationWith(v2);
-
 
             List<Vector> vectors = DataGenerator.generateData();
             Partitioning<Vector> partitioning = new Partitioner<Vector>().partition(vectors, 5);
