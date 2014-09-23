@@ -11,7 +11,7 @@ The traditional Threads \& Locks approach uses locks to limit the access to crit
 
 \ac{STM} is implemented in a number of languages, including Clojure\cite[p. 101]{sevenModels}, Concurrent Haskell\cite{harris2005composable} and Scala\cite{goodman2011muts} either directly or using a library. Generally the idea is that programmers specify regions which are to be executed as a transaction. The compiler or library then takes care of ensuring that the \ac{STM} transaction principles are maintained and that the transactions is eventually committed\cite[p. 1]{saha2006mcrt}. The transaction might be retried one or more times in the process, if any other transactions read or modified the used data.
 
-The strength of \ac{STM} lies in the avoidance of many of the issues that plague the traditional Threads \& Locks approach. \ac{STM} can avoid deadlocks, priority inversion and eliminates the issue of balancing lock granularity vs performance[p. 1]{harris2005composable}.
+The strength of \ac{STM} lies in the avoidance of many of the issues that plague the traditional Threads \& Locks approach. \ac{STM} can avoid deadlocks, priority inversion and eliminates the issue of balancing lock granularity vs performance\cite[p. 1]{harris2005composable}.
 \section{Communicating Sequential Processes}
 
 \worksheetend
