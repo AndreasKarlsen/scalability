@@ -15,12 +15,13 @@ public class ClusteringService {
 
         for (Vector v : items){
             Cluster cluster = null;
-            double distance = -99999999999.0;
+            double distance = 999999999999999.0;
             for (Cluster c : clustering.getClusters()){
-                double pearsons = v.pearsonCorrelationWith(c.getMean());
-                if (pearsons > distance){
+                double manhattanDistance = v.manhattanDistanceTo(c.getMean());
+                //double pearsons = v.pearsonCorrelationWith(c.getMean());
+                if (manhattanDistance < distance){
                     cluster = c;
-                    distance = pearsons;
+                    distance = manhattanDistance;
                 }
             }
             cluster.addVector(v);

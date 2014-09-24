@@ -15,6 +15,9 @@ public class Reducer implements Runnable{
     private ReentrantLock lock;
     private Queue<Clustering> queue;
     private int nrClusters;
+    private Clustering _clustering;
+
+
 
     public Reducer(Semaphore semaphore, ReentrantLock lock, Queue<Clustering> queue, int nrClusters) {
         this.semaphore = semaphore;
@@ -23,6 +26,9 @@ public class Reducer implements Runnable{
         this.nrClusters = nrClusters;
     }
 
+    public Clustering getClustering() {
+        return _clustering;
+    }
 
     @Override
     public void run() {
@@ -43,13 +49,20 @@ public class Reducer implements Runnable{
                     clustering = c;
                 }else{
                     for (int i = 0; i < clustering.getClusters().size(); i++) {
-                        Cluster c1 = clustering.getClusters().get(0);
-                        Cluster c2 = c.getClusters().get(0);
+                        Cluster c1 = clustering.getClusters().get(i);
+                        Cluster c2 = c.getClusters().get(i);
                         c1.mergeWith(c2);
                     }
                 }
 
             }
+
+            for (Cluster c :clustering.getClusters()){
+                c.calcMean();
+            }
+
+            _clustering = clustering;
+
         }catch (InterruptedException ex){
 
         }

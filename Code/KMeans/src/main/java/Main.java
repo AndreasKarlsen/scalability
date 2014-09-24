@@ -1,3 +1,4 @@
+import com.google.common.base.Stopwatch;
 import kmeans.Mapper;
 import kmeans.Reducer;
 import kmeans.clustering.Cluster;
@@ -10,11 +11,12 @@ import kmeans.partitioning.Partition;
 import kmeans.partitioning.Partitioner;
 import kmeans.partitioning.Partitioning;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
-import java.util.concurrent.Semaphore;
+import java.util.concurrent.*;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -26,7 +28,7 @@ public class Main {
         try {
 
             List<Vector> vectors = DataGenerator.generateData();
-            RunClustering(vectors,5,10);
+            RunClustering(vectors,5,3);
 
             /*
             ArrayList<Integer> a1 = new ArrayList<Integer>();
@@ -75,18 +77,39 @@ public class Main {
 
     public static void RunClustering(List<Vector> vectors, int nrClusters, int maxIterationCount) {
 
+
+        ExecutorService executor = Executors.newFixedThreadPool(nrClusters);
         Partitioning<Vector> partitioning = new Partitioner<Vector>().partition(vectors, nrClusters);
-        List<Vector> randomMeans = DataGenerator.generateRandomVectors(100,nrClusters,100);
+        List<Vector> means = DataGenerator.generateRandomVectors(100, nrClusters, 100);
         Semaphore sem = new Semaphore(0);
         ReentrantLock lock = new ReentrantLock();
-        Queue<Clustering> queue = new LinkedList<>();
-        for(Partition<Vector> p : partitioning.getPartitions()){
-            Thread t = new Thread(new Mapper(sem,lock,p.getData(),randomMeans,queue));
-            t.start();
+        Queue<Clustering> queue = new LinkedList<Clustering>();
+        int itrCount = 0;
+        Stopwatch sw = Stopwatch.createStarted();
+        while (itrCount < maxIterationCount) {
+            System.out.println("Starting iteration: " + (itrCount + 1));
+            for (Partition<Vector> p : partitioning.getPartitions()) {
+                executor.execute(new Mapper(sem, lock, p.getData(), means, queue));
+            }
+            Reducer reducer = new Reducer(sem, lock, queue, nrClusters);
+            reducer.run();
+            queue.clear();
+            means.clear();
+            Clustering clustering = reducer.getClustering();
+            for (Cluster c : clustering.getClusters()) {
+                means.add(c.getMean());
+            }
+            System.out.println("Finishing iteration: " + (itrCount + 1));
+            itrCount++;
         }
+        sw.stop();
+        long elapsedSeconds = sw.elapsed(TimeUnit.SECONDS);
 
-        Thread reducerThread = new Thread(new Reducer(sem,lock,queue,nrClusters));
-        reducerThread.start();
-
+        try {
+            ResultWriter.WriteResult(elapsedSeconds,TimeUnit.SECONDS,maxIterationCount,nrClusters,"Java");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        System.out.println(elapsedSeconds);
     }
 }
