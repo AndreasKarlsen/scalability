@@ -1,5 +1,5 @@
 \makeatletter \@ifundefined{rootpath}{\input{../../setup/preamble.tex}}\makeatother
-\worksheetstart{Project Introduction}{1}{September 5, 2014}{Kasper}{../../}
+\worksheetstart{Introduction}{1}{September 5, 2014}{Kasper}{../../}
 For many years Moore's law\cite{moore1965cramming} seemed to be true. The amount of transistors placed into an integrated circuit were approximately doubled every two years, resulting in increasing processing speed. This increase has however stagnated and processing power has mainly increased in the form of additional processing cores, as opposed to the speed of each of these processing cores\cite[p. 22]{sevenModels}. That is, computers have moved from having a \ac{CPU} consisting of one single core to one having multiple cores. This tendency is displayed in \bsref{fig:moores_in_reality}. 
 \label{chap:introduction}
 
@@ -13,13 +13,10 @@ For many years Moore's law\cite{moore1965cramming} seemed to be true. The amount
 Programming languages developed while Moore's law still held, such as assembly and C, were closely related to the Von Neumann architecture. As a consequence, the programming model was designed for synchronous execution. This introduces a challenge in how programs should be written to execute efficiently on a multi-core processor. A lot of effort has been invested into identifying suitable ways of programming against such architectures.
 
 While the need for applications to scale over multiple cores have arisen, so has the need to scale applications over multiple servers. With the rise of the Internet, the number of very large services supporting millions of users has increased. Furthermore many of these services present each user with dynamically generated content, limiting the usefulness of caching. Due to this, the need for scalable systems, and programming languages which support the scalable approach has arisen. Previously, when scalability issues arose a company might invest in a new machine capable of handling the load, effectively discarding the investment of purchasing the old machine\cite[p. 2]{haller2007actors}. A more modern approach entails scaling the service over a set of low end machines, adding and removing machines as needed. However, the applications needs to be aware of this approach when developed. A concurrency model that can be used on both a single machine as well as in a distributed fashion, could potentially assist in addressing both scaling over multiple cores and multiple servers.
-%Possibly something about the actor model
 
-This project seeks to identifying and investigating different concurrency models, that seek to assist in scaling applications over multiple cores and preferably multiple machines. The models along with their strengths and weaknesses will be described and a performance comparison of the different models will be presented. The motivation is, to enable the reader to make decisions on which concurrency model should be used in a given case.
-%more stuff here
+We wish to investigate different concurrency models,  in order to discover the strengths and weaknesses of these models and identify problem areas in which they best are applied. The focus will be on concurrency models that have seen widespread use, as well as models that currently are receiving academic and industrial interest.
 
-%Sprog
-%Skrives som simpelt imperativt
+The motivation of this project is to contribute with a clarification of the performance and applicability of the chosen concurrency models.
 
 
  

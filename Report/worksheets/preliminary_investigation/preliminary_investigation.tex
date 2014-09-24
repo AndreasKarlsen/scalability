@@ -5,7 +5,7 @@ This chapter presents a preliminary investigation of different concurrency model
 %Maybe a short section about why we have chosen to look at these concurrency models?
 \section{Threads \& Locks}
 \section{Actor model}
-\section{Event driven}
+\section{Reactive}
 \section{\acl{STM}}
 The traditional Threads \& Locks approach uses locks to limit the access to critical regions in order to ensure correct execution\cite[p. 1]{saha2006mcrt}. \ac{STM} instead takes a approach based on transactions as known from database theory\cite[p. 1]{shavit1997software}. \ac{STM} transitions are atomic and isolated. Atomic meaning that either all writes in a given transaction is committed, or non of them are, while isolated means that from a given transaction $T$, any other concurrently running transaction will have no impact on the values committed by $T$ when $T$ succeeds\cite[p. 102]{sevenModels}. These properties are similar to the ACID properties known from databases. 
 
