@@ -116,4 +116,38 @@ public class Main {
         }
         System.out.println(elapsedSeconds);
     }
+
+    public void RunClusteringSingleThread(List<Vector> vectors, int nrClusters, int maxIterationCount){
+        List<Vector> means = DataGenerator.generateRandomVectors(100, nrClusters, 100);
+        Semaphore sem = new Semaphore(0);
+        ReentrantLock lock = new ReentrantLock();
+        Queue<Clustering> queue = new LinkedList<Clustering>();
+        int itrCount = 0;
+        Stopwatch sw = Stopwatch.createStarted();
+        while (itrCount < maxIterationCount) {
+            System.out.println("Starting iteration: " + (itrCount + 1));
+            for (Partition<Vector> p : partitioning.getPartitions()) {
+                executor.execute(new Mapper(sem, lock, p.getData(), means, queue));
+            }
+            Reducer reducer = new Reducer(sem, lock, queue, nrClusters);
+            reducer.run();
+            queue.clear();
+            means.clear();
+            Clustering clustering = reducer.getClustering();
+            for (Cluster c : clustering.getClusters()) {
+                means.add(c.getMean());
+            }
+            System.out.println("Finishing iteration: " + (itrCount + 1));
+            itrCount++;
+        }
+        sw.stop();
+        long elapsedSeconds = sw.elapsed(TimeUnit.MILLISECONDS);
+
+        try {
+            ResultWriter.WriteResult(elapsedSeconds,TimeUnit.MILLISECONDS,maxIterationCount,nrClusters,"Java");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        System.out.println(elapsedSeconds);
+    }
 }
