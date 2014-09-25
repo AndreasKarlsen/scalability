@@ -25,6 +25,20 @@ The actor model avoids the deadlocks and race conditions present in the \ac{TL} 
 
 \section{Reactive}
 
+Which problem does the reactive model try to solve?
+\begin{itemize}
+\item Nested callbacks
+\
+\end{itemize}
+
+How does it solves it?
+\begin{itemize}
+\item Organization of asynchronous tasks
+\item Does not care about the concurrency model underneath
+\item Rx solves the issues for concurrently generating and consuming data
+\item Reverse the data flow (push instead of pull)
+\end{itemize}
+
 \section{\acl{STM}}
 The traditional \ac{TL} approach uses locks to limit the access to critical regions in order to ensure correct execution\cite[p. 1]{saha2006mcrt}. \ac{STM} instead takes a approach based on transactions as known from database theory\cite[p. 1]{shavit1997software}. \ac{STM} transitions are atomic and isolated. Atomic meaning that either all writes in a given transaction is committed, or non of them are, while isolated means that from a given transaction $T$, any other concurrently running transaction will have no impact on the values committed by $T$ when $T$ succeeds\cite[p. 102]{sevenModels}. These properties are similar to the ACID properties known from databases. 
 
