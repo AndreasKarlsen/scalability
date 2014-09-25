@@ -15,7 +15,7 @@ public class ResultWriter {
         if(path == null){
             File f = new File(".");
             path = f.getAbsoluteFile().getParentFile().getAbsoluteFile().getParentFile().getAbsolutePath();
-            path = path + "\\Data";
+            path = Paths.get(path, "Data").toString();
         }
 
         return path;
