@@ -1,9 +1,10 @@
 \makeatletter \@ifundefined{rootpath}{\input{../../setup/preamble.tex}}\makeatother
 \worksheetstart{Preliminary investigation}{1}{September 22, 2014}{Everybody}{../../}
 This chapter presents a preliminary investigation of different concurrency models. As it is not possible to go in depth with all concurrency models this chapter serves the purpose of giving an overview of these models. Based on this overview we will select which models to focus on in the project.\toby{Bud på en intro, i er velkommen til at ændre eller lave ny.} The first model to be investigated will be the traditional threads \& locks.
-
 %Maybe a short section about why we have chosen to look at these concurrency models?
+
 \section{Threads \& Locks}
+
 \section{Actor model}
 The actor model is inspired by physical laws and can be used to model, understand and reason about a wide range of concurrent systems\cite{hewitt2014actor}. The model targets both shared- and distributed-memory architectures and has support for fault tolerance\cite[Chap. 5]{sevenModels}. It is a general model for concurrency that can be used with almost any language but it is often associated with Erlang\footnote{erlang.org}.
  
@@ -24,13 +25,16 @@ Actors interact with one another through asynchronous message passing. For an ac
 An actor has a mailbox which messages sent to the actor arrives in. The actor dequeues the mailbox and processes one message at a time\footnote{Not true for recursion}. Messages sent can take arbitrarily long time to arrive, and if sent concurrently can arrive in a mailbox in any order\cite{hewitt2014actor}.
 
 The actor model avoids shared state and thereby avoids deadlocks and race conditions which is a reality in the threads and locks model\citep[Chap. 32]{odersky2011programming}. Instead the actor model allow isolated mutable state on actors and rely solely on asynchronous message passing between actors.
+
 \section{Reactive}
+
 \section{\acl{STM}}
 The traditional Threads \& Locks approach uses locks to limit the access to critical regions in order to ensure correct execution\cite[p. 1]{saha2006mcrt}. \ac{STM} instead takes a approach based on transactions as known from database theory\cite[p. 1]{shavit1997software}. \ac{STM} transitions are atomic and isolated. Atomic meaning that either all writes in a given transaction is committed, or non of them are, while isolated means that from a given transaction $T$, any other concurrently running transaction will have no impact on the values committed by $T$ when $T$ succeeds\cite[p. 102]{sevenModels}. These properties are similar to the ACID properties known from databases. 
 
 \ac{STM} is implemented in a number of languages, including Clojure\cite[p. 101]{sevenModels}, Concurrent Haskell\cite{harris2005composable} and Scala\cite{goodman2011muts} either directly or using a library. Generally the idea is that programmers specify regions which are to be executed as a transaction. The compiler or library then takes care of ensuring that the \ac{STM} transaction principles are maintained and that the transactions is eventually committed\cite[p. 1]{saha2006mcrt}. The transaction might be retried one or more times in the process, if any other transactions read or modified the used data.
 
 The strength of \ac{STM} lies in the avoidance of many of the issues that plague the traditional Threads \& Locks approach. \ac{STM} can avoid deadlocks, priority inversion and eliminates the issue of balancing lock granularity vs performance\cite[p. 1]{harris2005composable}.
+
 \section{Communicating Sequential Processes}
 
 \worksheetend
