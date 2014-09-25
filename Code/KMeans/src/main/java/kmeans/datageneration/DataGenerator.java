@@ -21,9 +21,9 @@ public class DataGenerator {
         Random rand = new Random();
 
         for (int i = 0; i < count; i++) {
-            ArrayList<Integer> items = new ArrayList<Integer>();
+            int[] items = new int[vectorSize];
             for (int j = 0; j < vectorSize ; j++) {
-                items.add(rand.nextInt(max));
+                items[j] = rand.nextInt(max);
             }
             vectors.add(new Vector(items));
         }

@@ -28,7 +28,7 @@ public class Main {
         try {
 
             List<Vector> vectors = DataGenerator.generateData();
-            RunClustering(vectors,5,3);
+            RunClustering(vectors,5,1);
 
             /*
             ArrayList<Integer> a1 = new ArrayList<Integer>();
@@ -108,6 +108,7 @@ public class Main {
         }
         sw.stop();
         PrintResult(sw,maxIterationCount,nrClusters);
+        executor.shutdown();
     }
 
     public static void RunClusteringSingleThread(List<Vector> vectors, int nrClusters, int maxIterationCount){

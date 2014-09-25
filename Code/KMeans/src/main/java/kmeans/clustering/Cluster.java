@@ -41,19 +41,19 @@ public class Cluster {
     }
 
     public Vector calcMean(){
-        ArrayList<Integer> items;
+        int[] items;
         if (this.vectors.size() == 0){
             //Empty vector
-            items = new ArrayList<>();
+            items = new int[0];
         }else{
             int vectorSize = this.vectors.get(0).size();
-            items = new ArrayList<>();
+            items = new int[vectorSize];
             for (int i = 0; i < vectorSize; i++) {
                 int sum = 0;
                 for (Vector v : this.vectors){
                     sum += v.itemAt(i);
                 }
-                items.add(sum/this.vectors.size());
+                items[i] = sum/this.vectors.size();
             }
         }
 
