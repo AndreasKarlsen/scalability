@@ -6,18 +6,19 @@ import java.util.List;
  */
 public class Vector {
 
-    private List<Integer> items;
 
-    public Vector(List<Integer> items) {
+    private int[]  items;
+
+    public Vector(int[] items) {
         this.items = items;
     }
 
     public int size() {
-        return items.size();
+        return items.length;
     }
 
     public int itemAt(int index) {
-        return items.get(index);
+        return items[index];
     }
 
     public double average(){
@@ -68,12 +69,16 @@ public class Vector {
     }
 
     public double covarianceWith(Vector other){
+        double avg = average();
+        double otherAvg = other.average();
+        return covarianceWith(avg,otherAvg,other);
+    }
+
+    private double covarianceWith(double avg, double otherAvg, Vector other){
         if (size() != other.size()){
             throw new IllegalArgumentException("Sizes does not match");
         }
 
-        double avg = average();
-        double otherAvg = other.average();
         double temp = 0;
         for (int i = 0; i < size() ; i++) {
             temp +=  (itemAt(i)-avg)*(other.itemAt(i)-otherAvg);
@@ -86,7 +91,7 @@ public class Vector {
         return standardDeviation(average());
     }
 
-    private double standardDeviation(double avg){
+    private double standardDeviation(final double avg){
         double sum = sum(new ITransformation() {
             @Override
             public double Transform(int i) {
@@ -133,7 +138,10 @@ public class Vector {
     }
 
     public double pearsonCorrelationWith(Vector other){
-        return covarianceWith(other) / (standardDeviation() * other.standardDeviation());
+        double avg = this.average();
+        double otherAvg = other.average();
+        return covarianceWith(avg, otherAvg, other)
+                / (standardDeviation(avg) * other.standardDeviation(otherAvg));
     }
 
     public interface ITransformation{

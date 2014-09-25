@@ -17,12 +17,13 @@ public class DataGenerator {
 
     public static List<Vector> generateRandomVectors(int max, int count, int vectorSize){
         List<Vector> vectors = new ArrayList<Vector>();
-        Random rand = new Random(System.currentTimeMillis());
+        //Random rand = new Random(System.currentTimeMillis());
+        Random rand = new Random();
 
         for (int i = 0; i < count; i++) {
-            ArrayList<Integer> items = new ArrayList<Integer>();
+            int[] items = new int[vectorSize];
             for (int j = 0; j < vectorSize ; j++) {
-                items.add(rand.nextInt(max));
+                items[j] = rand.nextInt(max);
             }
             vectors.add(new Vector(items));
         }

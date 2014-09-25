@@ -44,11 +44,11 @@ public class DataParser {
         fis = new FileInputStream(f);
         br = new BufferedReader(new InputStreamReader(fis, Charset.forName("UTF-8")));
         while ((line = br.readLine()) != null) {
-            List<Integer> items = new ArrayList<Integer>();
+
+            int[] items = new int[100];
             String[] splits = line.split(",");
-            for (String item : splits)
-            {
-                items.add(Integer.parseInt(item));
+            for (int i = 0; i < 100; i++) {
+                items[i] = Integer.parseInt(splits[i]);
             }
             vectors.add(new Vector(items));
         }

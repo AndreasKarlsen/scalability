@@ -55,15 +55,24 @@ public class Main {
 \section{Deadlocks}
 A \emph{deadlock} occurs when all concurrent tasks in a set are waiting on some event, that can only be caused by another task in the set\cite[p. 435]{tanenbaum2008modern}. Because all the concurrent tasks are blocked and waiting on one of the other tasks, none of them will ever continue and they will block indefinitely.
 
-\kasper[inline]{Deadlock example}
+As an example consider \bsref{fig:deadlockexample}. Here the three threads T1, T2 and T3 are depicted. The three threads are all waiting on a resource, that has been acquired by one of the other threads, as depicted by the arrows. Each thread is waiting on a resource held by one of the other threads and is per out definition of a deadlock, the event being the release of the resource, deadlocked.
+\begin{figure}[htbp]
+\centering
+ \includegraphics[width=0.5\textwidth]{\rootpath/worksheets/concurrency_issues/figures/deadlock} 
+ \caption{Deadlock example}
+\label{fig:deadlockexample}
+\end{figure}
 
-Deadlocks occur for different reasons in different concurrency models.
+Deadlocks occur for different reasons in different concurrency models. As described \bsref{fig:deadlockexample} depicts a example of a deadlock using Threads \& Locks. Here the deadlock is cause by thread acquiring a lock on a resource they need, where after they attempt to acquire a lock on a resource that is held by another thread, that is directly or indirectly waiting on $R$. This type of deadlock is called a \emph{resource deadlock}\cite[p. 435]{tanenbaum2008modern}. 
+
+Another type of deadlock that can occur in for example the the Actor concurrency model is called a \emph{communication deadlock}\cite[p. 456]{tanenbaum2008modern}. Instead of locks a deadlock is here cause by actors waiting on messages. In the context of \bsref{fig:deadlockexample} this would mean that T1, T2 and T3 where actors and the arrows represented a actor waiting on a message from a given actor, so that T1 is waiting on a message from T2. A communication deadlock can occur both over network as well as on a single machine.
 %threads and lock = resource aqusision
 %async message passing = wating on messages as with resources
-
+\kasper[inline]{how to combat different types of deadlocks}
 \kasper[inline]{Deadlock detection}
 \kasper[inline]{Deadlock recovery}
 \kasper[inline]{Livelocks} 
 \section{Mutual exclusion}
+\section{Priority inversion}
  
 \worksheetend
