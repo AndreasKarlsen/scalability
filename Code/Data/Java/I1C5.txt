@@ -1,4 +1,4 @@
 Implementation: Java
 Clusters: 5
 Iterations: 1
-Time: 13788 MILLISECONDS
+Time: 862 MILLISECONDS
