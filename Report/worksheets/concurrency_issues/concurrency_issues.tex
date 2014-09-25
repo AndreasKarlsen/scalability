@@ -1,6 +1,7 @@
 \makeatletter \@ifundefined{rootpath}{\input{../../setup/preamble.tex}}\makeatother
 \worksheetstart{Concurrency Issues}{1}{September 16, 2014}{Kasper}{../../}
 This chapter presents an overview of known issues related to concurrency. Some of the issues are related mainly to shared memory concurrency while others apply to a broader spectrum, including asynchronous message passing.
+
 \section{Race Conditions}\kasper{Time line of how threads execute}
 One issue that can arise in concurrent applications, is that the result of a computation, consisting of two or more concurrent tasks, that share data, depends on how the concurrent tasks are scheduled. This issue is called a \emph{race condition}
 \cite[p. 983]{bryant2011computer}\cite[p. 115]{tanenbaum2008modern}. Consider the example presented in \bsref{lst:racecondition} using Java threads. Here we see a small Java program that starts two threads and waits for each of them to finish, printing out the result of their computations before exiting. The first thread check if the static variable \bscode{number} is equal to ten (which is its initial value) and sets the \bscode{result} variable to \bscode{number} times three if it is true. The second thread simply sets the value of \bscode{number} to 20. It is clear that, if the \bscode{t1} was executed before \bscode{t2} the result would look as follows:
@@ -28,19 +29,21 @@ instead of 30 as expected. Race conditions can be very hard to find and remove, 
   keywordstyle=\color{bluekeywords},
   stringstyle=\color{redstrings}]  % Start your code-block
 public class Main {
-    public static int number = 10;
-    public static int result = 0;
-    
+    private static int number = 10;
+    private static int result = 0;
+
     public static void main(String[] args) throws InterruptedException {
         Thread t1 = new Thread(new Runnable() {
-            @Override public void run() {
+            @Override
+            public void run() {
                 if (number == 10){
                     result = number * 3;
                 }
             }
         });
         Thread t2 = new Thread(new Runnable() {
-            @Override public void run() {
+            @Override
+            public void run() {
                number = 20;
             }
         });
@@ -51,6 +54,52 @@ public class Main {
   }
 \end{lstlisting}
 
+\section{Mutual Exclusion}
+\emph{Mutual exclusion} is the property of shared memory concurrency which ensuring that only a single concurrent task can access a given \emph{critical region} at a time\cite[p. 117]{tanenbaum2008modern}\cite[p. 962]{bryant2011computer}. A critical region being a concurrent task accessing some memory that is shared with other concurrent tasks\cite[p. 117]{tanenbaum2008modern}\cite[p. 961]{bryant2011computer}. Having only a single concurrent task execute withing all critical regions at a time, ensures that the program will behave as if it was run sequentially, even though this might not be the case. Access to critical regions are often restricted by the use of different forms of locks. Mutual exclusion prevents race conditions but introduces other issues such as: deadlocks, priority inversion and starvation and leads to concurrent tasks spending time blocked instead of executing parts of the program.
+
+\bsref{lst:mutualexclusion} depicts a modified version of the example presented in \bsref{lst:racecondition}. The two threads have had their critical regions locked, limiting the access to one thread at a time. Because of this, the case where \bscode{t1} runs just until its about to compute the result and  \bscode{t2} taking over will no longer occur. \bscode{t2} will now not be able to change the value of number as \bscode{t2} still holds the lock on the critical region, even though it is paused. As a result the output result is: 60, can no longer occur. The output does however still depend on the order in which access to the critical regions is acquired.
+\begin{lstlisting}[float,label=lst:mutualexclusion,
+  caption={Mutual exclusion in Java using a lock},
+  language=Java,  
+  showspaces=false,
+  showtabs=false,
+  breaklines=true,
+  showstringspaces=false,
+  breakatwhitespace=true,
+  commentstyle=\color{greencomments},
+  keywordstyle=\color{bluekeywords},
+  stringstyle=\color{redstrings}]  % Start your code-block
+public class Main {
+	private static int number = 10;
+    private static int result = 0;
+    private final static Lock lock = new ReentrantLock();
+
+    public static void main(String[] args) throws InterruptedException {
+        Thread t1 = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                lock.lock();
+                if (number == 10){
+                    result = number * 3;
+                }
+                lock.unlock();
+            }
+        });
+        Thread t2 = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                lock.lock();
+                number = 20;
+                lock.unlock();
+            }
+        });
+        t1.start(); t2.start();
+        t1.join(); t2.join();
+        System.out.println("Result is: "+result);
+    }
+  }
+\end{lstlisting}
+\kasper[inline]{Example}
  
 \section{Deadlocks}
 A \emph{deadlock} occurs when all concurrent tasks in a set are waiting on some event, that can only be caused by another task in the set\cite[p. 435]{tanenbaum2008modern}. Because all the concurrent tasks are blocked and waiting on one of the other tasks, none of them will ever continue and they will block indefinitely.
@@ -63,16 +112,17 @@ As an example consider \bsref{fig:deadlockexample}. Here the three threads T1, T
 \label{fig:deadlockexample}
 \end{figure}
 
-Deadlocks occur for different reasons in different concurrency models. As described \bsref{fig:deadlockexample} depicts a example of a deadlock using Threads \& Locks. Here the deadlock is cause by thread acquiring a lock on a resource they need, where after they attempt to acquire a lock on a resource that is held by another thread, that is directly or indirectly waiting on $R$. This type of deadlock is called a \emph{resource deadlock}\cite[p. 435]{tanenbaum2008modern}. 
+Deadlocks occur for different reasons in different concurrency models. As described \bsref{fig:deadlockexample} depicts a example of a deadlock using Threads \& Locks. Here the deadlock is cause by thread acquiring a lock on a resource they need, where after they attempt to acquire a lock on a resource that is held by another thread, that is directly or indirectly waiting on \bscode{R}. This type of deadlock is called a \emph{resource deadlock}\cite[p. 435]{tanenbaum2008modern}. 
 
-Another type of deadlock that can occur in for example the the Actor concurrency model is called a \emph{communication deadlock}\cite[p. 456]{tanenbaum2008modern}. Instead of locks a deadlock is here cause by actors waiting on messages. In the context of \bsref{fig:deadlockexample} this would mean that T1, T2 and T3 where actors and the arrows represented a actor waiting on a message from a given actor, so that T1 is waiting on a message from T2. A communication deadlock can occur both over network as well as on a single machine.
+Another type of deadlock that can occur in, for example, the the Actor concurrency model is called a \emph{communication deadlock}\cite[p. 456]{tanenbaum2008modern}. Instead of deadlocks being caused by locks, a deadlock is here cause by actors waiting on messages. In the context of \bsref{fig:deadlockexample} this would mean that T1, T2 and T3 where actors and the arrows represented a actor waiting on a message from a given actor, so that T1 is waiting on a message from T2. A communication deadlock can occur both over network as well as on a single machine.
 %threads and lock = resource aqusision
 %async message passing = wating on messages as with resources
-\kasper[inline]{how to combat different types of deadlocks}
 \kasper[inline]{Deadlock detection}
 \kasper[inline]{Deadlock recovery}
 \kasper[inline]{Livelocks} 
-\section{Mutual exclusion}
-\section{Priority inversion}
+
+%\section{Priority Inversion && Starvation}
+\emph{Priority inversion}
+
  
 \worksheetend
