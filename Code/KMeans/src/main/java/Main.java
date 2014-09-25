@@ -75,11 +75,15 @@ public class Main {
 
     }
 
-    public static void RunClustering(List<Vector> vectors, int nrClusters, int maxIterationCount) {
+    public static void RunClustering(List<Vector> vectors, int nrClusters,  int maxIterationCount) {
+        RunClustering(vectors,nrClusters,nrClusters,maxIterationCount);
+    }
+
+    public static void RunClustering(List<Vector> vectors, int nrClusters, int nrThreads, int maxIterationCount) {
 
 
-        ExecutorService executor = Executors.newFixedThreadPool(nrClusters);
-        Partitioning<Vector> partitioning = new Partitioner<Vector>().partition(vectors, nrClusters);
+        ExecutorService executor = Executors.newFixedThreadPool(nrThreads);
+        Partitioning<Vector> partitioning = new Partitioner<Vector>().partition(vectors, nrThreads);
         List<Vector> means = DataGenerator.generateRandomVectors(100, nrClusters, 100);
         Semaphore sem = new Semaphore(0);
         ReentrantLock lock = new ReentrantLock();
@@ -103,10 +107,10 @@ public class Main {
             itrCount++;
         }
         sw.stop();
-        long elapsedSeconds = sw.elapsed(TimeUnit.SECONDS);
+        long elapsedSeconds = sw.elapsed(TimeUnit.MILLISECONDS);
 
         try {
-            ResultWriter.WriteResult(elapsedSeconds,TimeUnit.SECONDS,maxIterationCount,nrClusters,"Java");
+            ResultWriter.WriteResult(elapsedSeconds,TimeUnit.MILLISECONDS,maxIterationCount,nrClusters,"Java");
         } catch (IOException e) {
             e.printStackTrace();
         }
