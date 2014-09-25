@@ -1,4 +1,15 @@
 import com.google.common.base.Stopwatch;
+
+import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
+
 import kmeans.Mapper;
 import kmeans.Reducer;
 import kmeans.clustering.Cluster;
@@ -6,18 +17,9 @@ import kmeans.clustering.Clustering;
 import kmeans.clustering.ClusteringService;
 import kmeans.datageneration.DataGenerator;
 import kmeans.model.Vector;
-import kmeans.parsing.DataParser;
 import kmeans.partitioning.Partition;
 import kmeans.partitioning.Partitioner;
 import kmeans.partitioning.Partitioning;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
-import java.util.concurrent.*;
-import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Created by Kasper on 22-09-2014.

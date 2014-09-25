@@ -1,0 +1,4 @@
+Implementation: Java
+Clusters: 7
+Iterations: 20
+Time: 24298 MILLISECONDS
