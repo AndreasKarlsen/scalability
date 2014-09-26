@@ -1,10 +1,10 @@
 \makeatletter \@ifundefined{rootpath}{\input{../../setup/preamble.tex}}\makeatother
 \worksheetstart{Concurrency Issues}{1}{September 16, 2014}{Kasper}{../../}
-This chapter presents an overview of known issues related to concurrency. Some of the issues are related mainly to shared memory concurrency while others apply to a broader spectrum, including asynchronous message passing.
+This chapter presents an overview of known\lone{hvor? research community? de første 5 papirer?} issues related to concurrency. Some of the issues are related mainly to shared memory concurrency while others apply to a broader spectrum, including asynchronous message passing.
 
 \section{Race Conditions}\kasper{Time line of how threads execute}
 One issue that can arise in concurrent applications, is that the result of a computation, consisting of two or more concurrent tasks, that share data, depends on how the concurrent tasks are scheduled. This issue is called a \emph{race condition}
-\cite[p. 983]{bryant2011computer}\cite[p. 115]{tanenbaum2008modern}. Consider the example presented in \bsref{lst:racecondition} using Java threads. Here we see a small Java program that starts two threads and waits for each of them to finish, printing out the result of their computations before exiting. The first thread check if the static variable \bscode{number} is equal to ten (which is its initial value) and sets the \bscode{result} variable to \bscode{number} times three if it is true. The second thread simply sets the value of \bscode{number} to 20. It is clear that, if the \bscode{t1} was executed before \bscode{t2} the result would look as follows:
+\cite[p. 983]{bryant2011computer}\cite[p. 115]{tanenbaum2008modern}. Consider the example presented in \bsref{lst:racecondition} using Java threads. Here we see a small Java\lone{Hvorfor Java?} program that starts two threads and waits for each of them to finish, printing out the result of their computations before exiting. The first thread checks if the static variable \bscode{number} is equal to ten (which is its initial value) and sets the \bscode{result} variable to \bscode{number} times three if it is true. The second thread simply sets the value of \bscode{number} to 20. It is clear that, if the \bscode{t1} was executed before \bscode{t2} the result would look as follows:
 \begin{verbatim}
 Result is: 30
 \end{verbatim}
@@ -104,7 +104,7 @@ public class Main {
 \section{Deadlocks}
 A \emph{deadlock} occurs when all concurrent tasks in a set are waiting on some event, that can only be caused by another task in the set\cite[p. 435]{tanenbaum2008modern}. Because all the concurrent tasks are blocked and waiting on one of the other tasks, none of them will ever continue and they will block indefinitely.
 
-As an example consider \bsref{fig:deadlockexample}. Here the three threads T1, T2 and T3 are depicted. The three threads are all waiting on a resource, that has been acquired by one of the other threads, as depicted by the arrows. Each thread is waiting on a resource held by one of the other threads and is per out definition of a deadlock, the event being the release of the resource, deadlocked.
+As an example consider \bsref{fig:deadlockexample}. Here the three threads T1, T2 and T3 are depicted. The three threads are all waiting on a resource, that has been acquired by one of the other threads, as depicted by the arrows. Each thread is waiting on a resource held by one of the other threads and is per our definition of a deadlock, the event being the release of the resource, deadlocked.
 \begin{figure}[htbp]
 \centering
  \includegraphics[width=0.5\textwidth]{\rootpath/worksheets/concurrency_issues/figures/deadlock} 
@@ -112,9 +112,9 @@ As an example consider \bsref{fig:deadlockexample}. Here the three threads T1, T
 \label{fig:deadlockexample}
 \end{figure}
 
-Deadlocks occur for different reasons in different concurrency models. As described \bsref{fig:deadlockexample} depicts a example of a deadlock using Threads \& Locks. Here the deadlock is cause by thread acquiring a lock on a resource they need, where after they attempt to acquire a lock on a resource that is held by another thread, that is directly or indirectly waiting on \bscode{R}. This type of deadlock is called a \emph{resource deadlock}\cite[p. 435]{tanenbaum2008modern}. 
+Deadlocks occur for different reasons in different concurrency models. As described \bsref{fig:deadlockexample} depicts a example of a deadlock using \ac{TL}. Here the deadlock is caused by threads acquiring a lock on a resource they need, where after they attempt to acquire a lock on a resource that is held by another thread, that is directly or indirectly waiting on \bscode{R}. This type of deadlock is called a \emph{resource deadlock}\cite[p. 435]{tanenbaum2008modern}. 
 
-Another type of deadlock that can occur in, for example, the the Actor concurrency model is called a \emph{communication deadlock}\cite[p. 456]{tanenbaum2008modern}. Instead of deadlocks being caused by locks, a deadlock is here cause by actors waiting on messages. In the context of \bsref{fig:deadlockexample} this would mean that T1, T2 and T3 where actors and the arrows represented a actor waiting on a message from a given actor, so that T1 is waiting on a message from T2. A communication deadlock can occur both over network as well as on a single machine.
+Another type of deadlock that can occur in, for example,  the Actor concurrency model is called a \emph{communication deadlock}\cite[p. 456]{tanenbaum2008modern}. Instead of deadlocks being caused by locks, a deadlock is here cause by actors waiting on messages. In the context of \bsref{fig:deadlockexample} this would mean that T1, T2 and T3 where actors and the arrows represented an actor waiting on a message from a given actor, so that T1 is waiting on a message from T2. A communication deadlock can occur both over network as well as on a single machine.
 %threads and lock = resource aqusision
 %async message passing = wating on messages as with resources
 \kasper[inline]{Deadlock detection}

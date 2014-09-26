@@ -1,17 +1,21 @@
 \makeatletter \@ifundefined{rootpath}{\input{../../setup/preamble.tex}}\makeatother
 \worksheetstart{Problem Statement}{1}{22. September, 2014}{Andreas}{../../}
 %
-In order to structure our investigation, we have extracted five\toby{Make sure this is the right number in the end} questions. The questions are based on problems found in our preliminary investigation, which is described in the \bsref{chap:introduction}. These questions will serve as a guideline our further investigation, and will be used to conclude upon the project in \bsref{chap:conclusion}.
+\lone[inline]{Bør kunne læses uafhængigt}
+In order to structure our investigation\lone{Af hvad?}, we have extracted five\toby{Make sure this is the right number in the end} questions. The questions are based on problems found in our preliminary investigation, which is described in the \bsref{chap:introduction}. These questions will serve as a guideline for our further investigation, and will be used to conclude upon the project in \bsref{chap:conclusion}.
 
-The questions we search to answer are:
+The questions we seek to answer are:
 \begin{enumerate}
-\item Which problems exists with concurrency in a multithreaded environment? 
+\item Which problems exist with concurrency in a multithreaded environment? 
 \item What are the approaches for handling concurrency?
 \item In what problem domains are the approaches most applicable?
-\item How is the approaches performance comparatively?
-\item How can the approaches be applied to a distributed environment?
+\item How are the approaches performance comparatively?\lone{Dårlig sætning}
+
 \end{enumerate}
 
-In our preliminary investigation, we discovered the traditional threads and locks approach, and the more modern actor model, event-driven, and software transactional memory approaches. Threads and locks have been selected based on its widespread use and historical significance, while the remaining models have been chosen based on their more modern and widely different approaches to concurrency. It was deemed that these remaining models provide a broad enough view of what is currently state of the art concurrency models. 
+In our preliminary investigation, we discovered the traditional threads and locks approach, and the more modern\lone{more moden er et dårligt udtryk} actor model, event-driven, and software transactional memory approaches. Threads and locks have been selected based on its widespread use and historical significance, while the remaining models have been chosen based on their more modern and widely different approaches to concurrency. It was deemed\lone{Tyndt, omformuleres med argumenter som overbeviser jer og mig} that these remaining models provide a broad enough view of what is currently state of the art concurrency models. 
+
+\section{Learning Goals}
+Lav eksplicit lærings mål om at lære concurrency modeller, scala, clojure\\
 
 \worksheetend
