@@ -1,14 +1,14 @@
 \makeatletter \@ifundefined{rootpath}{\input{../../setup/preamble.tex}}\makeatother
-\worksheetstart{Preliminary investigation}{1}{September 22, 2014}{Everybody}{../../}
-Formuler formål med preliminary investigation\\
-Skriv at der kommer en detaljeret gennemgang og sammenligning senere\\
-Forsøg at præsentere de forskellige modeller isoleret\\
-Hvad er current state of the art, related work, open problem?\\
-Hvordan har vi valgt de modeller vi vil undersøge?
-
-This chapter presents a preliminary investigation of different concurrency models. As it is not possible to go in depth with all concurrency models this chapter serves the purpose of giving an overview of these models\lone{Lyder som en dårlig undskyldning}. Based on this overview we will select which models to focus on in the project\lone{Definer the project}. \toby{Bud på en intro, i er velkommen til at ændre eller lave ny.} The first model to be investigated will be the traditional \ac{TL}.
+\worksheetstart{Preliminary Analysis}{1}{September 22, 2014}{Everybody}{../../}
+\lone[inline]{Formuler formål med preliminary investigation}
+\lone[inline]{Skriv at der kommer en detaljeret gennemgang og sammenligning senere}
+\lone[inline]{Forsøg at præsentere de forskellige modeller isoleret}
+\lone[inline]{Hvad er current state of the art, related work, open problem?}
+\lone[inline]{Hvordan har vi valgt de modeller vi vil undersøge?}
+This chapter presents a preliminary analysis into concurrency models. The presented models have been chosen based on their historical significance, widespread use or currently ongoing research effort. The purpose of this presentation is to document our preliminary concurrency model analysis, in order to justify the choice of models to analyses further. For each model a short description will be given, along with a short presentation of what is currently state of the art within the given model. The first model to be investigated will be the traditional \ac{TL}.
 %Maybe a short section about why we have chosen to look at these concurrency models?
 \section{\acl{TL}}
+The traditional \ac{TL} approach uses locks to limit the access to critical regions in order to ensure correct execution\cite[p. 1]{saha2006mcrt}.
 
 \section{Actor model}
 The actor model is inspired by physical laws and can be used to model, understand and reason about a wide range of concurrent systems\cite{hewitt2014actor}. The model targets both shared- and distributed-memory architectures and has support for fault tolerance\cite[Chap. 5]{sevenModels}. It is a general model for concurrency that can be used with almost any language but it is often associated with Erlang\footnote{\url{http://erlang.org}}.
@@ -45,7 +45,7 @@ How does it solves it?
 \end{itemize}
 
 \section{\acl{STM}}
-The traditional \ac{TL} approach uses locks to limit the access to critical regions in order to ensure correct execution\cite[p. 1]{saha2006mcrt}. \ac{STM} instead takes an approach based on transactions as known from database theory\cite[p. 1]{shavit1997software}. \ac{STM} transitions are atomic and isolated. Atomic meaning that either all writes in a given transaction are committed, or non of them are, while isolated means that from a given transaction $T$, any other concurrently running transaction will have no impact on the values committed by $T$ when $T$ succeeds\cite[p. 102]{sevenModels}. These properties are similar to the ACID\lone{Lav til et akronym} properties known from databases. 
+\ac{STM} takes an approach to concurrency, that is based on transactions as known from database theory\cite[p. 1]{shavit1997software}. \ac{STM} transitions are atomic and isolated. Atomic meaning that either all writes in a given transaction are committed, or non of them are, while isolated means that from a given transaction \bscode{T}, any other concurrently running transaction will have no impact on the values committed by \bscode{T} when \bscode{T} succeeds\cite[p. 102]{sevenModels}. These properties are similar to the \ac{ACID} properties known from databases\cite[p. 754]{elmasri2011fundamentals}.
 
 \ac{STM} is implemented in a number of languages, including Clojure\cite[p. 101]{sevenModels}, Concurrent Haskell\cite{harris2005composable} and Scala\cite{goodman2011muts} either directly or using a library. Generally the idea is that programmers specify regions which are to be executed as a transaction. The compiler or library then takes care of ensuring that the \ac{STM} transaction principles are maintained and that the transactions are eventually committed\cite[p. 1]{saha2006mcrt}. The transaction might be retried one or more times in the process, if any other transactions read or modified the used data.
 
