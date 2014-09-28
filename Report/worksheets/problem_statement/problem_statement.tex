@@ -2,20 +2,30 @@
 \worksheetstart{Problem Statement}{1}{22. September, 2014}{Andreas}{../../}
 %
 \lone[inline]{Bør kunne læses uafhængigt}
-In order to structure our investigation\lone{Af hvad?}, we have extracted five\toby{Make sure this is the right number in the end} questions. The questions are based on problems found in our preliminary investigation, which is described in the \bsref{chap:introduction}. These questions will serve as a guideline for our further investigation, and will be used to conclude upon the project in \bsref{chap:conclusion}.
+In order to structure our investigation into concurrency models, we have extracted four\toby{Make sure this is the right number in the end} problems statement questions. As well as a set of concurrency models to investigate. The questions and selected models are based on findings presented in our preliminary analysis, which is described in \bsref{chap:introduction} and \bsref{chap:preliminary_analysis}. These questions will serve as a guideline for our further investigation, and will be used to conclude upon the project in \bsref{chap:conclusion}.
+
+In our preliminary analysis, we discovered the traditional threads and locks approach, as well the actor based, event-driven, and software transactional memory approaches. Threads and locks have been selected based on its widespread use and historical significance, while the remaining models have been chosen based on their up and coming usage or ongoing research efforts. Each of these models also have a vastly different approach to handling concurrency, and should provide varying perspectives.
 
 The questions we seek to answer are:
 \begin{enumerate}
 \item Which problems exist with concurrency in a multithreaded environment? 
-\item What are the approaches for handling concurrency?
+\item What are the characteristics of the selected models? Including their strengths and weaknesses.
+\item How do the selected models handle know concurrency issues?
 \item In what problem domains are the approaches most applicable?
-\item How are the approaches performance comparatively?\lone{Dårlig sætning}
-
+%\item How are the approaches performance comparatively?\lone{Dårlig sætning}
 \end{enumerate}
 
-In our preliminary investigation, we discovered the traditional threads and locks approach, and the more modern\lone{more moden er et dårligt udtryk} actor model, event-driven, and software transactional memory approaches. Threads and locks have been selected based on its widespread use and historical significance, while the remaining models have been chosen based on their more modern and widely different approaches to concurrency. It was deemed\lone{Tyndt, omformuleres med argumenter som overbeviser jer og mig} that these remaining models provide a broad enough view of what is currently state of the art concurrency models. 
+
+%It was deemed\lone{Tyndt, omformuleres med argumenter som overbeviser jer og mig} that these remaining models provide a broad enough view of what is currently state of the art concurrency models. 
 
 \section{Learning Goals}
-Lav eksplicit lærings mål om at lære concurrency modeller, scala, clojure\\
+Along with the definition of a problem statement, a set of learning goals have been defined. While answering the questions presented in the problem statement is the mains focus, the learning goals can be viewed as a set of sub goals that are aimed at stimulating our learning.
+
+The learning goals are defined as:
+\begin{enumerate}
+\item Learn what concurrency models exists and in what setting they are best applied
+\item Produce a sample implementation using each of the selected models in order further our understanding
+\item Get familiar with the the Scala\footnote{\url{http://www.scala-lang.org/}} programming language
+\end{enumerate}
 
 \worksheetend
