@@ -1,17 +1,28 @@
 \makeatletter \@ifundefined{rootpath}{\input{../../setup/preamble.tex}}\makeatother
 \worksheetstart{Preliminary Analysis}{1}{September 22, 2014}{Everybody}{../../}
-\lone[inline]{Formuler formål med preliminary investigation}
-\lone[inline]{Skriv at der kommer en detaljeret gennemgang og sammenligning senere}
-\lone[inline]{Forsøg at præsentere de forskellige modeller isoleret}
-\lone[inline]{Hvad er current state of the art, related work, open problem?}
-\lone[inline]{Hvordan har vi valgt de modeller vi vil undersøge?}
-This chapter presents a preliminary analysis into concurrency models. The presented models have been chosen based on their historical significance, widespread use or currently ongoing research effort. The purpose of this presentation is to document our preliminary concurrency model analysis, in order to justify the choice of models to analyses further. For each model a short description will be given, along with a short presentation of what is currently state of the art within the given model. The first model to be investigated will be the traditional \ac{TL}.
+% Formål med preliminary analysis
+This chapter contains an analysis of prior work related to concurrency models. It will be conducted by investigating papers, articles, and other research material of relevance, in order to discover state of the art, and open problems within the area of concurrency models. The purpose of the analysis is to establish an overview which will be used to choose the further path of our investigation.
 \label{chap:preliminary_analysis}
-%Maybe a short section about why we have chosen to look at these concurrency models?
-\section{\acl{TL}}
+%
+\section{Related work}
+\lone[inline]{Hvad er current state of the art, related work, open problem?}
+The report ``A Study in Concurrency''\cite{damborg2006concurrency} investigates the concurrency support in current object-oriented languages. In specific, four languages were analyzed: Java, C$\omega$, Fortress, and E. They conclude, that there is a mismatch between the object-oriented paradigm and concurrency, and no simple solution for this \cite[p. 101]{damborg2006concurrency}. They claim, that in the current concurrency models, the programmer is, in large, left alone when concurrency is needed. With these discoveries taken into account, a focus on concurrency models which does not require special focus from the programmer could be of special interest for our investigation.
+\andreas{Find ny kilde, der siger at programmøren er overladt til sig selv, når det kommer til concurrent programmering}
+The landscape of Parallel Computing Research\\
+
+
+
+\section{Models to investigate}
+\lone[inline]{Hvordan har vi valgt de modeller vi vil undersøge? Fordi det er current trends}
+\andreas[inline]{Redegør for relevansen for valg af de enkelte modeller}
+\lone[inline]{Forsøg at præsentere de forskellige modeller isoleret}
+\lone[inline]{Skriv at der kommer en detaljeret gennemgang og sammenligning senere}
+The presented models have been chosen based on their historical significance, widespread use or currently ongoing research effort. The purpose of this presentation is to document our preliminary concurrency model analysis, in order to justify the choice of models to analyses further. For each model a short description will be given, along with a short presentation of what is currently state of the art within the given model. The first model to be investigated will be the traditional \ac{TL}.
+
+\subsection{\acl{TL}}
 The traditional \ac{TL} approach uses locks to limit the access to critical regions in order to ensure correct execution\cite[p. 1]{saha2006mcrt}.
 
-\section{Actor model}
+\subsection{Actor model}
 The actor model is inspired by physical laws and can be used to model, understand and reason about a wide range of concurrent systems\cite{hewitt2014actor}. The model targets both shared- and distributed-memory architectures and has support for fault tolerance\cite[Chap. 5]{sevenModels}. It is a general model for concurrency that can be used with almost any language but it is often associated with Erlang\footnote{\url{http://erlang.org}}.
  
 The idea of the actor model is to use actors as the fundamental unit of computation. An actor has the following essential elements of computation\cite{actorLangNextVideo}: Processing, storage, and communication.
@@ -30,7 +41,7 @@ The actor model avoids the deadlocks and race conditions present in the \ac{TL} 
 
 
 
-\section{Reactive}
+\subsection{Reactive}
 
 Which problem does the reactive model try to solve?
 \begin{itemize}
@@ -45,13 +56,13 @@ How does it solves it?
 \item Reverse the data flow (push instead of pull)
 \end{itemize}
 
-\section{\acl{STM}}
+\subsection{\acl{STM}}
 \ac{STM} takes an approach to concurrency, that is based on transactions as known from database theory\cite[p. 1]{shavit1997software}. \ac{STM} transitions are atomic and isolated. Atomic meaning that either all writes in a given transaction are committed, or non of them are, while isolated means that from a given transaction \bscode{T}, any other concurrently running transaction will have no impact on the values committed by \bscode{T} when \bscode{T} succeeds\cite[p. 102]{sevenModels}. These properties are similar to the \ac{ACID} properties known from databases\cite[p. 754]{elmasri2011fundamentals}.
 
 \ac{STM} is implemented in a number of languages, including Clojure\cite[p. 101]{sevenModels}, Concurrent Haskell\cite{harris2005composable} and Scala\cite{goodman2011muts} either directly or using a library. Generally the idea is that programmers specify regions which are to be executed as a transaction. The compiler or library then takes care of ensuring that the \ac{STM} transaction principles are maintained and that the transactions are eventually committed\cite[p. 1]{saha2006mcrt}. The transaction might be retried one or more times in the process, if any other transactions read or modified the used data.
 
 The strength of \ac{STM} lies in the avoidance of many of the issues\lone{Nævner I dem?} that plague the traditional \ac{TL} approach. \ac{STM} can avoid deadlocks, priority inversion and eliminates the issue of balancing lock granularity vs performance\cite[p. 1]{harris2005composable}.
 
-\section{Communicating Sequential Processes}
+\subsection{Communicating Sequential Processes}
 
 \worksheetend
