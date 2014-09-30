@@ -99,7 +99,6 @@ public class Main {
     }
   }
 \end{lstlisting}
-\kasper[inline]{Example}
  
 \section{Deadlocks}
 A \emph{deadlock} occurs when all concurrent tasks in a set are waiting on some event, that can only be caused by another task in the set\cite[p. 435]{tanenbaum2008modern}. Because all the concurrent tasks are blocked and waiting on one of the other tasks, none of them will ever continue and they will block indefinitely.
@@ -114,15 +113,46 @@ As an example consider \bsref{fig:deadlockexample}. Here the three threads T1, T
 
 Deadlocks occur for different reasons in different concurrency models. As described \bsref{fig:deadlockexample} depicts a example of a deadlock using \ac{TL}. Here the deadlock is caused by threads acquiring a lock on a resource they need, where after they attempt to acquire a lock on a resource that is held by another thread, that is directly or indirectly waiting on \bscode{R}. This type of deadlock is called a \emph{resource deadlock}\cite[p. 435]{tanenbaum2008modern}. 
 
-Another type of deadlock that can occur in, for example,  the Actor concurrency model is called a \emph{communication deadlock}\cite[p. 456]{tanenbaum2008modern}. Instead of deadlocks being caused by locks, a deadlock is here cause by actors waiting on messages. In the context of \bsref{fig:deadlockexample} this would mean that T1, T2 and T3 where actors and the arrows represented an actor waiting on a message from a given actor, so that T1 is waiting on a message from T2. A communication deadlock can occur both over network as well as on a single machine.
+Another type of deadlock that can occur in, for example, the Actor concurrency model is called a \emph{communication deadlock}\cite[p. 124]{tanenbaum2008modern}. Instead of deadlocks being caused by locks, a deadlock is here cause by actors waiting on messages. In the context of \bsref{fig:deadlockexample} this would mean that T1, T2 and T3 where actors and the arrows represented an actor waiting on a message from a given actor, so that T1 is waiting on a message from T2. A communication deadlock can occur both over network as well as on a single machine.
 %threads and lock = resource aqusision
 %async message passing = wating on messages as with resources
 \kasper[inline]{Deadlock detection}
 \kasper[inline]{Deadlock recovery}
-\kasper[inline]{Livelocks} 
 
-%\section{Priority Inversion && Starvation}
-\emph{Priority inversion}
+\section{Livelocks} A livelock is similar to a deadlock in that no progress is being made. For it to be a livelock a deadlock is however not present. Consider two concurrent tasks \bscode{A} and \bscode{B}. \bscode{A} and \bscode{B} both attempt to write to some common storage where after they check if the data was written correctly. If that is not the case they attempt the write again. This could lead to another failed attempt and another retry, which could go on indefinitely. \bscode{A} and \bscode{B} are then said to be livelocked. They are not deadlocked as they are not blocking, but they are not progressing either. 
 
+In this scenario the livelock could be avoided by having each task wait a random period of time $t < m$, where m is the current maximum wait time, before retrying. Having $m$ grow for each time a task has to retry its operation minimizes the risk of the other tasks interfering with the write as it is more likely that the retry will occur at different times. It is however also of interest to minimize to wait time as no progress is made during this period.
+\kasper[inline]{Source!}
+
+
+
+\section{Priority Inversion}
+Priority inversion is the problem of a high priority concurrent tasks blocking, while waiting for a low priority concurrent tasks to finish\cite[p. 456]{tanenbaum2008modern}. As an example consider the two concurrent tasks \bscode{H} and \bscode{L} shown in \bsref{fig:priority_inversion}. \bscode{H} has a high priority while \bscode{L} has a low priority. \bscode{L} starts running, enters its critical region and acquires a lock on some shared resource \bscode{R}. The high priority task \bscode{H} is then started. It enters its critical region and attempts to acquire a lock on the resource \bscode{R}. The lock on \bscode{R} is however still held by \bscode{L} and the high priority task \bscode{H} must now wait for the low priority task \bscode{L} to finish.
+
+\begin{figure}[htbp]
+\centering
+ \includegraphics[width=0.95\textwidth]{\rootpath/worksheets/concurrency_issues/figures/pi_graf} 
+ \caption{Priority inversion example}
+\label{fig:priority_inversion}
+\end{figure}
+If a concurrent task \bscode{M} with medium priority was introduced, scenario could instead looks as depicted in \bsref{fig:priority_inversion_m}. The scenario is similar to the previous but here \bscode{M} starts up after \bscode{L} has acquired the lock on \bscode{R}. Because \bscode{M} is a medium priority task it is scheduled before \bscode{L}. As a result \bscode{H} has to wait on both a low and medium priority task to finish before acquiring the lock on \bscode{R}.
+
+\begin{figure}[htbp]
+\centering
+ \includegraphics[width=0.95\textwidth]{\rootpath/worksheets/concurrency_issues/figures/pi_graf2} 
+ \caption{Priority inversion example}
+\label{fig:priority_inversion_m}
+\end{figure}
+
+\section{Starvation}
+A concurrent task is said to be starved if, it is denied access to a recourse indefinitely\cite[p. 459]{tanenbaum2008modern}. The task can be denied based on many different criteria. For example, priority or the size of the job that it is to perform.
+
+As an example, imagine a scheduler that gives concurrent tasks access to some resource R based the priority of the task. Task with a high priority gets access to the resource before tasks with a low priority. Now a low priority concurrent task \bscode{A} attempts to acquire a lock on some resource \bscode{R}. The lock on \bscode{R} is however currently held by some other task and so \bscode{A} is blocked waiting for access to \bscode{R}. While \bscode{A} is blocked, a high priority task \bscode{B} also attempts to acquire the lock on \bscode{R} and is blocked as well. When the lock on \bscode{R} is released it is given to the high priority task \bscode{B} even though \bscode{A} blocked first and so \bscode{A} remained blocked. If this scenario keeps repeating and a high priority task keeps getting the lock over \bscode{A}, \bscode{A} is said to be starved.
+
+The same scenario can without the use of locks for synchronization. Imagine a printing service in a asynchronous message passing system. The printing service accepts, schedules and handles print jobs on behalves of a number of clients. The printing services givers a higher priority to jobs created by some clients than jobs created by others. If a client submitted the low priority job \bscode{A} to the printing service, but the queue of the printing service already contained a number of high priority jobs, \bscode{A} would have to wait until the high priority jobs where finished. If the printing services keeps receiving new high priority jobs at a pace such that the queue allways contains atleast a single high priority job, then \bscode{A} will never be executed and will be starved. The similar scenario could occur if the printing service gave priority to the smallest job. A very large job might starve as smaller jobs keep getting prioritized
+
+Starvation can be avoided using a \ac{FIFO} scheduling strategy\cite[p. 459]{tanenbaum2008modern}.
+
+%over the network
  
 \worksheetend
