@@ -1,25 +1,42 @@
 \makeatletter \@ifundefined{rootpath}{\input{../../setup/preamble.tex}}\makeatother
 \worksheetstart{Preliminary Analysis}{1}{September 22, 2014}{Everybody}{../../}
 % Formål med preliminary analysis
-This chapter contains an analysis of prior work related to concurrency models. It will be conducted by investigating papers, articles, and other research material of relevance, in order to discover state of the art, and open problems within the area of concurrency models. The purpose of the analysis is to establish an overview which will be used to choose the further path of our investigation.
+This chapter contains an analysis of prior work related to concurrency. It will be conducted by investigating papers, articles, and other research material of relevance, in order to discover state of the art, and open problems within the area of concurrency models. The purpose of the analysis is to establish an overview which will be used to choose the further path of our investigation.
 \label{chap:preliminary_analysis}
-%
+% Moores law, skalér med flere kerner, ikke højere CPU
+% Krav til at applikationer kræver mere ydelse
+% Focus på skalering til flere computere i.e. parallel computing, ikke kun flere kerner
+% Brug for en evolution, inden for tilgange til at skrive parallele programmer
+% Vi vil kigge på concurrency inden for rammerne af samme maskine
+
+%Threads and locks duer ikke
+%Hvad er der behov for
+%Hvad andet findes der, der opfylder behovet
 \section{Related work}
 \lone[inline]{Hvad er current state of the art, related work, open problem?}
-The report ``A Study in Concurrency''\cite{damborg2006concurrency} investigates the concurrency support in current object-oriented languages. In specific, four languages were analyzed: Java, C$\omega$, Fortress, and E. They conclude, that there is a mismatch between the object-oriented paradigm and concurrency, and no simple solution for this \cite[p. 101]{damborg2006concurrency}. They claim, that in the current concurrency models, the programmer is, in large, left alone when concurrency is needed. With these discoveries taken into account, a focus on concurrency models which does not require special focus from the programmer could be of special interest for our investigation.
-\andreas{Find ny kilde, der siger at programmøren er overladt til sig selv, når det kommer til concurrent programmering}
-The landscape of Parallel Computing Research\\
+
+In ``The Free Lunch is Over''\cite{sutter2005free}, it is claimed that the era of gaining performance increase without changing a program was over. 
+
+\bsqoute{[...] if you want your application to benefit from the continued exponential throughput advances in new processors, it will need to be a well-written concurrent [...] application. And that’s easier said than done, because not all problems are inherently parallelizable and because concurrent programming is hard.}{Herb Sutter}
+
+Hardware limitations in the processor development is having an impact on the way software should be developed to utilize the full potential of multi-core processors. Different approaches for writing concurrent programs have emerged. Language constructs such as \ac{TL} have been used to control the interaction between threads in order to enforce synchronization at key points. First off, the programmer is left alone to place the locks in the correct place and the correct order, which in itself is hard. If he succeeds of using locks as synchronization mechanism, a major caveat is that they are not composable\cite[p. 58]{sutter2005software}. That is, you cannot compose two correct lock-based pieces of code and know the result is still correct. This significantly limits the reuseability of software components, and another model is therefore desirable. With these discoveries taken into account, a focus on concurrency models which does not require special focus from the programmer could be of special interest for our investigation.
+
+
+
+The landscape of Parallel Computing Research\cite{asanovic2006landscape}\\
+
+\cite{hill2008amdahl}
 
 
 
 \section{Models to investigate}
-\lone[inline]{Hvordan har vi valgt de modeller vi vil undersøge? Fordi det er current trends}
-\andreas[inline]{Redegør for relevansen for valg af de enkelte modeller}
+\andreas[inline]{Redegør for relevansen for valg af de enkelte modeller. Skriv en linie eller to i starten af hvert afsnit, om hvorfor modellen er valgt}
 \lone[inline]{Forsøg at præsentere de forskellige modeller isoleret}
-\lone[inline]{Skriv at der kommer en detaljeret gennemgang og sammenligning senere}
-The presented models have been chosen based on their historical significance, widespread use or currently ongoing research effort. The purpose of this presentation is to document our preliminary concurrency model analysis, in order to justify the choice of models to analyses further. For each model a short description will be given, along with a short presentation of what is currently state of the art within the given model. The first model to be investigated will be the traditional \ac{TL}.
+
+The purpose of this presentation is to document our preliminary concurrency model analysis, in order to justify the choice of models to analysis further. For each model a reason for looking into it will be given followed by a short description which will provide an overview of the model. Later the chosen models will be presented further in depth.\andreas[inline]{Lav en reference til den uddybende forklaring for de enkelte modeller når den er færdig}
 
 \subsection{\acl{TL}}
+The \ac{TL} model have been chosen based on its historical significance and widespread commercial use\cite[p. 58]{sutter2005software}.
 The traditional \ac{TL} approach uses locks to limit the access to critical regions in order to ensure correct execution\cite[p. 1]{saha2006mcrt}.
 
 \subsection{Actor model}
@@ -57,6 +74,8 @@ How does it solves it?
 \end{itemize}
 
 \subsection{\acl{STM}}
+\ac{STM} have been viewed by many people as a promising direction for solving concurrency issues\cite{sutter2005software}. There have been a lot of attention to this area, and there is still active research ongoing. Due to this, it is a natural candidate of interest.
+
 \ac{STM} takes an approach to concurrency, that is based on transactions as known from database theory\cite[p. 1]{shavit1997software}. \ac{STM} transitions are atomic and isolated. Atomic meaning that either all writes in a given transaction are committed, or non of them are, while isolated means that from a given transaction \bscode{T}, any other concurrently running transaction will have no impact on the values committed by \bscode{T} when \bscode{T} succeeds\cite[p. 102]{sevenModels}. These properties are similar to the \ac{ACID} properties known from databases\cite[p. 754]{elmasri2011fundamentals}.
 
 \ac{STM} is implemented in a number of languages, including Clojure\cite[p. 101]{sevenModels}, Concurrent Haskell\cite{harris2005composable} and Scala\cite{goodman2011muts} either directly or using a library. Generally the idea is that programmers specify regions which are to be executed as a transaction. The compiler or library then takes care of ensuring that the \ac{STM} transaction principles are maintained and that the transactions are eventually committed\cite[p. 1]{saha2006mcrt}. The transaction might be retried one or more times in the process, if any other transactions read or modified the used data.
