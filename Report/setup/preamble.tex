@@ -239,7 +239,12 @@
 }
 
 \newcommand{\bsqoute}[2]{
-	``#1'' -\emph{#2}
+	\begin{quote}
+		\textit{``#1''}
+		\begin{center}
+			-- \emph{#2}
+		\end{center}
+	\end{quote}
 }
 
 

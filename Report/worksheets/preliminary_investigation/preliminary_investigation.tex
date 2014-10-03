@@ -15,19 +15,15 @@ This chapter contains an analysis of prior work related to concurrency. It will 
 \section{Related work}
 \lone[inline]{Hvad er current state of the art, related work, open problem?}
 
-In ``The Free Lunch is Over''\cite{sutter2005free}, it is claimed that the era of gaining performance increase without changing a program was over. 
+In ``The Free Lunch is Over''\cite{sutter2005free}, it is claimed that the era of gaining performance increase without changing a program is over:
 
-\bsqoute{[...] if you want your application to benefit from the continued exponential throughput advances in new processors, it will need to be a well-written concurrent [...] application. And that’s easier said than done, because not all problems are inherently parallelizable and because concurrent programming is hard.}{Herb Sutter}
+\bsqoute{[...] if you want your application to benefit from the continued exponential throughput advances in new processors, it will need to be a well-written concurrent (usually multithreaded) application. And that’s easier said than done, because not all problems are inherently parallelizable and because concurrent programming is hard.}{Herb Sutter}
 
-Hardware limitations in the processor development is having an impact on the way software should be developed to utilize the full potential of multi-core processors. Different approaches for writing concurrent programs have emerged. Language constructs such as \ac{TL} have been used to control the interaction between threads in order to enforce synchronization at key points. First off, the programmer is left alone to place the locks in the correct place and the correct order, which in itself is hard. If he succeeds of using locks as synchronization mechanism, a major caveat is that they are not composable\cite[p. 58]{sutter2005software}. That is, you cannot compose two correct lock-based pieces of code and know the result is still correct. This significantly limits the reuseability of software components, and another model is therefore desirable. With these discoveries taken into account, a focus on concurrency models which does not require special focus from the programmer could be of special interest for our investigation.
+In other words, hardware limitations in the processor development is having an impact on the way software should be developed to utilize the full potential of multi-core processors. The key to take advantage of the raw performance of future multicore processors, is to enable the programmer to harvest that performance\cite[p. 31]{asanovic2006landscape}. In ``The landscape of Parallel Computing Research''\cite{asanovic2006landscape} they claim that a programming model needs to be a both enable productivity and implementation efficiency\cite[p. 31]{asanovic2006landscape}. The same holds for a concurrency model, as it is a programming model. 
 
+Optimally, productivity and implementation efficiency of a concurrency model should both be as high as possible. While the wish to enable both productivity and implementation efficiency seems reasonable, the two goals are often conflicting. An abstraction over concurrency mechanisms frees the programmer from low level details, an increases productivity. However, by using the abstraction, the programmer loses the ability to fine tune the underlying concurrency implementation for performance. A concurrency model must therefore seek to find the right abstraction, that gives the programmer enough abstraction for a productivity increase, without loosing too much implementation efficiency.
 
-
-The landscape of Parallel Computing Research\cite{asanovic2006landscape}\\
-
-\cite{hill2008amdahl}
-
-
+With these discoveries taken into account, a focus on concurrency models with the characteristic of abstraction over low level details, and a solid performance is of special interest for our investigation.
 
 \section{Models to investigate}
 \andreas[inline]{Redegør for relevansen for valg af de enkelte modeller. Skriv en linie eller to i starten af hvert afsnit, om hvorfor modellen er valgt}
@@ -36,10 +32,10 @@ The landscape of Parallel Computing Research\cite{asanovic2006landscape}\\
 The purpose of this presentation is to document our preliminary concurrency model analysis, in order to justify the choice of models to analysis further. For each model a reason for looking into it will be given followed by a short description which will provide an overview of the model. Later the chosen models will be presented further in depth.\andreas[inline]{Lav en reference til den uddybende forklaring for de enkelte modeller når den er færdig}
 
 \subsection{\acl{TL}}
-The \ac{TL} model have been chosen based on its historical significance and widespread commercial use\cite[p. 58]{sutter2005software}.
-The traditional \ac{TL} approach uses locks to limit the access to critical regions in order to ensure correct execution\cite[p. 1]{saha2006mcrt}.
+The \ac{TL} model have been chosen based on its historical significance and widespread commercial use\cite[p. 58]{sutter2005software}. The traditional \ac{TL} approach uses locks to limit the access to critical regions in order to ensure correct execution\cite[p. 1]{saha2006mcrt}. 
 
 \subsection{Actor model}
+%Formalism-centric programming models, such as Actors [Hewitt et al 1973], try to reduce the chance of programmer making mistakes by having clean semantics and offer the chance to remove bugs by verifying correctness of portions of the code. "A view from berkeley, p. 33"
 The actor model is inspired by physical laws and can be used to model, understand and reason about a wide range of concurrent systems\cite{hewitt2014actor}. The model targets both shared- and distributed-memory architectures and has support for fault tolerance\cite[Chap. 5]{sevenModels}. It is a general model for concurrency that can be used with almost any language but it is often associated with Erlang\footnote{\url{http://erlang.org}}.
  
 The idea of the actor model is to use actors as the fundamental unit of computation. An actor has the following essential elements of computation\cite{actorLangNextVideo}: Processing, storage, and communication.
