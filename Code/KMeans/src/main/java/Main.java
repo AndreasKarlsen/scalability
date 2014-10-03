@@ -11,7 +11,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
 import kmeans.Mapper;
+import kmeans.MapperNaive;
 import kmeans.Reducer;
+import kmeans.ReducerNaive;
 import kmeans.clustering.Cluster;
 import kmeans.clustering.Clustering;
 import kmeans.clustering.ClusteringService;
@@ -30,7 +32,8 @@ public class Main {
         try {
 
             List<Vector> vectors = DataGenerator.generateData();
-            RunClustering(vectors,5,1);
+            RunClustering(vectors,5,7,1);
+            RunClusteringNaive(vectors,5,7,1);
 
             /*
             ArrayList<Integer> a1 = new ArrayList<Integer>();
@@ -77,6 +80,7 @@ public class Main {
 
     }
 
+
     public static void RunClustering(List<Vector> vectors, int nrClusters,  int maxIterationCount) {
         RunClustering(vectors,nrClusters,nrClusters,maxIterationCount);
     }
@@ -109,7 +113,7 @@ public class Main {
             itrCount++;
         }
         sw.stop();
-        PrintResult(sw,maxIterationCount,nrClusters);
+        PrintResult(sw,maxIterationCount,nrClusters, "Java");
         executor.shutdown();
     }
 
@@ -128,15 +132,46 @@ public class Main {
             itrCount++;
         }
         sw.stop();
-        PrintResult(sw,maxIterationCount,nrClusters);
+        PrintResult(sw,maxIterationCount,nrClusters, "Java");
 
     }
 
-    private static void PrintResult(Stopwatch sw, int maxIterationCount, int nrClusters){
+    public static void RunClusteringNaive(List<Vector> vectors, int nrClusters, int maxIterationCount) {
+        RunClusteringNaive(vectors,nrClusters,nrClusters,maxIterationCount);
+    }
+
+    public static void RunClusteringNaive(List<Vector> vectors, int nrClusters, int nrThreads, int maxIterationCount) {
+
+        ExecutorService executor = Executors.newFixedThreadPool(nrThreads);
+        Partitioning<Vector> partitioning = new Partitioner<Vector>().partition(vectors, nrThreads);
+        List<Vector> means = DataGenerator.generateRandomVectors(100, nrClusters, 100);
+        Clustering clustering = new Clustering(means);
+        Semaphore sem = new Semaphore(0);
+        ReentrantLock lock = new ReentrantLock();
+        int itrCount = 0;
+        Stopwatch sw = Stopwatch.createStarted();
+        while (itrCount < maxIterationCount) {
+            System.out.println("Starting iteration: " + (itrCount + 1));
+            for (Partition<Vector> p : partitioning.getPartitions()) {
+                executor.execute(new MapperNaive(sem,lock,p.getData(),clustering));
+            }
+            ReducerNaive reducer = new ReducerNaive(sem, lock, nrThreads, clustering);
+            reducer.run();
+            means.clear();
+            System.out.println("Finishing iteration: " + (itrCount + 1));
+            itrCount++;
+        }
+        sw.stop();
+        PrintResult(sw,maxIterationCount,nrClusters, "JavaNaive");
+        executor.shutdown();
+    }
+
+
+    private static void PrintResult(Stopwatch sw, int maxIterationCount, int nrClusters, String implementation){
         long elapsedSeconds = sw.elapsed(TimeUnit.MILLISECONDS);
 
         try {
-            ResultWriter.WriteResult(elapsedSeconds,TimeUnit.MILLISECONDS,maxIterationCount,nrClusters,"Java");
+            ResultWriter.WriteResult(elapsedSeconds,TimeUnit.MILLISECONDS,maxIterationCount,nrClusters,implementation);
         } catch (IOException e) {
             e.printStackTrace();
         }
