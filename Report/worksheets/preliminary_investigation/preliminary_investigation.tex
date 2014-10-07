@@ -32,7 +32,11 @@ With these discoveries taken into account, a focus on concurrency models with th
 The purpose of this presentation is to document our preliminary concurrency model analysis, in order to justify the choice of models to analyze further. For each model, a reason for looking into it will be given followed by a short description, which will provide an overview of the model. Later the chosen models will be presented further in depth.\andreas[inline]{Lav en reference til den uddybende forklaring for de enkelte modeller når den er færdig}
 
 \subsection{\acl{TL}}
-The \ac{TL} model have been chosen based on its historical significance and widespread commercial use\cite[p. 58]{sutter2005software}. The traditional \ac{TL} approach uses locks to limit the access to critical regions in order to ensure correct execution\cite[p. 1]{saha2006mcrt}. 
+The \ac{TL} model has been chosen based on its historical significance and widespread commercial use\cite[p. 58]{sutter2005software}. The traditional \ac{TL} approach is based on shared memory and uses locks to limit the access to critical regions in order to ensure correct execution\cite[p. 1]{saha2006mcrt}. The use of threads and locks leads to a number of issues, including: deadlocks, difficult fined-grained synchronization and no support for error recovery\cite[p. 187]{saha2006mcrt}. The \ac{TL} model has been implemented in many languages, including C and Java. 
+
+A problem of particular importance in modern software development is composition of code segments. Many programs rely on libraries to handle part of its operations. Using the \ac{TL} approach it is however not guarantied that combining two lock based code segments will result in a correct program\cite[p. 56]{sutter2005software}.
+
+Using the \ac{TL} approach it is left up to the programmer to identity correct lock placements as well as balancing lock granularity vs performance\cite[p. 49]{harris2005composable}. \ac{TL} concurrency is generally believed to be hard to get right\cite[p. 92]{herlihy2003software}. Arguments have been made for the case that the \ac{TL} approach is insufficient for today's concurrency needs and that new models which put less strain on the programmer are needed\cite[p. 3]{jones2007beautiful}\cite[p. 48]{harris2005composable}.
 
 \subsection{Actor model}
 %Formalism-centric programming models, such as Actors [Hewitt et al 1973], try to reduce the chance of programmer making mistakes by having clean semantics and offer the chance to remove bugs by verifying correctness of portions of the code. "A view from berkeley, p. 33"
@@ -51,8 +55,6 @@ Actors interact with one another through asynchronous message passing. For an ac
 An actor has a mailbox which messages sent to the actor arrives in. The actor dequeues the mailbox and processes one message at a time\footnote{Not true for recursion}. Messages sent can take arbitrarily long time to arrive, and if sent concurrently can arrive in a mailbox in any order\cite{hewitt2014actor}.
 
 The actor model avoids the deadlocks and race conditions present in the \ac{TL} model, by avoiding shared state\citep[Chap. 32]{odersky2011programming}. Instead the actor model allows isolated mutable state on actors and rely solely on asynchronous message passing between actors.
-
-
 
 \subsection{\acl{RX}}
 At Microsoft Research, Erik Meijer\footnote{\url{http://en.wikipedia.org/wiki/Erik_Meijer_(computer_scientist)}} and his team have developed \ac{RX} which is a library for composing asynchronous and event-based programs. The approach has gained a lot of traction in the developer community, and the idea is spreading to various platforms, for instance Netflix have ported it to Java\footnote{\url{https://github.com/ReactiveX/RxJava/}}, and Facebook ported it to JavaScript\footnote{\url{http://facebook.github.io/react/}}. Google is also inspired by the idea in their new language Dart\footnote{\url{https://www.dartlang.org/docs/tutorials/streams/\#error-handling}}
