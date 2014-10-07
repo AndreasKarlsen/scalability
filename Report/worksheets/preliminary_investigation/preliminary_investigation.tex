@@ -79,8 +79,17 @@ How does it solves it?
 The strength of \ac{STM} lies in the avoidance of many of the issues\lone{Nævner I dem?} that plague the traditional \ac{TL} approach. \ac{STM} can avoid deadlocks, priority inversion and eliminates the issue of balancing lock granularity vs performance\cite[p. 1]{harris2005composable}.
 
 \subsection{Communicating Sequential Processes}
-The \ac{CSP} language model was invented by C. A. R. Hoare\cite{abdallah2005communicating}. 
+The \ac{CSP} language model was invented by C. A. R. Hoare and it is widely regarded as one of the most influential papers in computer science\cite{abdallah2005communicating}. 
 
-% go lang bruger den
+\ac{CSP} has influenced the design of numerous languages and it is implemented either directly in the language or indirectly in the form of a library. This includes programming languages such as Ada, occam and Concurrent ML\cite{abdallah2005communicating}. The model has still a lot of attention and the recent popularity is especially due to the Go\footnote{https://golang.org/doc/faq\#csp} programming language developed by Google, as Go builds their concurrency model on the ideas of \ac{CSP}\cite[Chap. 6]{sevenModels}. \ac{CSP} is therefore deemed as an important and viable candidate for consideration.
 
+A process in \ac{CSP} is a basic construct that operate independently and communication between such processes enables concurrency\cite{ibmCSP}. There is no shared state between processes and communication is accomplished solely through message passing to and from channels. A channel in \ac{CSP} is a first-class queue where messages are added to in one end and removed from in the other\cite[Chap. 6]{sevenModels}. It is possible to have arbitrarily many reader/writer processes on a channel. 
+
+The strength of \ac{CSP} lies in avoiding many of the issues that is related to shared state\toby{Hvilke helt præcist? race hazards, deadlocks, livelocks, and resource starvation?} by modeling computations as independent isolated processes which communicate together through channels. 
+
+% nævn den originalt er en mathematical model?
+%Noget om at CSP har ændret sig over tid? Actor har altid været den samme
+%Til valg af modeller: CSP og Actor minder meget om hinaden, derfor vælger vi kun at se på Actor (men der er forskelle! evt. vælg at pointere dem ud, eller skriv et lille afsnit om det i Actor afsnittet)
+	%Evt. begrund med at vi vælger CSP fra fordi det er mere matematisk orienteret, hvilket ikke er attraktivt for 
+	%CSP har fokus på channels (kommunikation mellem entities), hvor Actor har fokus på Actors (entities)
 \worksheetend
