@@ -114,22 +114,22 @@ The strength of \ac{CSP} lies in avoiding many of the issues that is related to 
 	%CSP har fokus på channels (kommunikation mellem entities), hvor Actor har fokus på Actors (entities)
 
 \section{Problem Statement}
-The motivation of this project is to contribute with a clarification of the productivity and implementation efficiency of the chosen concurrency models\lone{Passer det med titlen?}. We wish to investigate different concurrency models, in order to discover the strengths and weaknesses of these models and identify problem areas in which they are applied best. The focus will be on concurrency models that have seen widespread use, as well as models that currently are receiving academic and industrial interest.
+The motivation of this project is to contribute with a clarification of the characteristics and performance of the chosen concurrency models. We wish to investigate different concurrency models, in order to discover the strengths and weaknesses of these models and identify problem areas in which they are best applied. The focus will be on concurrency models that have seen widespread use, as well as models that currently are receiving academic and industrial interest.
 \label{sec:problemstatement}
+In our preliminary analysis, we briefly covered the traditional \ac{TL} model, as well the actor based, \ac{Rx}, \ac{STM} and \ac{CSP} approaches. From these models we have chosen to continue our investigation into \ac{TL}, Actors and \ac{STM}. \ac{TL} have been selected based on its widespread use and historical significance, while the remaining models have been chosen based on their up and coming usage or ongoing research efforts. Each of these models also have a vastly different approach to handling concurrency, and will provide varying perspectives.
 
-In our preliminary analysis, we briefly covered the traditional threads and locks model, as well the actor based, event-driven, and software transactional memory approaches. Threads and locks have been selected based on its widespread use and historical significance, while the remaining models have been chosen based on their up and coming usage or ongoing research efforts. Each of these models also have a vastly different approach to handling concurrency, and will provide varying perspectives.
-
-In order to structure our investigation into concurrency models, we have extracted a number of problems statement questions. The questions and selected models are based on findings presented in our preliminary analysis, which is described in \bsref{sec:motivation} and \bsref{sec:preliminary_analysis}. These questions will serve as a guideline for our further investigation, and will be used to conclude upon the project in \bsref{chap:conclusion}.
+In order to structure our investigation into concurrency models, we have extracted a number of problems statement questions. The questions and selected models are based on findings presented in our preliminary analysis, which is described in previously in this chapter. These questions will serve as a guideline for our further investigation, and will be used to conclude upon the project in \bsref{chap:conclusion}.
 
 The questions we seek to answer are:
 \begin{enumerate}
-\item Which problems exist with concurrency in a multithreaded\lone{hvor kom det fra?} environment? 
+\item Which issues exist with the traditional \ac{TL} concurrency model?
 \item What are the characteristics of the selected models? Including their strengths and weaknesses.
-\item How do the selected models handle known\lone{alle?} concurrency issues?
-\item In what problem domains are the models most applicable?\lone{og hvad så når I har det?}
-\item Comparing models against \ac{TL}
-\item Performance test
+\item How do the selected models handle concurrency issues known from the traditional \ac{TL} approach?
+\item In what problem domains are the models most applicable?
+\item How is the performance of the selected models?
 \end{enumerate}
+
+Using the knowledge obtained from answering these questions, we will present a overview of the selected concurrency models. Specifically a overview of their characteristics and performance, along with a set of suggestions for when to apply each model.
 
 \subsection{Learning Goals}
 Along with the definition of a problem statement, a set of learning goals have been defined. While answering the questions presented in the problem statement is the mains focus, the learning goals can be viewed as a set of sub goals that are aimed at stimulating our learning.
@@ -137,8 +137,8 @@ Along with the definition of a problem statement, a set of learning goals have b
 The learning goals are defined as:
 \begin{enumerate}
 \item Learn what concurrency models exists and in what setting they are best applied
-\item Produce a sample implementation using each of the selected models in order to further our understanding\lone{hands on experience}
-\item Get familiar with the the Scala\footnote{\url{http://www.scala-lang.org/}} programming language
+\item Produce a sample implementation using each of the selected models in order to gain hand-on experience\lone{hands on experience}
+\item Get familiar with the Scala\footnote{\url{http://www.scala-lang.org/}} programming language as it is gaining traction in the area of highly concurrent web services. 
 \end{enumerate}
 
 \worksheetend
