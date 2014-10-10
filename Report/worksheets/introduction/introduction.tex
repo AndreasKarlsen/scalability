@@ -60,23 +60,22 @@ A problem of particular importance in modern software development is composition
 
 Using the \ac{TL} approach it is left up to the programmer to identity correct lock placements as well as balancing lock granularity vs performance\cite[p. 49]{harris2005composable}. \ac{TL} concurrency is generally believed to be hard to get right\cite[p. 92]{herlihy2003software}. Arguments have been made for the case that the \ac{TL} approach is insufficient for today's concurrency needs and that new models which put less strain on the programmer are needed\cite[p. 3]{jones2007beautiful}\cite[p. 48]{harris2005composable}.
 
+
 \subsection{Actor model}
-%Formalism-centric programming models, such as Actors [Hewitt et al 1973], try to reduce the chance of programmer making mistakes by having clean semantics and offer the chance to remove bugs by verifying correctness of portions of the code. "A view from berkeley, p. 33"
-The actor model is inspired by physical laws and can be used to model, understand and reason about a wide range of concurrent systems\cite{hewitt2014actor}. The model targets both shared- and distributed-memory architectures and has support for fault tolerance\cite[Chap. 5]{sevenModels}. It is a general model for concurrency that can be used with almost any language but it is often associated with Erlang\footnote{\url{http://erlang.org}}.
- 
+%Formalism-centric programming models, such as Actors [Hewitt et al 1973], try to reduce the chance of programmer making mistakes by having clean semantics and offer the chance to remove bugs by verifying correctness of portions of the code. "A view from berkeley, p. 33" - Toby: Maybe use this in the conclusion of which model to choose
+The actor model was developed by Carl Hewitt and his team at MIT in 1973\cite{hewitt1973universal}. The goal was to simplify building concurrent systems and especially ease developers in reasoning about concurrent programs, to be more certain that programs worked as intended\cite[p. 14]{haller2012actors}. The actor model is a general model for concurrency that can be used with almost any language and it is often known as the concurrency model of Erlang\footnote{\url{http://erlang.org}} where it is directly implemented in the language\cite[p. 115]{sevenModels}. Other languages that implements the actor model, either directly or indirectly, includes Scala, Smalltalk, Java, C++\footnote{http://c2.com/cgi/wiki?ActorLanguages}. As a result of the popularity and widespread use of the Actor model, it has been chosen as a candidate of interest. 
+
 The idea of the actor model is to use actors as the fundamental unit of computation. An actor has the following essential elements of computation\cite{actorLangNextVideo}: Processing, storage, and communication.
 
-The actor encapsulates state and communicates with other actors by sending messages. In response to a message an actor can\cite{hewitt2014actor}:
+The actor encapsulates state and communicates with other actors through asynchronous message passing. In response to a message an actor can\cite{hewitt2014actor}:
 \begin{itemize}
 \item Create new actors
 \item Send messages to actors it knows
 \item Modify internal behavior (how the next message it receives should be handled)
 \end{itemize}
-Actors interact with one another through asynchronous message passing. For an actor to be able to send a message to another actor it must have the address of the actor. An actor \bscode{A} can know the address of another actor \bscode{B} if \bscode{A} creates \bscode{B} or receives the address of \bscode{B} as a message from another actor.
+An actor has a mailbox which messages sent to the actor arrives in. The actor dequeues the mailbox and processes one message at a time\footnote{Not true for recursion\cite{actorLangNextVideo}}. Messages sent can take arbitrarily long time to arrive, and if sent concurrently can arrive in a mailbox in any order\cite{hewitt2014actor}.
 
-An actor has a mailbox which messages sent to the actor arrives in. The actor dequeues the mailbox and processes one message at a time\footnote{Not true for recursion}. Messages sent can take arbitrarily long time to arrive, and if sent concurrently can arrive in a mailbox in any order\cite{hewitt2014actor}.
-
-The actor model avoids the deadlocks and race conditions present in the \ac{TL} model, by avoiding shared state\citep[Chap. 32]{odersky2011programming}. Instead the actor model allows isolated mutable state on actors and rely solely on asynchronous message passing between actors.
+The actor model avoids the deadlocks and race conditions present in the \ac{TL} model, by avoiding shared state\citep[Chap. 32]{odersky2011programming}.\toby{Skal vi skrive det uafhænigigt af TL? Og evt. også nogle af de concurrency problemer den har?} Instead the actor model allows isolated mutable state on actors and rely solely on asynchronous message passing between actors.
 
 \subsection{\acl{Rx}}
 At Microsoft Research, Erik Meijer\andreas{Known from....} and his team have developed \ac{Rx} which is a library for composing asynchronous and event-based programs. The approach has gained a lot of traction in the developer community, and the idea is spreading to various platforms, for instance Netflix have ported it to Java\footnote{\url{https://github.com/ReactiveX/RxJava/}}, and Facebook ported it to JavaScript\footnote{\url{http://facebook.github.io/react/}}. Google is also inspired by the idea in their new language Dart\footnote{\url{https://www.dartlang.org/docs/tutorials/streams/\#error-handling}}
