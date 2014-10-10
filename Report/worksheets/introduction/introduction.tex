@@ -1,5 +1,7 @@
 \makeatletter \@ifundefined{rootpath}{\input{../../setup/preamble.tex}}\makeatother
 \worksheetstart{Introduction}{1}{September 5, 2014}{Kasper}{../../}
+This chapter describes the motivation of the work behind this report in \bsref{sec:motivation}. Related work is accounted for in \bsref{sec:relatedwork}. A preliminary investigation of concurrency models is conducted in \bsref{sec:prelim}. Finally, the project statement are described in \bsref{sec:problemstatement}.
+
 \section{Motivation}
 % Moores law, skalér med flere kerner, ikke højere CPU
 % Krav til at applikationer kræver mere ydelse
@@ -7,7 +9,7 @@
 % Brug for en evolution, inden for tilgange til at skrive parallele programmer
 % Vi vil kigge på concurrency inden for rammerne af samme maskine
 Moore's law\cite{moore1965cramming} is the empirical observation that the number of transistors per area, on a integrated circuit, was approximately doubled roughly every 18 months\cite[p. 203]{mack2011fifty}. As a result, processing speed kept increasing as more transistors where added. This increase has however stagnated and processing power has mainly increased in the form of additional processing cores, as opposed to the speed of each of these processing cores\cite[p. 22]{sevenModels}. That is, computers have moved from having a \ac{CPU} consisting of one single core to one having multiple cores. This tendency is displayed in \bsref{fig:moores_in_reality}. 
-\label{chap:introduction}
+\label{sec:motivation}
 
 \begin{figure}[htbp]
 \centering
@@ -21,9 +23,9 @@ While the need for applications to scale over multiple cores has arisen, so has 
 Programming languages developed while it was believed that single core performance would keep increasing, such as assembly and C, were closely related to the Von Neumann architecture. As a consequence, the programming model was designed for synchronous execution. This introduces a challenge in how programs should be written to execute efficiently on a multi-core processor. A lot of effort has been invested into identifying suitable ways of programming against such architectures\cite{shavit1997software}\cite{haller2007actors}\cite{hewitt2014actor}\cite{scherer2005advanced}. \lone[inline]{Nævn et par eksempler}
 \andreas[inline]{Purpose!}
 
+\section{Related Work}\label{sec:relatedwork}
 % Formål med preliminary analysis
-This chapter contains an analysis of prior work related to concurrency. It will be conducted by investigating papers, articles, and other research material of relevance, in order to discover state of the art, and open problems within the area of concurrency models. The purpose of the analysis is to establish an overview which will be used to choose the further path of our investigation.
-\label{chap:preliminary_analysis}
+This section contains an analysis of prior work related to concurrency. It will be conducted by investigating papers, articles, and other research material of relevance, in order to discover state of the art, and open problems within the area of concurrency models. The purpose of the analysis is to establish an overview which will be used to choose the further path of our investigation.
 % Moores law, skalér med flere kerner, ikke højere CPU
 % Krav til at applikationer kræver mere ydelse
 % Focus på skalering til flere computere i.e. parallel computing, ikke kun flere kerner
@@ -33,7 +35,6 @@ This chapter contains an analysis of prior work related to concurrency. It will 
 %Threads and locks duer ikke
 %Hvad er der behov for
 %Hvad andet findes der, der opfylder behovet
-\section{Related work}
 \lone[inline]{Hvad er current state of the art, related work, open problem?}
 
 In ``The Free Lunch is Over''\cite{sutter2005free}, it is claimed that the era of gaining performance increase without changing a program is over:
@@ -46,7 +47,7 @@ Optimally\lone{says who? why? ikke altid?}, productivity and implementation effi
 
 With these discoveries taken into account, a focus on concurrency models with the characteristic of abstraction over low level details, and a solid performance is of special interest for our investigation.
 
-\section{Models to Investigate}
+\section{Preliminary Investigation}\label{sec:prelim}
 \andreas[inline]{Redegør for relevansen for valg af de enkelte modeller. Skriv en linie eller to i starten af hvert afsnit, om hvorfor modellen er valgt}
 \lone[inline]{Forsøg at præsentere de forskellige modeller isoleret}
 
@@ -114,10 +115,11 @@ The strength of \ac{CSP} lies in avoiding many of the issues that is related to 
 
 \section{Problem Statement}
 The motivation of this project is to contribute with a clarification of the productivity and implementation efficiency of the chosen concurrency models\lone{Passer det med titlen?}. We wish to investigate different concurrency models, in order to discover the strengths and weaknesses of these models and identify problem areas in which they are applied best. The focus will be on concurrency models that have seen widespread use, as well as models that currently are receiving academic and industrial interest.
+\label{sec:problemstatement}
 
 In our preliminary analysis, we briefly covered the traditional threads and locks model, as well the actor based, event-driven, and software transactional memory approaches. Threads and locks have been selected based on its widespread use and historical significance, while the remaining models have been chosen based on their up and coming usage or ongoing research efforts. Each of these models also have a vastly different approach to handling concurrency, and will provide varying perspectives.
 
-In order to structure our investigation into concurrency models, we have extracted a number of problems statement questions. The questions and selected models are based on findings presented in our preliminary analysis, which is described in \bsref{chap:introduction} and \bsref{chap:preliminary_analysis}. These questions will serve as a guideline for our further investigation, and will be used to conclude upon the project in \bsref{chap:conclusion}.
+In order to structure our investigation into concurrency models, we have extracted a number of problems statement questions. The questions and selected models are based on findings presented in our preliminary analysis, which is described in \bsref{sec:motivation} and \bsref{sec:preliminary_analysis}. These questions will serve as a guideline for our further investigation, and will be used to conclude upon the project in \bsref{chap:conclusion}.
 
 The questions we seek to answer are:
 \begin{enumerate}
