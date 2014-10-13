@@ -1,5 +1,161 @@
 \makeatletter \@ifundefined{rootpath}{\input{../../setup/preamble.tex}}\makeatother
 \worksheetstart{Threads \& Locks}{1}{April 24, 2013}{Andreas}{../../}
-First off, the programmer is left alone to place the locks in the correct place and the correct order, which in itself is hard. If he succeeds of using locks as synchronization mechanism, a major caveat is that they are not composable\cite[p. 58]{sutter2005software}. That is, you cannot compose two correct lock-based pieces of code and know the result is still correct. This significantly limits the reuseability of software components, and therefore lower the productivity of the programmer. 
+First off, the programmer is left alone to place the locks in the correct place and the correct order, which in itself is hard. If he succeeds of using locks as synchronization mechanism, a major caveat is that they are not composable\cite[p. 58]{sutter2005software}. That is, you cannot compose two correct lock-based pieces of code and know the result is still correct. This significantly limits the reuseability of software components, and therefore lower the productivity of the programmer.
+
+\section{Concurrency issues}
+This chapter presents an overview of known issues related to \ac{TL} concurrency. Many of the issues arise as a result of access to shared memory and synchronization of this access. Some of the issues are also present in other concurrency models.
+%Some of the issues are related mainly to shared memory concurrency while others apply to a broader spectrum, including asynchronous message passing.
+
+\subsection{Race Conditions}\kasper{Time line of how threads execute}
+One issue that can arise in concurrent applications, is that the result of a computation, consisting of two or more concurrent tasks, that share data, depends on how the concurrent tasks are scheduled. This issue is called a \emph{race condition}
+\cite[p. 983]{bryant2011computer}\cite[p. 115]{tanenbaum2008modern}. Consider the example presented in \bsref{lst:racecondition} using Java threads. Here we see a small Java\lone{Hvorfor Java?} program that starts two threads and waits for each of them to finish, printing out the result of their computations before exiting. The first thread checks if the static variable \bscode{number} is equal to ten (which is its initial value) and sets the \bscode{result} variable to \bscode{number} times three if it is true. The second thread simply sets the value of \bscode{number} to 20. It is clear that, if the \bscode{t1} was executed before \bscode{t2} the result would look as follows:
+\begin{verbatim}
+Result is: 30
+\end{verbatim}
+If however \bscode{t2} was executed before \bscode{t1} the result would be:
+\begin{verbatim}
+Result is: 0
+\end{verbatim}
+The result depends on the order of execution. In reality the two threads are not necessarily executed one after another, but instead concurrently, and it is the operating system that schedules when each tread gets to run. Because the operating system might pause a thread multiple times before it finishes, the execution of \bscode{t1} and \bscode{t2} might overlap. Imagine that \bscode{t1} runs just until its about to compute the result, at which point it is paused by the operating system and \bscode{t2} get to run instead. \bscode{t2} now sets the value of \bscode{number} to 20 after which it exits causing \bscode{t1} to be resumed. \bscode{t1} then computes the result based on the new \bscode{number} value of 20, causing the result to be:
+\begin{verbatim}
+Result is: 60
+\end{verbatim}
+instead of 30 as expected. Race conditions can be very hard to find and remove, but can be avoided using a form of mutual exclusion.
+\begin{lstlisting}[float,label=lst:racecondition,
+  caption={Race condition example},
+  language=Java,  
+  showspaces=false,
+  showtabs=false,
+  breaklines=true,
+  showstringspaces=false,
+  breakatwhitespace=true,
+  commentstyle=\color{greencomments},
+  keywordstyle=\color{bluekeywords},
+  stringstyle=\color{redstrings}]  % Start your code-block
+
+	public class Main {
+    private static int number = 10;
+    private static int result = 0;
+
+    public static void main(String[] args) throws InterruptedException {
+        Thread t1 = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                if (number == 10){
+                    result = number * 3;
+                }
+            }
+        });
+        Thread t2 = new Thread(new Runnable() {
+            @Override
+            public void run() {
+               number = 20;
+            }
+        });
+        t1.start(); t2.start();
+        t1.join(); t2.join();
+        System.out.println("Result is: "+result);
+    }
+  }
+\end{lstlisting}
+
+\subsection{Mutual Exclusion}
+\emph{Mutual exclusion} is the property of shared memory concurrency which ensuring that only a single concurrent task can access a given \emph{critical region} at a time\cite[p. 117]{tanenbaum2008modern}\cite[p. 962]{bryant2011computer}. A critical region being a concurrent task accessing some memory that is shared with other concurrent tasks\cite[p. 117]{tanenbaum2008modern}\cite[p. 961]{bryant2011computer}. Having only a single concurrent task execute withing all critical regions at a time, ensures that the program will behave as if it was run sequentially, even though this might not be the case. Access to critical regions are often restricted by the use of different forms of locks. Mutual exclusion prevents race conditions but introduces other issues such as: deadlocks, priority inversion and starvation and leads to concurrent tasks spending time blocked instead of executing parts of the program.
+
+\bsref{lst:mutualexclusion} depicts a modified version of the example presented in \bsref{lst:racecondition}. The two threads have had their critical regions locked, limiting the access to one thread at a time. Because of this, the case where \bscode{t1} runs just until its about to compute the result and  \bscode{t2} taking over will no longer occur. \bscode{t2} will now not be able to change the value of number as \bscode{t2} still holds the lock on the critical region, even though it is paused. As a result the output result is: 60, can no longer occur. The output does however still depend on the order in which access to the critical regions is acquired.
+\begin{lstlisting}[float,label=lst:mutualexclusion,
+  caption={Mutual exclusion in Java using a lock},
+  language=Java,  
+  showspaces=false,
+  showtabs=false,
+  breaklines=true,
+  showstringspaces=false,
+  breakatwhitespace=true,
+  commentstyle=\color{greencomments},
+  keywordstyle=\color{bluekeywords},
+  stringstyle=\color{redstrings}]  % Start your code-block
+
+	public class Main {
+    private static int number = 10;
+    private static int result = 0;
+    private final static Lock lock = new ReentrantLock();
+
+    public static void main(String[] args) throws InterruptedException {
+        Thread t1 = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                lock.lock();
+                if (number == 10){
+                    result = number * 3;
+                }
+                lock.unlock();
+            }
+        });
+        Thread t2 = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                lock.lock();
+                number = 20;
+                lock.unlock();
+            }
+        });
+        t1.start(); t2.start();
+        t1.join(); t2.join();
+        System.out.println("Result is: "+result);
+    }
+  }
+\end{lstlisting}
+ 
+\subsection{Deadlocks}
+A \emph{deadlock} occurs when all concurrent tasks in a set are waiting on some event, that can only be caused by another task in the set\cite[p. 435]{tanenbaum2008modern}. Because all the concurrent tasks are blocked and waiting on one of the other tasks, none of them will ever continue and they will block indefinitely.
+
+As an example consider \bsref{fig:deadlockexample}. Here the three threads T1, T2 and T3 are depicted. The three threads are all waiting on a resource, that has been acquired by one of the other threads, as depicted by the arrows. Each thread is waiting on a resource held by one of the other threads and is per our definition of a deadlock, the event being the release of the resource, deadlocked.
+\begin{figure}[htbp]
+\centering
+ \includegraphics[width=0.5\textwidth]{\rootpath/worksheets/concurrency_issues/figures/deadlock} 
+ \caption{Deadlock example}
+\label{fig:deadlockexample}
+\end{figure}
+
+Deadlocks occur for different reasons in different concurrency models. As described \bsref{fig:deadlockexample} depicts a example of a deadlock using \ac{TL}. Here the deadlock is caused by threads acquiring a lock on a resource they need, where after they attempt to acquire a lock on a resource that is held by another thread, that is directly or indirectly waiting on \bscode{R}. This type of deadlock is called a \emph{resource deadlock}\cite[p. 435]{tanenbaum2008modern}. 
+
+%Another type of deadlock that can occur in, for example, the Actor concurrency model is called a \emph{communication deadlock}\cite[p. 124]{tanenbaum2008modern}. Instead of deadlocks being caused by locks, a deadlock is here cause by actors waiting on messages. In the context of \bsref{fig:deadlockexample} this would mean that T1, T2 and T3 where actors and the arrows represented an actor waiting on a message from a given actor, so that T1 is waiting on a message from T2. A communication deadlock can occur both over network as well as on a single machine.
+%threads and lock = resource aqusision
+%async message passing = wating on messages as with resources
+\kasper[inline]{Deadlock detection}
+\kasper[inline]{Deadlock recovery}
+
+\subsection{Livelocks} A livelock is similar to a deadlock in that no progress is being made. A livelock can occur when multiple concurrent tasks attempts to recover form a error such as a deadlock\cite[p. 457]{tanenbaum2008modern}. Consider two concurrent tasks \bscode{A} and \bscode{B}. \bscode{A} and \bscode{B} both attempt to write to some common storage where after they check if the data was written correctly. If that is not the case they attempt the write again. This could lead to another failed attempt and another retry, which could go on indefinitely. \bscode{A} and \bscode{B} are then said to be livelocked. They are not deadlocked as they are not blocking, but they are not progressing either. 
+
+In this scenario the livelock could be avoided by having each task wait a random period of time $t < m$, where m is the current maximum wait time, before retrying. Having $m$ grow for each time a task has to retry its operation minimizes the risk of the other tasks interfering with the write as it is more likely that the retry will occur at different times. It is however also of interest to minimize to wait time as no progress is made during this period.
+\kasper[inline]{Source!}
+
+
+\subsection{Priority Inversion}
+Priority inversion is the problem of a high priority concurrent tasks blocking, while waiting for a low priority concurrent tasks to finish\cite[p. 456]{tanenbaum2008modern}. As an example consider the two concurrent tasks \bscode{H} and \bscode{L} shown in \bsref{fig:priority_inversion}. \bscode{H} has a high priority while \bscode{L} has a low priority. \bscode{L} starts running, enters its critical region and acquires a lock on some shared resource \bscode{R}. The high priority task \bscode{H} is then started. It enters its critical region and attempts to acquire a lock on the resource \bscode{R}. The lock on \bscode{R} is however still held by \bscode{L} and the high priority task \bscode{H} must now wait for the low priority task \bscode{L} to finish.
+
+\begin{figure}[htbp]
+\centering
+ \includegraphics[width=0.95\textwidth]{\rootpath/worksheets/threads_and_locks/figures/pi_graf} 
+ \caption{Priority inversion example}
+\label{fig:priority_inversion}
+\end{figure}
+If a concurrent task \bscode{M} with medium priority was introduced, scenario could instead looks as depicted in \bsref{fig:priority_inversion_m}. The scenario is similar to the previous but here \bscode{M} starts up after \bscode{L} has acquired the lock on \bscode{R}. Because \bscode{M} is a medium priority task it is scheduled before \bscode{L}. As a result \bscode{H} has to wait on both a low and medium priority task to finish before acquiring the lock on \bscode{R}.
+
+\begin{figure}[htbp]
+\centering
+ \includegraphics[width=0.95\textwidth]{\rootpath/worksheets/threads_and_locks/figures/pi_graf2} 
+ \caption{Priority inversion example}
+\label{fig:priority_inversion_m}
+\end{figure}
+
+\subsection{Starvation}
+A concurrent task is said to be starved if, it is denied access to a recourse indefinitely\cite[p. 459]{tanenbaum2008modern}. The task can be denied based on many different criteria. For example, priority or the size of the job that it is to perform.
+
+As an example, imagine a scheduler that gives concurrent tasks access to some resource R based the priority of the task. Task with a high priority gets access to the resource before tasks with a low priority. Now a low priority concurrent task \bscode{A} attempts to acquire a lock on some resource \bscode{R}. The lock on \bscode{R} is however currently held by some other task and so \bscode{A} is blocked waiting for access to \bscode{R}. While \bscode{A} is blocked, a high priority task \bscode{B} also attempts to acquire the lock on \bscode{R} and is blocked as well. When the lock on \bscode{R} is released it is given to the high priority task \bscode{B} even though \bscode{A} blocked first and so \bscode{A} remained blocked. If this scenario keeps repeating and a high priority task keeps getting the lock over \bscode{A}, \bscode{A} is said to be starved.
+
+The same scenario can without the use of locks for synchronization. Imagine a printing service in a asynchronous message passing system. The printing service accepts, schedules and handles print jobs on behalves of a number of clients. The printing services givers a higher priority to jobs created by some clients than jobs created by others. If a client submitted the low priority job \bscode{A} to the printing service, but the queue of the printing service already contained a number of high priority jobs, \bscode{A} would have to wait until the high priority jobs where finished. If the printing services keeps receiving new high priority jobs at a pace such that the queue allways contains atleast a single high priority job, then \bscode{A} will never be executed and will be starved. The similar scenario could occur if the printing service gave priority to the smallest job. A very large job might starve as smaller jobs keep getting prioritized
+
+Starvation can be avoided using a \ac{FIFO} scheduling strategy\cite[p. 459]{tanenbaum2008modern}.
 
 \worksheetend
