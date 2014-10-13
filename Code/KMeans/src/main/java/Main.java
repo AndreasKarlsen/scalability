@@ -32,8 +32,8 @@ public class Main {
         try {
 
             List<Vector> vectors = DataGenerator.generateData();
-            RunClustering(vectors,5,7,1);
             RunClusteringNaive(vectors,5,7,1);
+            RunClustering(vectors,5,7,1);
 
             /*
             ArrayList<Integer> a1 = new ArrayList<Integer>();
@@ -101,7 +101,7 @@ public class Main {
             for (Partition<Vector> p : partitioning.getPartitions()) {
                 executor.execute(new Mapper(sem, lock, p.getData(), means, queue));
             }
-            Reducer reducer = new Reducer(sem, lock, queue, nrClusters);
+            Reducer reducer = new Reducer(sem, lock, queue, nrThreads);
             reducer.run();
             queue.clear();
             means.clear();

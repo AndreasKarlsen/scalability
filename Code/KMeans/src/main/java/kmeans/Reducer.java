@@ -14,16 +14,16 @@ public class Reducer implements Runnable{
     private Semaphore semaphore;
     private ReentrantLock lock;
     private Queue<Clustering> queue;
-    private int nrClusters;
+    private int nrThreads;
     private Clustering _clustering;
 
 
 
-    public Reducer(Semaphore semaphore, ReentrantLock lock, Queue<Clustering> queue, int nrClusters) {
+    public Reducer(Semaphore semaphore, ReentrantLock lock, Queue<Clustering> queue, int nrThreads) {
         this.semaphore = semaphore;
         this.lock = lock;
         this.queue = queue;
-        this.nrClusters = nrClusters;
+        this.nrThreads = nrThreads;
     }
 
     public Clustering getClustering() {
@@ -35,9 +35,9 @@ public class Reducer implements Runnable{
         System.out.println("Reducer started");
 
         int recieved = 0;
-        Clustering clustering = null;
+        Clustering clustering = null; //intermediate result
         try {
-            while (recieved != nrClusters) {
+            while (recieved != nrThreads) {
                 Clustering c;
                 semaphore.acquire(1);
                 lock.lock();
@@ -48,7 +48,7 @@ public class Reducer implements Runnable{
                 if (clustering == null){
                     clustering = c;
                 }else{
-                    for (int i = 0; i < clustering.getClusters().size(); i++) {
+                    for (int i = 0, size = clustering.getClusters().size(); i < size; i++) {
                         Cluster c1 = clustering.getClusters().get(i);
                         Cluster c2 = c.getClusters().get(i);
                         c1.mergeWith(c2);

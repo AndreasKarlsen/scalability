@@ -18,10 +18,9 @@ Moore's law\cite{moore1965cramming} is the empirical observation that the number
 \label{fig:moores_in_reality}
 \end{figure}
 
-While the need for applications to scale over multiple cores has arisen, so has the need to scale applications over multiple servers\lone{udokumenteret påstand?}. With the rise of the Internet, the number of very large services supporting millions of users has increased. Due to this, the need for\lone{udokumenteret påstand} scalable systems, and programming languages which support the scalable approach has arisen. Previously, when scalability issues arose a company might invest in a new machine capable of handling the load, effectively discarding the investment of purchasing the old machine\cite[p. 2]{haller2007actors}. A more modern approach entails scaling the service over a set of low end machines, adding and removing machines as needed. However, the applications\lone{er det applications el. developers?} need to be aware of this approach when developed. A concurrency model\lone{hvad skal den bruges til?} that can be used on both a single machine as well as in a distributed fashion, could potentially assist in addressing both scaling over multiple cores and multiple servers.
+Programming languages developed while it was believed that single core performance would keep increasing, such as assembly and C, were closely related to the Von Neumann architecture. As a consequence, the programming model was designed for synchronous execution. This introduces a challenge in how programs should be written to execute efficiently on a multi-core processor. A lot of effort has been invested into identifying suitable ways of programming against such architectures: With inspiration from the database domain, transactions have been integrated into software, known as \ac{STM}\cite{shavit1997software}\cite{scherer2005advanced}. \ac{FP} is having a renascence, and is now being used outside the world of academia, for instance in the financial sector\cite{minsky2008caml}. Another proposal is the Actor model\cite{hewitt1973universal}, that with the rise of multi-core processors have gained a lot of popularity in different languages  \cite{haller2007actors}\cite{hewitt2014actor}. 
 
-Programming languages developed while it was believed that single core performance would keep increasing, such as assembly and C, were closely related to the Von Neumann architecture. As a consequence, the programming model was designed for synchronous execution. This introduces a challenge in how programs should be written to execute efficiently on a multi-core processor. A lot of effort has been invested into identifying suitable ways of programming against such architectures\cite{shavit1997software}\cite{haller2007actors}\cite{hewitt2014actor}\cite{scherer2005advanced}. \lone[inline]{Nævn et par eksempler}
-\andreas[inline]{Purpose!}
+The purpose of this report is to compare different ways of concurrent programming with a focus on their implementation efficiency and characteristics. The focus will be on concurrency models that have seen widespread use, as well as models that currently are receiving academic and industrial interest. The result will enable programmers to easily choose which concurrency model to use given the wanted properties of their project.
 
 \section{Related Work}\label{sec:relatedwork}
 % Formål med preliminary analysis
@@ -35,24 +34,20 @@ This section contains an analysis of prior work related to concurrency. It will 
 %Threads and locks duer ikke
 %Hvad er der behov for
 %Hvad andet findes der, der opfylder behovet
-\lone[inline]{Hvad er current state of the art, related work, open problem?}
-
 In ``The Free Lunch is Over''\cite{sutter2005free}, it is claimed that the era of gaining performance increase without changing a program is over:
 
 \bsqoute{[...] if you want your application to benefit from the continued exponential throughput advances in new processors, it will need to be a well-written concurrent (usually multithreaded) application. And that’s easier said than done, because not all problems are inherently parallelizable and because concurrent programming is hard.}{Herb Sutter}
 
 In other words, hardware limitations in the processor development are having an impact on the way software should be developed to utilize the full potential of multi-core processors. The key to take advantage of the raw performance of future multicore processors, is to enable the programmer to harvest that performance\cite[p. 31]{asanovic2006landscape}. In ``The landscape of Parallel Computing Research''\cite{asanovic2006landscape} they propose that a programming model needs to enable productivity and implementation efficiency\cite[p. 31]{asanovic2006landscape}. Productivity is defined as the speed a programmer can develop a program, and implementation efficiency is defined as the runtime speed.
 
-Optimally\lone{says who? why? ikke altid?}, productivity and implementation efficiency of a concurrency model should both be as high as possible. While the wish to enable both productivity and implementation efficiency seems reasonable, the two goals are often conflicting. An abstraction over concurrency mechanisms frees the programmer from low level details, and increases productivity. However, by using the abstraction, the programmer loses the ability to fine tune the underlying concurrency implementation for performance. A concurrency model must therefore seek to find the right abstraction, that gives the programmer enough abstraction for a productivity increase, without losing too much implementation efficiency.
+Productivity and implementation efficiency of a concurrency model should both be as high as possible, since they are both positive effects. While the wish to enable both productivity and implementation efficiency seems reasonable, the two goals are often conflicting. An abstraction over concurrency mechanisms frees the programmer from low level details, and increases productivity. However, by using the abstraction, the programmer loses the ability to fine tune the underlying concurrency implementation for performance. A concurrency model must therefore seek to find the right abstraction, that gives the programmer enough abstraction for a productivity increase, without losing too much implementation efficiency.
 
 With these discoveries taken into account, a focus on concurrency models with the characteristic of abstraction over low level details, and a solid performance is of special interest for our investigation.
 
 \section{Preliminary Investigation}\label{sec:prelim}
-\andreas[inline]{Redegør for relevansen for valg af de enkelte modeller. Skriv en linie eller to i starten af hvert afsnit, om hvorfor modellen er valgt}
-\lone[inline]{Forsøg at præsentere de forskellige modeller isoleret}
+The purpose of this subsection is to document our preliminary concurrency model analysis, in order to justify the choice of models to analyse further. For each model, a reason for looking into it will be given followed by a short description, which will provide an overview of the model. Later the chosen models will be presented further in depth.
 
-The purpose of this presentation\lone{subsection?} is to document our preliminary concurrency model analysis, in order to justify the choice of models to analyse further. For each model, a reason for looking into it will be given followed by a short description, which will provide an overview of the model. Later the chosen models will be presented further in depth.\andreas[inline]{Lav en reference til den uddybende forklaring for de enkelte modeller når den er færdig}
-
+\andreas[inline]{Lav en reference til den uddybende forklaring for de enkelte modeller når den er færdig}
 \subsection{\acl{TL}}
 \label{subsec:tl}
 The \ac{TL} model has been chosen based on its historical significance and widespread commercial use\cite[p. 58]{sutter2005software}. The traditional \ac{TL} approach is based on shared memory and uses locks to limit the access to critical regions in order to ensure correct execution\cite[p. 1]{saha2006mcrt}. The use of threads and locks leads to a number of issues, including: deadlocks, difficult fined-grained synchronization and no support for error recovery\cite[p. 187]{saha2006mcrt}. The \ac{TL} model has been implemented in many languages, including C and Java. 
@@ -74,10 +69,10 @@ The idea of the actor model is to use actors as the fundamental unit of computat
 \end{itemize}
 An actor has a mailbox which messages sent to the actor arrives in. The actor dequeues the mailbox and processes one message at a time\footnote{Not true for recursion\cite{actorLangNextVideo}}. Messages sent can take arbitrarily long time to arrive, and if sent concurrently can arrive in a mailbox in any order\cite{hewitt2014actor}.
 
-The actor model avoids the deadlocks and race conditions present in the \ac{TL} model, by avoiding shared state\citep[Chap. 32]{odersky2011programming}.\toby{Skal vi skrive det uafhænigigt af TL? Og evt. også nogle af de concurrency problemer den har?} Instead the actor model allows isolated mutable state on actors and rely solely on asynchronous message passing between actors.
+The actor model is attempting to mitigate the issues related to shared state, for instance deadlocks and race conditions, by avoiding shared state between actors\citep[Chap. 32]{odersky2011programming}. Instead the actor model allows isolated mutable state on actors and rely solely on asynchronous message passing between actors.
 
 \subsection{\acl{Rx}}
-At Microsoft Research, Erik Meijer\andreas{Known from....} and his team have developed \ac{Rx} which is a library for composing asynchronous and event-based programs. The approach has gained a lot of traction in the developer community, and the idea is spreading to various platforms, for instance Netflix have ported it to Java\footnote{\url{https://github.com/ReactiveX/RxJava/}}, and Facebook ported it to JavaScript\footnote{\url{http://facebook.github.io/react/}}. Google is also inspired by the idea in their new language Dart\footnote{\url{https://www.dartlang.org/docs/tutorials/streams/\#error-handling}}
+At Microsoft Research, Erik Meijer and his team have developed \ac{Rx} which is a library for composing asynchronous and event-based programs. The approach has gained a lot of traction in the developer community, and the idea is spreading to various platforms, for instance Netflix have ported it to Java\footnote{\url{https://github.com/ReactiveX/RxJava/}}, and Facebook ported it to JavaScript\footnote{\url{http://facebook.github.io/react/}}. Google is also inspired by the idea in their new language Dart\footnote{\url{https://www.dartlang.org/docs/tutorials/streams/\#error-handling}}
 
 \ac{Rx} gives reactive capabilities to mainstream imperative languages, such as Java and C\#\footnote{\url{https://Rx.codeplex.com/}}. The idea is, to abstract over the complexity that asynchronous computations introduces, by providing a way to orchestrate asynchronous data streams in a uniform way, regardless of the underlying concurrency model.
 
@@ -85,7 +80,7 @@ It is based on the idea of the Observer Pattern\cite{gamma1994design}. That is, 
 
 \ac{Rx} provides a way to deal with asynchronous data streams, the same way programmers deal with synchronous data streams. In Java, a synchronous data stream is a data structure which implements the \bscode{Iterable} interface\footnote{\url{http://docs.oracle.com/javase/7/docs/api/java/lang/Iterable.html}}. However, while iterations over an \bscode{Iterable} blocks between each iteration, \ac{Rx} does not block between each push of the next element. This a key difference, since not blocking while doing concurrency computations is essential for performance.
 
-\ac{Rx} can hardly be called a concurrency model itself. However, it provides a uniform way, to structure asynchronous tasks independently of the underlying concurrency model. The underlying model could be \ac{TL}, actors, or a third alternative. It does not matter, since this is abstracted away from the client, that treat all interaction with Observables as asynchronous.
+\ac{Rx} can hardly be called a concurrency model itself, since it cannot be used to spawn concurrent tasks. However, it provides a uniform way, to structure asynchronous tasks independently of the underlying concurrency model. The underlying model could be \ac{TL}, actors, or a third alternative. It does not matter, since this is abstracted away from the client, that treat all interaction with Observables as asynchronous.
 
 \subsection{\acl{STM}}
 \ac{STM} has been viewed by many people as a promising direction for solving concurrency issues\cite{sutter2005software}. There has been a lot of attention to this area, and there is still active research. Due to this, it is a natural candidate of interest.
@@ -103,7 +98,7 @@ The \ac{CSP} model was invented by C. A. R. Hoare and it is widely regarded as o
 
 A process in \ac{CSP} is a basic construct that operate independently and communication between such processes enables concurrency\cite{ibmCSP}. There is no shared state between processes and communication is accomplished solely through message passing to and from channels. A channel in \ac{CSP} is a first-class queue where messages are added to in one end and removed from in the other\cite[Chap. 6]{sevenModels}. It is possible to have arbitrarily many reader/writer processes on a channel. 
 
-The strength of \ac{CSP} lies in avoiding many of the issues that is related to shared state\toby{Hvilke helt præcist? race hazards, deadlocks, livelocks, and resource starvation?} by modeling computations as independent isolated processes which communicate together through channels. 
+The strength of \ac{CSP} lies in avoiding many of the issues that is related to shared state by modelling computations as independent isolated processes which communicate together through channels. 
 
 % nævn den originalt er en mathematical model?
 %Noget om at CSP har ændret sig over tid? Actor har altid været den samme
@@ -112,9 +107,8 @@ The strength of \ac{CSP} lies in avoiding many of the issues that is related to 
 	%CSP har fokus på channels (kommunikation mellem entities), hvor Actor har fokus på Actors (entities)
 
 \section{Problem Statement}
-The motivation of this project is to contribute with a clarification of the characteristics and performance of the chosen concurrency models. We wish to investigate different concurrency models, in order to discover the strengths and weaknesses of these models and identify problem areas in which they are best applied. The focus will be on concurrency models that have seen widespread use, as well as models that currently are receiving academic and industrial interest.
+In our preliminary analysis, we briefly covered the traditional \ac{TL} model, as well as the actor model, \ac{Rx}, \ac{STM} and \ac{CSP} approaches. From these models we have chosen to continue our investigation into \ac{TL}, Actors, and \ac{STM}. \ac{TL} have been selected based on its widespread use and historical significance. Actors and \ac{STM} have been chosen based on their up and coming usage or ongoing research efforts. Each of these models also have a vastly different approach to handling concurrency, and will provide varying perspectives. We have chosen not to investigate \ac{Rx} as it is not a concurrency model, as it cannot spawn concurrent tasks, and therefore does not fit into our investigation. The thoughts of isolating memory in channels \ac{CSP} is much alike thoughts of actor model, and due to their similarity only one is chosen. We have chosen the actor model due to its widespread use and popularity.
 \label{sec:problemstatement}
-In our preliminary analysis, we briefly covered the traditional \ac{TL} model, as well the actor based, \ac{Rx}, \ac{STM} and \ac{CSP} approaches. From these models we have chosen to continue our investigation into \ac{TL}, Actors and \ac{STM}. \ac{TL} have been selected based on its widespread use and historical significance, while the remaining models have been chosen based on their up and coming usage or ongoing research efforts. Each of these models also have a vastly different approach to handling concurrency, and will provide varying perspectives.
 
 In order to structure our investigation into concurrency models, we have extracted a number of problems statement questions. The questions and selected models are based on findings presented in our preliminary analysis, which is described in previously in this chapter. These questions will serve as a guideline for our further investigation, and will be used to conclude upon the project in \bsref{chap:conclusion}.
 
@@ -123,8 +117,7 @@ The questions we seek to answer are:
 \item Which issues exist with the traditional \ac{TL} concurrency model?
 \item What are the characteristics of the selected models? Including their strengths and weaknesses.
 \item How do the selected models handle concurrency issues known from the traditional \ac{TL} approach?
-\item In what problem domains are the models most applicable?
-\item How is the performance of the selected models?
+\item How is the implementation efficiency of the selected models?
 \end{enumerate}
 
 Using the knowledge obtained from answering these questions, we will present a overview of the selected concurrency models. Specifically a overview of their characteristics and performance, along with a set of suggestions for when to apply each model.
