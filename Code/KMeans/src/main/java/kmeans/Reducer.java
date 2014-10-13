@@ -2,6 +2,8 @@ package kmeans;
 
 import kmeans.clustering.Cluster;
 import kmeans.clustering.Clustering;
+import kmeans.model.Vector;
+
 import java.util.Queue;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.locks.ReentrantLock;
@@ -57,9 +59,11 @@ public class Reducer implements Runnable{
 
             }
 
-            for (Cluster c :clustering.getClusters()){
-                c.calcMean();
+            for (Cluster c : clustering.getClusters()){
+                Vector mean = c.calcMean(c.getMeanSums());
+                String breakString = "";
             }
+
 
             _clustering = clustering;
 

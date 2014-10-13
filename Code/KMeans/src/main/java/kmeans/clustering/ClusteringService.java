@@ -3,6 +3,7 @@ package kmeans.clustering;
 import kmeans.model.Vector;
 
 import java.util.List;
+import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -17,6 +18,20 @@ public class ClusteringService {
         for (Vector v : items){
             Cluster cluster = ClusteringInternal(clustering,v);
             cluster.addVector(v);
+            cluster.updateMeanSums(v);
+        }
+
+        return clustering;
+    }
+
+    public static Clustering ClusterKMeansMSIncremental(List<Vector> items, List<Vector> means){
+
+        Clustering clustering = new Clustering(means);
+
+        for (Vector v : items){
+            Cluster cluster = ClusteringInternal(clustering,v);
+            cluster.addVector(v);
+            cluster.updateMeanSums(v);
         }
 
         return clustering;
@@ -37,12 +52,14 @@ public class ClusteringService {
         return cluster;
     }
 
-    public static Clustering ClusterKMeansNaive(Clustering clustering, List<Vector> items, ReentrantLock lock){
+    public static Clustering ClusterKMeansNaive(Clustering clustering, List<Vector> items, Lock lock){
 
         for (Vector v : items){
             Cluster cluster = ClusteringInternal(clustering,v);
+
             lock.lock();
             cluster.addVector(v);
+            cluster.updateMeanSums(v);
             lock.unlock();
         }
 

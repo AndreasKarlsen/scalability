@@ -7,6 +7,7 @@ import kmeans.model.Vector;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -15,7 +16,7 @@ import java.util.concurrent.locks.ReentrantLock;
 public class MapperNaive implements  Runnable{
 
     private Semaphore semaphore;
-    private ReentrantLock lock;
+    private Lock lock;
     private List<Vector> data;
     private Clustering clustering;
 

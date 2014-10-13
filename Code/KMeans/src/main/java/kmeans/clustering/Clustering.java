@@ -29,4 +29,23 @@ public class Clustering {
     public List<Cluster> getClusters() {
         return clusters;
     }
+
+    public void CalcMeanSums(){
+        for (Cluster c : clusters){
+            c.calcMeanSums();
+        }
+    }
+
+    public List<int[]> GetMeanSums(){
+        List<int[]> meanSums = new ArrayList<>();
+        for (Cluster c : clusters){
+            int[] meanSum = c.getMeanSums();
+            if (meanSum == null){
+                meanSum = c.calcMeanSums();
+            }
+            meanSums.add(meanSum);
+        }
+
+        return meanSums;
+    }
 }

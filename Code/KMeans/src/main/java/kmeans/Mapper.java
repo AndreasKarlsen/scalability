@@ -32,7 +32,7 @@ public class Mapper implements  Runnable{
     public void run() {
 
         System.out.println("Thread: "+Thread.currentThread().getId()+" started.");
-        Clustering clustering = ClusteringService.ClusterKMeans(data, means);
+        Clustering clustering = ClusteringService.ClusterKMeansMSIncremental(data, means);
         System.out.println("Thread: "+Thread.currentThread().getId()+" done clustering.");
         //Hand off data
         lock.lock();

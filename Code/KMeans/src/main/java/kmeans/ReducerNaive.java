@@ -2,6 +2,7 @@ package kmeans;
 
 import kmeans.clustering.Cluster;
 import kmeans.clustering.Clustering;
+import kmeans.model.Vector;
 
 import java.util.Queue;
 import java.util.concurrent.Semaphore;
@@ -18,7 +19,7 @@ public class ReducerNaive implements Runnable{
 
 
 
-    public ReducerNaive(Semaphore semaphore, ReentrantLock lock, int nrMappers, Clustering clustering) {
+    public ReducerNaive(Semaphore semaphore, int nrMappers, Clustering clustering) {
         this.semaphore = semaphore;
         this.nrMappers = nrMappers;
         this.clustering = clustering;
@@ -41,7 +42,8 @@ public class ReducerNaive implements Runnable{
             }
 
             for (Cluster c :clustering.getClusters()){
-                c.calcMean();
+                Vector mean = c.calcMean(c.getMeanSums());
+                String breakString = "";
             }
 
         }catch (InterruptedException ex){

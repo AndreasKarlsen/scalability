@@ -15,6 +15,10 @@ public class DataGenerator {
         return generateRandomVectors(100,500000,100);
     }
 
+    public static List<Vector> generateRandomVectors(int count){
+        return generateRandomVectors(100,count,100);
+    }
+
     public static List<Vector> generateRandomVectors(int max, int count, int vectorSize){
         List<Vector> vectors = new ArrayList<Vector>();
         //Random rand = new Random(System.currentTimeMillis());

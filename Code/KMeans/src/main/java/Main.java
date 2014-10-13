@@ -10,10 +10,7 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
-import kmeans.Mapper;
-import kmeans.MapperNaive;
-import kmeans.Reducer;
-import kmeans.ReducerNaive;
+import kmeans.*;
 import kmeans.clustering.Cluster;
 import kmeans.clustering.Clustering;
 import kmeans.clustering.ClusteringService;
@@ -32,8 +29,9 @@ public class Main {
         try {
 
             List<Vector> vectors = DataGenerator.generateData();
-            RunClusteringNaive(vectors,5,7,1);
-            RunClustering(vectors,5,7,1);
+            //RunClusteringSingleThread(vectors,5,1);
+            RunClusteringNaive(vectors, 5, 7, 1);
+            RunClustering(vectors, 5, 7, 1);
 
             /*
             ArrayList<Integer> a1 = new ArrayList<Integer>();
@@ -87,13 +85,12 @@ public class Main {
 
     public static void RunClustering(List<Vector> vectors, int nrClusters, int nrThreads, int maxIterationCount) {
 
-
         ExecutorService executor = Executors.newFixedThreadPool(nrThreads);
         Partitioning<Vector> partitioning = new Partitioner<Vector>().partition(vectors, nrThreads);
-        List<Vector> means = DataGenerator.generateRandomVectors(100, nrClusters, 100);
+        List<Vector> means = DataGenerator.generateRandomVectors(nrClusters);
         Semaphore sem = new Semaphore(0);
         ReentrantLock lock = new ReentrantLock();
-        Queue<Clustering> queue = new LinkedList<Clustering>();
+        Queue<Clustering> queue = new LinkedList<>();
         int itrCount = 0;
         Stopwatch sw = Stopwatch.createStarted();
         while (itrCount < maxIterationCount) {
@@ -113,26 +110,26 @@ public class Main {
             itrCount++;
         }
         sw.stop();
-        PrintResult(sw,maxIterationCount,nrClusters, "Java");
+        PrintResult(sw,maxIterationCount,nrClusters,nrThreads, "Java");
         executor.shutdown();
     }
 
     public static void RunClusteringSingleThread(List<Vector> vectors, int nrClusters, int maxIterationCount){
-        List<Vector> means = DataGenerator.generateRandomVectors(100, nrClusters, 100);
+        List<Vector> means = DataGenerator.generateRandomVectors(nrClusters);
         int itrCount = 0;
         Stopwatch sw = Stopwatch.createStarted();
         while (itrCount < maxIterationCount) {
             System.out.println("Starting iteration: " + (itrCount + 1));
-            Clustering clustering = ClusteringService.ClusterKMeans(vectors,means);
+            Clustering clustering = ClusteringService.ClusterKMeansMSIncremental(vectors,means);
             means.clear();
             for (Cluster c : clustering.getClusters()) {
-                means.add(c.getMean());
+                means.add(c.calcMean(c.getMeanSums()));
             }
             System.out.println("Finishing iteration: " + (itrCount + 1));
             itrCount++;
         }
         sw.stop();
-        PrintResult(sw,maxIterationCount,nrClusters, "Java");
+        PrintResult(sw,maxIterationCount,nrClusters,0, "Java");
 
     }
 
@@ -144,7 +141,7 @@ public class Main {
 
         ExecutorService executor = Executors.newFixedThreadPool(nrThreads);
         Partitioning<Vector> partitioning = new Partitioner<Vector>().partition(vectors, nrThreads);
-        List<Vector> means = DataGenerator.generateRandomVectors(100, nrClusters, 100);
+        List<Vector> means = DataGenerator.generateRandomVectors(nrClusters);
         Clustering clustering = new Clustering(means);
         Semaphore sem = new Semaphore(0);
         ReentrantLock lock = new ReentrantLock();
@@ -155,23 +152,23 @@ public class Main {
             for (Partition<Vector> p : partitioning.getPartitions()) {
                 executor.execute(new MapperNaive(sem,lock,p.getData(),clustering));
             }
-            ReducerNaive reducer = new ReducerNaive(sem, lock, nrThreads, clustering);
+            ReducerNaive reducer = new ReducerNaive(sem, nrThreads, clustering);
             reducer.run();
             means.clear();
             System.out.println("Finishing iteration: " + (itrCount + 1));
             itrCount++;
         }
         sw.stop();
-        PrintResult(sw,maxIterationCount,nrClusters, "JavaNaive");
+        PrintResult(sw,maxIterationCount, nrClusters, nrThreads, "JavaNaive");
         executor.shutdown();
     }
 
 
-    private static void PrintResult(Stopwatch sw, int maxIterationCount, int nrClusters, String implementation){
+    private static void PrintResult(Stopwatch sw, int maxIterationCount, int nrClusters,int nrMappers, String implementation){
         long elapsedSeconds = sw.elapsed(TimeUnit.MILLISECONDS);
 
         try {
-            ResultWriter.WriteResult(elapsedSeconds,TimeUnit.MILLISECONDS,maxIterationCount,nrClusters,implementation);
+            ResultWriter.WriteResult(elapsedSeconds,TimeUnit.MILLISECONDS,maxIterationCount,nrClusters,nrMappers,implementation);
         } catch (IOException e) {
             e.printStackTrace();
         }
