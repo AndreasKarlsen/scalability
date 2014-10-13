@@ -33,30 +33,22 @@ instead of 30 as expected. Race conditions can be very hard to find and remove, 
   keywordstyle=\color{bluekeywords},
   stringstyle=\color{redstrings}]  % Start your code-block
 
-	public class Main {
+	public class RaceCondition {
     private static int number = 10;
     private static int result = 0;
 
     public static void main(String[] args) throws InterruptedException {
-        Thread t1 = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                if (number == 10){
-                    result = number * 3;
-                }
+        Thread thread1 = new Thread(() -> {
+            if (number == 10){
+                result = number * 3;
             }
         });
-        Thread t2 = new Thread(new Runnable() {
-            @Override
-            public void run() {
-               number = 20;
-            }
-        });
-        t1.start(); t2.start();
-        t1.join(); t2.join();
+        Thread thread2 = new Thread(() -> number = 20);
+        thread1.start(); thread2.start();
+        thread1.join(); thread2.join();
         System.out.println("Result is: "+result);
     }
-  }
+	}
 \end{lstlisting}
 
 \subsection{Mutual Exclusion}
@@ -75,35 +67,32 @@ instead of 30 as expected. Race conditions can be very hard to find and remove, 
   keywordstyle=\color{bluekeywords},
   stringstyle=\color{redstrings}]  % Start your code-block
 
-	public class Main {
+	import java.util.concurrent.locks.Lock;
+	import java.util.concurrent.locks.ReentrantLock;
+
+	public class Deadlock {
     private static int number = 10;
     private static int result = 0;
     private final static Lock lock = new ReentrantLock();
 
     public static void main(String[] args) throws InterruptedException {
-        Thread t1 = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                lock.lock();
-                if (number == 10){
-                    result = number * 3;
-                }
-                lock.unlock();
+        Thread thread1 = new Thread(() -> {
+            lock.lock();
+            if (number == 10){
+                result = number * 3;
             }
+            lock.unlock();
         });
-        Thread t2 = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                lock.lock();
-                number = 20;
-                lock.unlock();
-            }
+        Thread thread2 = new Thread(() -> {
+            lock.lock();
+            number = 20;
+            lock.unlock();
         });
-        t1.start(); t2.start();
-        t1.join(); t2.join();
-        System.out.println("Result is: "+result);
+        thread1.start(); thread2.start();
+        thread1.join(); thread2.join();
+        System.out.println("Result is: " + result);
     }
-  }
+	}
 \end{lstlisting}
  
 \subsection{Deadlocks}
@@ -112,7 +101,7 @@ A \emph{deadlock} occurs when all concurrent tasks in a set are waiting on some 
 As an example consider \bsref{fig:deadlockexample}. Here the three threads T1, T2 and T3 are depicted. The three threads are all waiting on a resource, that has been acquired by one of the other threads, as depicted by the arrows. Each thread is waiting on a resource held by one of the other threads and is per our definition of a deadlock, the event being the release of the resource, deadlocked.
 \begin{figure}[htbp]
 \centering
- \includegraphics[width=0.5\textwidth]{\rootpath/worksheets/concurrency_issues/figures/deadlock} 
+ \includegraphics[width=0.5\textwidth]{\rootpath/worksheets/threads_and_locks/figures/deadlock} 
  \caption{Deadlock example}
 \label{fig:deadlockexample}
 \end{figure}
