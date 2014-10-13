@@ -1,0 +1,4 @@
+Implementation: JavaNaive
+Clusters: 5
+Iterations: 1
+Time: 8028 MILLISECONDS
