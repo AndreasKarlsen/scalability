@@ -54,6 +54,7 @@ With these discoveries taken into account, a focus on concurrency models with th
 The purpose of this presentation\lone{subsection?} is to document our preliminary concurrency model analysis, in order to justify the choice of models to analyse further. For each model, a reason for looking into it will be given followed by a short description, which will provide an overview of the model. Later the chosen models will be presented further in depth.\andreas[inline]{Lav en reference til den uddybende forklaring for de enkelte modeller når den er færdig}
 
 \subsection{\acl{TL}}
+\label{subsec:tl}
 The \ac{TL} model has been chosen based on its historical significance and widespread commercial use\cite[p. 58]{sutter2005software}. The traditional \ac{TL} approach is based on shared memory and uses locks to limit the access to critical regions in order to ensure correct execution\cite[p. 1]{saha2006mcrt}. The use of threads and locks leads to a number of issues, including: deadlocks, difficult fined-grained synchronization and no support for error recovery\cite[p. 187]{saha2006mcrt}. The \ac{TL} model has been implemented in many languages, including C and Java. 
 
 A problem of particular importance in modern software development is composition of code segments. Many programs rely on libraries to handle part of its operations. Using the \ac{TL} approach it is however not guarantied that combining two lock based code segments will result in a correct program\cite[p. 56]{sutter2005software}.
@@ -63,11 +64,9 @@ Using the \ac{TL} approach it is left up to the programmer to identity correct l
 
 \subsection{Actor model}
 %Formalism-centric programming models, such as Actors [Hewitt et al 1973], try to reduce the chance of programmer making mistakes by having clean semantics and offer the chance to remove bugs by verifying correctness of portions of the code. "A view from berkeley, p. 33" - Toby: Maybe use this in the conclusion of which model to choose
-The actor model was developed by Carl Hewitt and his team at MIT in 1973\cite{hewitt1973universal}. The goal was to simplify building concurrent systems and especially ease developers in reasoning about concurrent programs, to be more certain that programs worked as intended\cite[p. 14]{haller2012actors}. The actor model is a general model for concurrency that can be used with almost any language and it is often known as the concurrency model of Erlang\footnote{\url{http://erlang.org}} where it is directly implemented in the language\cite[p. 115]{sevenModels}. Other languages that implements the actor model, either directly or indirectly, includes Scala, Smalltalk, Java, C++\footnote{http://c2.com/cgi/wiki?ActorLanguages}. As a result of the popularity and widespread use of the Actor model, it has been chosen as a candidate of interest. 
+The actor model was developed by Carl Hewitt and his team at MIT in 1973\cite{hewitt1973universal}. The goal was to simplify building concurrent systems and especially ease developers in reasoning about concurrent programs, to be more certain that programs worked as intended\cite[p. 14]{haller2012actors}. Since the goal of the Actor model seek to solve well known problems of concurrency, the model is a candidate of interest for further investigation. The actor model is a general model for concurrency that can be used with almost any language and it is often known as the concurrency model of Erlang\footnote{\url{http://erlang.org}} where it is directly implemented in the language\cite[p. 115]{sevenModels}. Other languages that implements the actor model, either directly or indirectly, includes Scala, Smalltalk, Java, C++\footnote{http://c2.com/cgi/wiki?ActorLanguages}. In addition to the goal of the Actor model,  the popularity and widespread use of the Actor model also contributes to our interest to the model.
 
-The idea of the actor model is to use actors as the fundamental unit of computation. An actor has the following essential elements of computation\cite{actorLangNextVideo}: Processing, storage, and communication.
-
-The actor encapsulates state and communicates with other actors through asynchronous message passing. In response to a message an actor can\cite{hewitt2014actor}:
+The idea of the actor model is to use actors as the fundamental unit of computation. An actor has the following essential elements of computation\cite{actorLangNextVideo}: Processing, storage, and communication. The actor encapsulates state and communicates with other actors through asynchronous message passing. In response to a message an actor can\cite{hewitt2014actor}:
 \begin{itemize}
 \item Create new actors
 \item Send messages to actors it knows
@@ -93,9 +92,9 @@ It is based on the idea of the Observer Pattern\cite{gamma1994design}. That is, 
 
 \ac{STM} takes an approach to concurrency, that is based on transactions as known from database theory\cite[p. 1]{shavit1997software}. \ac{STM} transitions are atomic and isolated. Atomic meaning that either all writes in a given transaction are committed, or non of them are, while isolated means that from a given transaction \bscode{T}, any other concurrently running transaction will have no impact on the values committed by \bscode{T} when \bscode{T} succeeds\cite[p. 102]{sevenModels}. These properties are similar to the \ac{ACID} properties known from databases\cite[p. 754]{elmasri2011fundamentals}.
 
-\ac{STM} is implemented in a number of languages, including Clojure\cite[p. 101]{sevenModels}, Concurrent Haskell\cite{harris2005composable} and Scala\cite{goodman2011muts} either directly or using a library. Generally the idea is that programmers specify regions which are to be executed as a transaction. The compiler or library then takes care of ensuring that the \ac{STM} transaction principles are maintained and that the transactions are eventually committed\cite[p. 1]{saha2006mcrt}. The transaction might be\lone{Hvordan afgøres det?} retried one or more times in the process, if any other transactions read or modified the used data.
+\ac{STM} is implemented in a number of languages, including Clojure\cite[p. 101]{sevenModels}, Concurrent Haskell\cite{harris2005composable} and Scala\cite{goodman2011muts} either directly or using a library. Generally the idea is that programmers specify regions which are to be executed as a transaction. The compiler or library then takes care of ensuring that the \ac{STM} transaction principles are maintained and that the transactions are eventually committed\cite[p. 1]{saha2006mcrt}. The transaction will be retried if any other transactions read or modified the used data in the process. It is retried until it is successful.
 
-The strength of \ac{STM} lies in the avoidance of many of the issues\lone{Nævner I dem?} that plague the traditional \ac{TL} approach. \ac{STM} can avoid deadlocks, priority inversion and eliminates the issue of balancing lock granularity vs performance\cite[p. 1]{harris2005composable}.
+The strength of \ac{STM} lies in the avoidance of many of the issues mentioned in \bsref{subsec:tl} that plague the traditional \ac{TL} approach. \ac{STM} can avoid deadlocks, priority inversion and eliminates the issue of balancing lock granularity vs performance\cite[p. 1]{harris2005composable}.
 
 \subsection{Communicating Sequential Processes}
 The \ac{CSP} model was invented by C. A. R. Hoare and it is widely regarded as one of the most influential papers in computer science\cite{abdallah2005communicating}. 
@@ -136,8 +135,8 @@ Along with the definition of a problem statement, a set of learning goals have b
 The learning goals are defined as:
 \begin{enumerate}
 \item Learn what concurrency models exists and in what setting they are best applied
-\item Produce a sample implementation using each of the selected models in order to gain hand-on experience\lone{hands on experience}
-\item Get familiar with the Scala\footnote{\url{http://www.scala-lang.org/}} programming language as it is gaining traction in the area of highly concurrent web services. 
+\item Produce a sample implementation using each of the selected models in order to gain hand-on experience
+\item Get hands on experience with the Scala\footnote{\url{http://www.scala-lang.org/}} programming language as it is gaining traction in the area of highly concurrent web services. 
 \end{enumerate}
 
 \worksheetend
