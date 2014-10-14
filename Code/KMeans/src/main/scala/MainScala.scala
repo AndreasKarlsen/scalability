@@ -6,6 +6,8 @@ import kmeans.partitioning.Partitioner
 import kmeans.partitioning.Partitioning
 import java.util.ArrayList
 import java.util.List
+import akka.actor.ActorSystem
+import com.typesafe.config.ConfigFactory
 
 /**
  * Created by Kasper on 23-09-2014.
@@ -13,9 +15,9 @@ import java.util.List
 object MainScala {
 
   def main(args: Array[String]) {
-    val vectors = DataGenerator.generateData()
-    val partitioning = new Partitioner[Vector].partition(vectors,5);
-
-    println("Hello, world!")
+    //val vectors = DataGenerator.generateData()
+    //val partitioning = new Partitioner[Vector].partition(vectors,5);
+    // println("Hello, world!")
+    val system = ActorSystem("MySystem", ConfigFactory.load("application"))
   }
 }
