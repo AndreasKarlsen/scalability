@@ -25,13 +25,24 @@ import kmeans.partitioning.Partitioning;
  */
 public class Main {
 
+    public static int _nrClusters = 5;
+    public static int _nrIterations = 1;
+
     public static void main(String[] args) {
         try {
 
-            List<Vector> vectors = DataGenerator.generateData();
+            //List<Vector> vectors = DataGenerator.generateData();
             //RunClusteringSingleThread(vectors,5,1);
-            RunClusteringNaive(vectors, 5, 7, 1);
-            RunClustering(vectors, 5, 7, 1);
+            //RunClusteringNaive(vectors, 5, 7, 1);
+            //RunClustering(vectors, 5, 7, 1);
+
+            //"Best" implementation
+            RunClusteringThreadScale();
+            RunClusteringDataScale();
+
+            //Naive implementation
+            RunClusteringNaiveThreadScale();
+            RunClusteringDataScale();
 
             /*
             ArrayList<Integer> a1 = new ArrayList<Integer>();
@@ -83,7 +94,78 @@ public class Main {
         RunClustering(vectors,nrClusters,nrClusters,maxIterationCount);
     }
 
-    public static void RunClustering(List<Vector> vectors, int nrClusters, int nrThreads, int maxIterationCount) {
+    public static void RunClusteringThreadScale(){
+
+        String type = "ThreadScale";
+        List<Vector> vectors = DataGenerator.generateRandomVectors(1000000);
+        //RunClusteringSingleThread(vectors,_nrClusters,_nrIterations);
+        RunClustering(vectors,_nrClusters,2,_nrIterations, type);
+        RunClustering(vectors,_nrClusters,3,_nrIterations, type);
+        RunClustering(vectors,_nrClusters,4,_nrIterations, type);
+        RunClustering(vectors,_nrClusters,5,_nrIterations, type);
+        RunClustering(vectors,_nrClusters,6,_nrIterations, type);
+        RunClustering(vectors,_nrClusters,7,_nrIterations, type);
+        RunClustering(vectors,_nrClusters,8,_nrIterations, type);
+    }
+
+    public static void RunClusteringDataScale(){
+        String type = "DataScale";
+        List<Vector> vectors100k = DataGenerator.generateRandomVectors(100000);
+        RunClustering(vectors100k,_nrClusters,3,_nrIterations, type);
+        List<Vector> vectors200k = DataGenerator.generateRandomVectors(200000);
+        RunClustering(vectors200k,_nrClusters,3,_nrIterations, type);
+        List<Vector> vectors500k = DataGenerator.generateRandomVectors(500000);
+        RunClustering(vectors500k,_nrClusters,3,_nrIterations, type);
+        List<Vector> vectors1m = DataGenerator.generateRandomVectors(1000000);
+        RunClustering(vectors1m,_nrClusters,3,_nrIterations, type);
+        List<Vector> vectors15m = DataGenerator.generateRandomVectors(1500000);
+        RunClustering(vectors15m,_nrClusters,3,_nrIterations, type);
+        List<Vector> vectors2m = DataGenerator.generateRandomVectors(2000000);
+        RunClustering(vectors2m,_nrClusters,3,_nrIterations, type);
+        List<Vector> vectors25m = DataGenerator.generateRandomVectors(2500000);
+        RunClustering(vectors25m,_nrClusters,3,_nrIterations, type);
+        List<Vector> vectors3m = DataGenerator.generateRandomVectors(3000000);
+        RunClustering(vectors3m,_nrClusters,3,_nrIterations, type);
+    }
+
+    public static void RunClusteringNaiveThreadScale(){
+        String type = "ThreadScale";
+        List<Vector> vectors = DataGenerator.generateRandomVectors(1000000);
+        //RunClusteringSingleThread(vectors,_nrClusters,_nrIterations);
+        RunClusteringNaive(vectors,_nrClusters,2,_nrIterations, type);
+        RunClusteringNaive(vectors,_nrClusters,3,_nrIterations, type);
+        RunClusteringNaive(vectors,_nrClusters,4,_nrIterations, type);
+        RunClusteringNaive(vectors,_nrClusters,5,_nrIterations, type);
+        RunClusteringNaive(vectors,_nrClusters,6,_nrIterations, type);
+        RunClusteringNaive(vectors,_nrClusters,7,_nrIterations, type);
+        RunClusteringNaive(vectors,_nrClusters,8,_nrIterations, type);
+    }
+
+    public static void RunClusteringNaiveDataScale(){
+        String type = "DataScale";
+        List<Vector> vectors100k = DataGenerator.generateRandomVectors(100000);
+        RunClusteringNaive(vectors100k,_nrClusters,3,_nrIterations, type);
+        List<Vector> vectors200k = DataGenerator.generateRandomVectors(200000);
+        RunClusteringNaive(vectors200k,_nrClusters,3,_nrIterations, type);
+        List<Vector> vectors500k = DataGenerator.generateRandomVectors(500000);
+        RunClusteringNaive(vectors500k,_nrClusters,3,_nrIterations, type);
+        List<Vector> vectors1m = DataGenerator.generateRandomVectors(1000000);
+        RunClusteringNaive(vectors1m,_nrClusters,3,_nrIterations, type);
+        List<Vector> vectors15m = DataGenerator.generateRandomVectors(1500000);
+        RunClusteringNaive(vectors15m,_nrClusters,3,_nrIterations, type);
+        List<Vector> vectors2m = DataGenerator.generateRandomVectors(2000000);
+        RunClusteringNaive(vectors2m,_nrClusters,3,_nrIterations, type);
+        List<Vector> vectors25m = DataGenerator.generateRandomVectors(2500000);
+        RunClusteringNaive(vectors25m,_nrClusters,3,_nrIterations, type);
+        List<Vector> vectors3m = DataGenerator.generateRandomVectors(3000000);
+        RunClusteringNaive(vectors3m,_nrClusters,3,_nrIterations, type);
+    }
+
+    public static void RunClustering(List<Vector> vectors, int nrClusters, int nrThreads, int maxIterationCount){
+        RunClustering(vectors,nrClusters,nrThreads,maxIterationCount,"");
+    }
+
+    public static void RunClustering(List<Vector> vectors, int nrClusters, int nrThreads, int maxIterationCount, String outputFolderName) {
 
         ExecutorService executor = Executors.newFixedThreadPool(nrThreads);
         Partitioning<Vector> partitioning = new Partitioner<Vector>().partition(vectors, nrThreads);
@@ -110,7 +192,7 @@ public class Main {
             itrCount++;
         }
         sw.stop();
-        PrintResult(sw,maxIterationCount,nrClusters,nrThreads, "Java");
+        PrintResult(sw,maxIterationCount,nrClusters,nrThreads, "Java", outputFolderName);
         executor.shutdown();
     }
 
@@ -129,7 +211,7 @@ public class Main {
             itrCount++;
         }
         sw.stop();
-        PrintResult(sw,maxIterationCount,nrClusters,0, "Java");
+        PrintResult(sw,maxIterationCount,nrClusters,0, "Java", "");
 
     }
 
@@ -137,7 +219,11 @@ public class Main {
         RunClusteringNaive(vectors,nrClusters,nrClusters,maxIterationCount);
     }
 
-    public static void RunClusteringNaive(List<Vector> vectors, int nrClusters, int nrThreads, int maxIterationCount) {
+    public static void RunClusteringNaive(List<Vector> vectors, int nrClusters, int nrThreads, int maxIterationCount){
+        RunClusteringNaive(vectors,nrClusters,nrThreads,maxIterationCount,"");
+    }
+
+    public static void RunClusteringNaive(List<Vector> vectors, int nrClusters, int nrThreads, int maxIterationCount, String outputFolderName) {
 
         ExecutorService executor = Executors.newFixedThreadPool(nrThreads);
         Partitioning<Vector> partitioning = new Partitioner<Vector>().partition(vectors, nrThreads);
@@ -159,16 +245,16 @@ public class Main {
             itrCount++;
         }
         sw.stop();
-        PrintResult(sw,maxIterationCount, nrClusters, nrThreads, "JavaNaive");
+        PrintResult(sw,maxIterationCount, nrClusters, nrThreads, "JavaNaive", outputFolderName);
         executor.shutdown();
     }
 
 
-    private static void PrintResult(Stopwatch sw, int maxIterationCount, int nrClusters,int nrMappers, String implementation){
+    private static void PrintResult(Stopwatch sw, int maxIterationCount, int nrClusters,int nrMappers, String implementation, String outputFolderName){
         long elapsedSeconds = sw.elapsed(TimeUnit.MILLISECONDS);
 
         try {
-            ResultWriter.WriteResult(elapsedSeconds,TimeUnit.MILLISECONDS,maxIterationCount,nrClusters,nrMappers,implementation);
+            ResultWriter.WriteResult(elapsedSeconds,TimeUnit.MILLISECONDS,maxIterationCount,nrClusters,nrMappers,implementation, outputFolderName);
         } catch (IOException e) {
             e.printStackTrace();
         }
