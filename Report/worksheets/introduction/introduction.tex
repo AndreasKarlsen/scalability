@@ -1,6 +1,7 @@
 \makeatletter \@ifundefined{rootpath}{\input{../../setup/preamble.tex}}\makeatother
 \worksheetstart{Introduction}{1}{September 5, 2014}{Kasper}{../../}
 This chapter describes the motivation of the work behind this report in \bsref{sec:motivation}. Related work is accounted for in \bsref{sec:relatedwork}. A preliminary investigation of concurrency models is conducted in \bsref{sec:prelim}. Finally, the project statement are described in \bsref{sec:problemstatement}.
+\label{chap:intro}
 
 \section{Motivation}
 % Moores law, skalér med flere kerner, ikke højere CPU
@@ -106,11 +107,10 @@ The strength of \ac{CSP} lies in avoiding many of the issues that is related to 
 	%Evt. begrund med at vi vælger CSP fra fordi det er mere matematisk orienteret, hvilket ikke er attraktivt for 
 	%CSP har fokus på channels (kommunikation mellem entities), hvor Actor har fokus på Actors (entities)
 
-\section{Problem Statement}
-In our preliminary analysis, we briefly covered the traditional \ac{TL} model, as well as the actor model, \ac{Rx}, \ac{STM} and \ac{CSP} approaches. From these models we have chosen to continue our investigation into \ac{TL}, Actors, and \ac{STM}. \ac{TL} have been selected based on its widespread use and historical significance. Actors and \ac{STM} have been chosen based on their up and coming usage or ongoing research efforts. Each of these models also have a vastly different approach to handling concurrency, and will provide varying perspectives. We have chosen not to investigate \ac{Rx} as it is not a concurrency model, as it cannot spawn concurrent tasks, and therefore does not fit into our investigation. The thoughts of isolating memory in channels \ac{CSP} is much alike thoughts of actor model, and due to their similarity only one is chosen. We have chosen the actor model due to its widespread use and popularity.
-\label{sec:problemstatement}
+\section{Problem Statement}\label{sec:problemstatement}
+In our preliminary analysis, we briefly covered the traditional \ac{TL} model, as well as the actor model, \ac{Rx}, \ac{STM} and \ac{CSP} approaches. From these models we have chosen to continue our investigation into \ac{TL}, Actors, and \ac{STM}. \ac{TL} have been selected based on its widespread use and historical significance. Actors and \ac{STM} have been chosen based on their up and coming usage or ongoing research efforts. Each of these models also have a vastly different approach to handling concurrency, and will provide varying perspectives. We have chosen not to investigate \ac{Rx} as it is not a concurrency model, as it cannot spawn concurrent tasks, and therefore does not fit into our investigation. The actor model and CSP are similar models as they both consist of independent concurrently executing entities, processes in CSP and actors in the actor model, that only communicate by sending messages. The important difference between the models is that the actor model has focus on the entities (actors), where CSP has focus on the communication between entities (channels)\cite[p. 153]{sevenModels}. Due to the similarity of the models we have chosen to look only at one of the models. The actor model has been chosen due to its widespread use and popularity.
 
-In order to structure our investigation into concurrency models, we have extracted a number of problems statement questions. The questions and selected models are based on findings presented in our preliminary analysis, which is described in previously in this chapter. These questions will serve as a guideline for our further investigation, and will be used to conclude upon the project in \bsref{chap:conclusion}.
+In order to structure our investigation into concurrency models, we have extracted a number of problem statement questions. The questions and selected models are based on findings presented in our preliminary analysis, which is described previously in this chapter. These questions will serve as a guideline for our further investigation, and will be used to conclude upon the project in \bsref{chap:conclusion}.
 
 The questions we seek to answer are:
 \begin{enumerate}
@@ -120,16 +120,16 @@ The questions we seek to answer are:
 \item How is the implementation efficiency of the selected models?
 \end{enumerate}
 
-Using the knowledge obtained from answering these questions, we will present a overview of the selected concurrency models. Specifically a overview of their characteristics and performance, along with a set of suggestions for when to apply each model.
+Using the knowledge obtained from answering these questions, we will present an overview of the selected concurrency models. Specifically an overview of their characteristics and implementation efficiency, along with a set of suggestions for when to apply each model.
 
 \subsection{Learning Goals}
-Along with the definition of a problem statement, a set of learning goals have been defined. While answering the questions presented in the problem statement is the mains focus, the learning goals can be viewed as a set of sub goals that are aimed at stimulating our learning.
+Along with the definition of a problem statement, a set of learning goals have been defined. While answering the questions presented in the problem statement is the main focus, the learning goals can be viewed as a set of sub goals that are aimed at stimulating our learning.
 
 The learning goals are defined as:
 \begin{enumerate}
 \item Learn what concurrency models exists and in what setting they are best applied
-\item Produce a sample implementation using each of the selected models in order to gain hand-on experience
-\item Get hands on experience with the Scala\footnote{\url{http://www.scala-lang.org/}} programming language as it is gaining traction in the area of highly concurrent web services. 
+\item Produce a sample implementation using each of the selected models in order to gain hands-on experience
+\item Get hands-on experience with the Scala\footnote{\url{http://www.scala-lang.org/}} programming language as it is gaining traction in the area of highly concurrent web services.\toby{Måske forklar før eller mere uddybnede forklaring af hvorfor netop Scala er interessant}
 \end{enumerate}
 
 \worksheetend
