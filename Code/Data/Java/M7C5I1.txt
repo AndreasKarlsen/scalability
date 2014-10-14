@@ -1,7 +1,0 @@
-Timestamp: 2014-10-13 19:16:37.501
-Implementation: Java
-Mappers: 7
-Clusters: 5
-Iterations: 1
-Time: 312 MILLISECONDS
-

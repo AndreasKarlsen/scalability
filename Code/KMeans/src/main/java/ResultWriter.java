@@ -37,7 +37,7 @@ public class ResultWriter {
             Files.createDirectory(p);
         }
 
-        String fileName = "M"+nrMappers+"C"+nrClusters+"I"+nrIterations+".txt";
+        String fileName = "M"+nrMappers+"C"+nrClusters+"I"+nrIterations+".td";
         path = Paths.get(path,implementation,fileName).toString();
         try (PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(path,true)))) {
             writer.println("Timestamp: "+sdf.format(new Date()));
