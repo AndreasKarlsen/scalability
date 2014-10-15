@@ -25,7 +25,7 @@ public class ResultWriter {
     }
 
 
-    public static void WriteResult(long time, TimeUnit unit, int nrIterations, int nrClusters, int nrMappers, String implementation) throws IOException {
+    public static void WriteResult(long time, TimeUnit unit, int nrIterations, int nrClusters, int nrMappers, String implementation, String outputFolder) throws IOException {
         String path = getPath();
         Path p = Paths.get(path);
         if (Files.notExists(p)){
@@ -37,8 +37,15 @@ public class ResultWriter {
             Files.createDirectory(p);
         }
 
+        if(outputFolder != null && !outputFolder.isEmpty()){
+            p = Paths.get(p.toString(),outputFolder);
+            if (Files.notExists(p)){
+                Files.createDirectory(p);
+            }
+        }
+
         String fileName = "M"+nrMappers+"C"+nrClusters+"I"+nrIterations+".td";
-        path = Paths.get(path,implementation,fileName).toString();
+        path = Paths.get(p.toString(),fileName).toString();
         try (PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(path,true)))) {
             writer.println("Timestamp: "+sdf.format(new Date()));
             writer.println("Implementation: " + implementation);
