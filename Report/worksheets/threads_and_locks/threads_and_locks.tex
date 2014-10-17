@@ -1,31 +1,31 @@
 \makeatletter \@ifundefined{rootpath}{\input{../../setup/preamble.tex}}\makeatother
 \worksheetstart{Threads \& Locks}{1}{April 24, 2013}{Andreas}{../../}
-This chapter will give a presentation of the \acl{TL} concurrency model. Describing its building blocks and key concepts. \kasper{Reference sections when done}
+This chapter presents the \ac{TL} concurrency model. Describing its key concepts and building blocks. \kasper{Reference sections when done}
+\kasper[inline]{Section on why Java was selected for TL implementation and discussion}
 \label{chap:threads_locks}
-\kasper[inline]{Notes below in tex}
 \section{Key Concepts}
 This section will present the key concept of the \ac{TL} concurrency model. 
 \subsection{Threads}\label{subsec:threads}
-Threads are the basic building block for concurrency in many concurrency models and in particular the \ac{TL} model. A thread is a abstraction for a part of a application that executes sequentially. When a application is started the \ac{OS} creates a single thread along with a memory space for the application. These together handle the execution of the application. Concurrency can be achieved by, within a single application, running multiple threads. Threads running within the same application have accessed to shared memory in order to facilitate communication. They are the basic construct for concurrency and other concurrency models build upon threads in some form.
+Threads are the basic building block for concurrency in many concurrency models and in particular the \ac{TL} model. A thread is a abstraction for a part of a application that executes sequentially. When a application is started the \ac{OS} creates a single thread along with a memory space for the application. These together handle the execution of the application. Concurrency can be achieved by, within a single application, running multiple threads. Threads running within the same application have access to shared memory in order to facilitate communication. They are the basic construct for concurrency and other concurrency models build upon threads in some form.
 
-Two groups of threads exists: hardware threads and user library threads. Hardware threads are directly supported by the underlying hardware and \ac{OS}. The hardware must support a set of instructions which the \ac{OS} uses to maintain the thread abstraction. Hardware threads can utilize multiple cores as support for them is build directly into the underlying hardware and \ac{OS}. The \ac{OS} handles scheduling of the threads.
+Two groups of threads exist: hardware threads and user library threads. Hardware threads are directly supported by the underlying hardware and \ac{OS}. The hardware must support a set of instructions which the \ac{OS} uses to maintain the thread abstraction. Hardware threads can utilize multiple cores as support for them is build directly into the underlying hardware and \ac{OS}. The \ac{OS} handles scheduling of the threads.
 
-User library threads are implemented purely in software on top of the hardware and \ac{OS}. They have no direct connection to the underlying hardware and \ac{OS} and because of this can not take advantage of their scheduling or use additional cores if available. The content of this report is restricted to native threads.
+User library threads are implemented purely in software on top of the hardware and \ac{OS}. They have no direct connection to the underlying hardware and \ac{OS} and because of this can not take advantage of their scheduling or use additional cores if available. Because of these limitations the content of this report is restricted to native threads.
 
 \subsection{Shared Memory}
-Threads have access to shared memory, in order to facilitate communication between them\cite[p. 93]{tanenbaum2008modern}. Threads can communicate by reading from and writing to the shared memory. As described in \bsref{subsec:threads} once a program is started the the \ac{OS} create a single thread and along with that a memory space for the program. If more threads are created they have their own stack but otherwise share the same memory space.
+Threads have access to shared memory, in order to facilitate communication between them\cite[p. 93]{tanenbaum2008modern}. Threads can communicate by reading from and writing to the shared memory.  As described in \bsref{subsec:threads} once a program is started the \ac{OS} creates a single thread and along with that a memory space for the program. If more threads are created they have their own stack but otherwise share the same memory space.
 
 Accessing shared data facilitates fast communication between threads, but also presents a number of issues such as race conditions. If threads do not read data that can be modified from other threads, these issues are not present. So multiple threads can run without issue as long as they do not read any shared data or even as long as they do not modify any shared data.
 
 \kasper[inline]{Look in seven models}
 
-\subsection{Locks and Mutual Exclusion}
-Mutual exclusion is the property of shared memory concurrency which ensuring that only a single concurrent task can access a given critical region at a time\cite[p. 117]{tanenbaum2008modern}\cite[p. 962]{bryant2011computer}. A critical region being a concurrent task accessing some memory that is shared with other concurrent tasks\cite[p. 117]{tanenbaum2008modern}\cite[p. 961]{bryant2011computer}. Having only a single concurrent task execute within all critical regions at a time, ensures that the program will behave as if it was run sequentially, even though this might not be the case. Access to critical regions are often restricted by the use of different forms of locks. 
+\subsection{Locks and Mutual Exclusion}\label{sec:locks_me}
+Mutual exclusion is the property of shared memory concurrency which ensures that only a single concurrent task can access a given critical region at a time\cite[p. 117]{tanenbaum2008modern}\cite[p. 962]{bryant2011computer}, a critical region being a concurrent task accessing some memory that is shared with other concurrent tasks\cite[p. 117]{tanenbaum2008modern}\cite[p. 961]{bryant2011computer}. Having only a single concurrent task execute within all critical regions at a time, ensures that the program will behave as if it was run sequentially, even though this might not be the case. Access to critical regions are often restricted by the use of different forms of locks\cite[p. 58]{sutter2005software}. 
 
-Locks are a general class of constructs used for providing mutual exclusion. Locks come in a variate of different fashions such a Mutex, Monitor and Semaphore. Each of these operate in their own way, but the overall goal remains the same. Locks provide mutual exclusion by allowing only a single concurrent task to enter its critical region at a time. When a concurrent task \bscode{t1} attempts to access a lock that is all ready held by another task \bscode{t2},\bscode{t1} blocks, effectively waiting for the \bscode{t2} to exit its critical region and release the lock before proceeding. Locks prevent race conditions but introduces other issues such as: deadlocks, priority inversion and starvation and leads to concurrent tasks spending time blocked instead of executing parts of the program. Furthermore, the programmer is left alone to place the locks in the correct place and the correct order, which in itself is hard. If he succeeds of using locks as synchronization mechanism, a major caveat is that they are not composable\cite[p. 58]{sutter2005software}. That is, you cannot compose two correct lock-based pieces of code and know the result is still correct. This significantly limits the reuseability of software components, and therefore lowers the productivity of the programmer.
+Locks are a general class of constructs used for providing mutual exclusion. Locks come in a variety of different fashions such a Mutex, Monitor and Semaphore. Each of these operate in their own way, but the overall goal remains the same. Locks provide mutual exclusion by allowing only a single concurrent task to enter its critical region at a time. When a concurrent task \bscode{t1} attempts to access a lock that is all ready held by another task \bscode{t2},\bscode{t1} blocks, effectively waiting for the \bscode{t2} to exit its critical region and release the lock before proceeding. Locks prevent race conditions but introduce other issues such as: deadlocks, priority inversion and starvation (which will be presented in \bsref{sec:tl_ci}) and leads to concurrent tasks spending time blocked instead of executing parts of the program. Furthermore, the programmer is left alone to place the locks in the correct place and the correct order, which in itself is hard. If he succeeds of using locks as synchronization mechanism, a major caveat is that they are not composable\cite[p. 58]{sutter2005software}. That is, you cannot compose two correct lock-based pieces of code and know the result is still correct. This significantly limits the reuseability of software components, and therefore lowers the productivity of the programmer.
 \kasper{Maybe move parts of above paragraph to characteristics chapter discussion chapter later}
 
-Consider the example presented in \bsref{lst:mutualexclusion} using Java threads and Locks. Here we see a small Java\lone{Hvorfor Java?} program that starts two threads and waits for each of them to finish, printing out the result of their computations before exiting. The two threads have had their critical regions locked, limiting the access to one thread at a time. The first thread checks if the static variable \bscode{number} is equal to ten (which is its initial value) and sets the \bscode{result} variable to \bscode{number} times three if it is true. The second thread simply sets the value of \bscode{number} to 20. It is clear that, if the \bscode{t1} was executed before \bscode{t2} the result would look as follows:
+Consider the example presented in \bsref{lst:mutualexclusion} using Java threads and Locks. Here we see a small Java\lone{Hvorfor Java?} program that starts two threads and waits for each of them to finish, printing out the result of their computations before exiting. As it can be seen in lines 11-15 and 18-19 the two threads have had their critical regions locked, limiting the access to one thread at a time. On line 12 \bscode{t1} checks if the static variable \bscode{number} is equal to ten (which is its initial value) while it on line 13 sets the \bscode{result} variable to \bscode{number} times three if it the condition was true. As can be seen on line 19 the second thread simply sets the value of \bscode{number} to 20. It is clear that, if \bscode{t1} was executed before \bscode{t2} the result would look as follows:
 \begin{verbatim}
 Result is: 30
 \end{verbatim}
@@ -33,7 +33,7 @@ If however \bscode{t2} was executed before \bscode{t1} the result would be:
 \begin{verbatim}
 Result is: 0
 \end{verbatim}
-If either \bscode{t1} or \bscode{t2} attempts to acquire the lock while the other already hold it they would block ensuring mutual exclusion.
+If either \bscode{t1} or \bscode{t2} attempts to acquire the lock while the other already holds it they would block ensuring mutual exclusion.
 
 %\bsref{lst:mutualexclusion} depicts a modified version of the example presented in \bsref{lst:racecondition}. The two threads have had their critical regions locked, limiting the access to one thread at a time. Because of this, the case where \bscode{t1} runs just until its about to compute the result and  \bscode{t2} taking over will no longer occur. \bscode{t2} will now not be able to change the value of number as \bscode{t2} still holds the lock on the critical region, even though it is paused. As a result the output result is: 60, can no longer occur. The output does however still depend on the order in which access to the critical regions is acquired.
 \begin{lstlisting}[float,label=lst:mutualexclusion,
@@ -51,44 +51,44 @@ If either \bscode{t1} or \bscode{t2} attempts to acquire the lock while the othe
 	import java.util.concurrent.locks.Lock;
 	import java.util.concurrent.locks.ReentrantLock;
 
-	public class Deadlock {
+	public class MutualExclusion {
     private static int number = 10;
     private static int result = 0;
     private final static Lock lock = new ReentrantLock();
 
     public static void main(String[] args) throws InterruptedException {
-        Thread thread1 = new Thread(() -> {
+        Thread t1 = new Thread(() -> {
             lock.lock();
             if (number == 10){
                 result = number * 3;
             }
             lock.unlock();
         });
-        Thread thread2 = new Thread(() -> {
+        Thread t2 = new Thread(() -> {
             lock.lock();
             number = 20;
             lock.unlock();
         });
-        thread1.start(); thread2.start();
-        thread1.join(); thread2.join();
+        t1.start(); t2.start();
+        t1.join(); t2.join();
         System.out.println("Result is: " + result);
     }
 	}
 \end{lstlisting}
 
-\section{Concurrency issues}
+\section{Concurrency Issues}\label{sec:tl_ci}
 This section presents an overview of known issues related to \ac{TL} concurrency. Many of the issues arise as a result of access to shared memory and synchronization of this access. Some of the issues are also present in other concurrency models.
 %Some of the issues are related mainly to shared memory concurrency while others apply to a broader spectrum, including asynchronous message passing.
 
 \subsection{Race Conditions}\label{subsec:race_coditions}\kasper{Time line of how threads execute}
-One issue that can arise in concurrent applications, is that the result of a computation, consisting of two or more concurrent tasks, that share data, depends on how the concurrent tasks are scheduled. That is the behaviour of the application depends on the timing of concurrent tasks. This issue is called a \emph{race condition}
+One issue that can arise in concurrent applications, is that the result of a computation, consisting of two or more concurrent tasks that share data, depends on how the concurrent tasks are scheduled. That is the behaviour of the application depends on the timing of concurrent tasks. This issue is called a \emph{race condition}
 \cite[p. 983]{bryant2011computer}\cite[p. 115]{tanenbaum2008modern}\cite[p. 44]{sevenModels}. 
 
-Consider the example presented in \bsref{lst:racecondition}, which is similar to that of \bsref{lst:mutualexclusion}, except the lock ensuring mutual exclusion has been removed. As a result a race condition can now occur. Imagine that \bscode{t1} runs just until its about to compute the result, at which point it is paused by the operating system and \bscode{t2} get to run instead. \bscode{t2} now sets the value of \bscode{number} to 20 after which it exits causing \bscode{t1} to be resumed. \bscode{t1} then computes the result based on the new \bscode{number} value of 20, causing the result to be:
+Consider the example presented in \bsref{lst:racecondition}, which is similar to that of \bsref{lst:mutualexclusion}, except the lock ensuring mutual exclusion on lines 11-15 and 18-20 has been removed. As a result a race condition is now present. Imagine that \bscode{t1} runs just until its about to compute the result in line 8, at which point it is paused by the operating system and \bscode{t2} get to run instead. \bscode{t2} now executes the lambda shown on line 11 and sets the value of \bscode{number} to 20, after which it exits causing \bscode{t1} to be resumed. \bscode{t1} then runs line 8, computing the result based on the new \bscode{number} value of 20, causing the result to be:
 \begin{verbatim}
 Result is: 60
 \end{verbatim}
-instead of 30 as expected. The previous outputs of 0 and 30 are still possible, but the output now depend on the timing of the concurrent tasks. Race conditions can be very hard to find and remove as they can result in incorrect values instead of errors and because they do not necessarily occur on every program execution.
+instead of 30 as expected. The previous outputs of 0 and 30 are still possible, but the output now depends on the timing of the concurrent tasks. Race conditions can be very hard to find and remove as they can result in incorrect values instead of errors and because they do not necessarily occur on every program execution. Race conditions can be avoided by providing mutual exclusion as discussed in \bsref{sec:locks_me},
 \begin{lstlisting}[float,label=lst:racecondition,
   caption={Race condition example},
   language=Java,  
@@ -106,14 +106,14 @@ instead of 30 as expected. The previous outputs of 0 and 30 are still possible, 
     private static int result = 0;
 
     public static void main(String[] args) throws InterruptedException {
-        Thread thread1 = new Thread(() -> {
+        Thread t1 = new Thread(() -> {
             if (number == 10){
                 result = number * 3;
             }
         });
-        Thread thread2 = new Thread(() -> number = 20);
-        thread1.start(); thread2.start();
-        thread1.join(); thread2.join();
+        Thread t2 = new Thread(() -> number = 20);
+        t1.start(); t2.start();
+        t1.join(); t2.join();
         System.out.println("Result is: "+result);
     }
 	}
@@ -138,14 +138,13 @@ Deadlocks occur for different reasons in different concurrency models. As descri
 \kasper[inline]{Deadlock detection}
 \kasper[inline]{Deadlock recovery}
 
-\subsection{Livelocks} A livelock is similar to a deadlock in that no progress is being made. A livelock can occur when multiple concurrent tasks attempts to recover form a error such as a deadlock\cite[p. 457]{tanenbaum2008modern}. Consider two concurrent tasks \bscode{A} and \bscode{B}. \bscode{A} and \bscode{B} both attempt to write to some common storage where after they check if the data was written correctly. If that is not the case they attempt the write again. This could lead to another failed attempt and another retry, which could go on indefinitely. \bscode{A} and \bscode{B} are then said to be livelocked. They are not deadlocked as they are not blocking, but they are not progressing either. 
+\subsection{Livelocks} A livelock is similar to a deadlock in that no progress is being made. While a deadlocked concurrent task is blocked, a livelocked concurrent task is till executing. The execution does however not result in any progress. A livelock can occur when multiple concurrent tasks attempts to recover from a error such as a deadlock\cite[p. 457]{tanenbaum2008modern}. Consider two concurrent tasks \bscode{A} and \bscode{B}. \bscode{A} and \bscode{B} both attempt to write to some common storage where after they check if the data was written correctly. If that is not the case they attempt the write again. This could lead to another failed attempt and another retry, which could go on indefinitely. \bscode{A} and \bscode{B} are then said to be livelocked.
 
 In this scenario the livelock could be avoided by having each task wait a random period of time $t < m$, where m is the current maximum wait time, before retrying. Having $m$ grow for each time a task has to retry its operation minimizes the risk of the other tasks interfering with the write as it is more likely that the retry will occur at different times. It is however also of interest to minimize wait time as no progress is made during this period.
 \kasper[inline]{Source!}
 
-
 \subsection{Priority Inversion}
-Priority inversion is the problem of a high priority concurrent tasks blocking, while waiting for a low priority concurrent tasks to finish\cite[p. 456]{tanenbaum2008modern}. As an example consider the two concurrent tasks \bscode{H} and \bscode{L} shown in \bsref{fig:priority_inversion}. \bscode{H} has a high priority while \bscode{L} has a low priority. \bscode{L} starts running, enters its critical region and acquires a lock on some shared resource \bscode{R}. The high priority task \bscode{H} is then started. It attempts to acquire a lock on the resource \bscode{R} in order to enter its critical region. The lock on \bscode{R} is however still held by \bscode{L} and the high priority task \bscode{H} must now wait for the low priority task \bscode{L} to finish.
+Priority inversion is the problem of a high priority concurrent tasks blocking, while waiting for a low priority concurrent task to finish\cite[p. 456]{tanenbaum2008modern}. As an example consider the two concurrent tasks \bscode{H} and \bscode{L} shown in \bsref{fig:priority_inversion}. \bscode{H} has a high priority while \bscode{L} has a low priority. \bscode{L} starts running, enters its critical region and acquires a lock on some shared resource \bscode{R}. The high priority task \bscode{H} is then started. It attempts to acquire a lock on the resource \bscode{R} in order to enter its critical region. The lock on \bscode{R} is however still held by \bscode{L} and the high priority task \bscode{H} must now wait for the low priority task \bscode{L} to finish.
 
 \begin{figure}[htbp]
 \centering
@@ -163,9 +162,9 @@ If a concurrent task \bscode{M} with medium priority was introduced, scenario co
 \end{figure}
 
 \subsection{Starvation}
-A concurrent task is said to be starved if, it is denied access to a recourse indefinitely\cite[p. 459]{tanenbaum2008modern}. The task can be denied based on many different criteria. For example, priority or the size of the job that it is to perform.
+A concurrent task is said to be starved if, it is denied access to a resource indefinitely\cite[p. 459]{tanenbaum2008modern}. The task can be denied based on many different criteria. For example, priority or the size of the job that it is to perform.
 
-As an example, imagine a scheduler that gives concurrent tasks access to some resource R based the priority of the task. Task with a high priority gets access to the resource before tasks with a low priority. Now a low priority concurrent task \bscode{A} attempts to acquire a lock on some resource \bscode{R}. The lock on \bscode{R} is however currently held by some other task and so \bscode{A} is blocked waiting for access to \bscode{R}. While \bscode{A} is blocked, a high priority task \bscode{B} also attempts to acquire the lock on \bscode{R} and is blocked as well. When the lock on \bscode{R} is released it is given to the high priority task \bscode{B} even though \bscode{A} blocked first and so \bscode{A} remained blocked. If this scenario keeps repeating and a high priority task keeps getting the lock over \bscode{A}, \bscode{A} is said to be starved.
+As an example, imagine a scheduler that gives concurrent tasks access to some resource R based on the priority of the task. Tasks with a high priority gets access to the resource before tasks with a low priority. Now imagine a low priority concurrent task \bscode{A} attempts to acquire a lock on some resource \bscode{R}. The lock on \bscode{R} is however currently held by some other task and \bscode{A} is blocked waiting for access to \bscode{R}. While \bscode{A} is blocked, a high priority task \bscode{B} also attempts to acquire the lock on \bscode{R} and is blocked as well. When the lock on \bscode{R} is released it is given to the high priority task \bscode{B} even though \bscode{A} blocked first and \bscode{A} remains blocked. If this scenario keeps repeating and a high priority task keeps getting the lock over \bscode{A}, \bscode{A} is said to be starved.
 
 %The same scenario can without the use of locks for synchronization. Imagine a printing service in a asynchronous message passing system. The printing service accepts, schedules and handles print jobs on behalves of a number of clients. The printing services givers a higher priority to jobs created by some clients than jobs created by others. If a client submitted the low priority job \bscode{A} to the printing service, but the queue of the printing service already contained a number of high priority jobs, \bscode{A} would have to wait until the high priority jobs where finished. If the printing services keeps receiving new high priority jobs at a pace such that the queue allways contains atleast a single high priority job, then \bscode{A} will never be executed and will be starved. The similar scenario could occur if the printing service gave priority to the smallest job. A very large job might starve as smaller jobs keep getting prioritized
 
