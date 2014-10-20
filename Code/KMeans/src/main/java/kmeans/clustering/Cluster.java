@@ -15,6 +15,10 @@ public class Cluster {
     private Vector mean;
     private int[] meanSums;
 
+    public Cluster(){
+        vectors = new ArrayList<Vector>();
+    }
+
     public Cluster(Vector mean){
         vectors = new ArrayList<Vector>();
         this.mean = mean;
@@ -43,7 +47,9 @@ public class Cluster {
 
     public void mergeWith(Cluster other){
 
-        if (meanSums != null && other.meanSums != null){
+        if (meanSums == null && other.meanSums != null){
+            meanSums = other.meanSums;
+        }else if (meanSums != null && other.meanSums != null){
             for (int i = 0; i < meanSums.length; i++) {
                 meanSums[i] += other.meanSums[i];
             }

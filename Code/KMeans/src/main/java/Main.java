@@ -31,19 +31,22 @@ public class Main {
     public static void main(String[] args) {
         try {
 
-            //List<Vector> vectors = DataGenerator.generateData();
+            List<Vector> vectors = DataGenerator.generateData();
             //RunClusteringSingleThread(vectors,5,1);
             //RunClusteringNaive(vectors, 5, 7, 1);
-            //RunClustering(vectors, 5, 7, 1);
+            RunClustering(vectors, 5, 7, 1);
 
             //"Best" implementation
+            /*
             RunClusteringThreadScale();
             RunClusteringDataScale();
+            */
 
             //Naive implementation
+            /*
             RunClusteringNaiveThreadScale();
             RunClusteringDataScale();
-
+            */
             /*
             ArrayList<Integer> a1 = new ArrayList<Integer>();
             a1.add(87);
@@ -179,7 +182,7 @@ public class Main {
             for (Partition<Vector> p : partitioning.getPartitions()) {
                 executor.execute(new Mapper(sem, lock, p.getData(), means, queue));
             }
-            Reducer reducer = new Reducer(sem, lock, queue, nrThreads);
+            Reducer reducer = new Reducer(sem, lock, queue, nrThreads, nrClusters);
             reducer.run();
             queue.clear();
             means.clear();
