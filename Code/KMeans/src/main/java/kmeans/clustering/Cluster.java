@@ -63,7 +63,6 @@ public class Cluster {
     }
 
     public Vector calcMean(int[] sums) {
-        int vectorSize = this.vectors.get(0).size();
         int[] items = new int[sums.length];
         for (int i = 0; i < sums.length; i++) {
             items[i] = sums[i] / this.vectors.size();

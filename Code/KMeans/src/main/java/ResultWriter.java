@@ -1,3 +1,5 @@
+import com.google.common.base.Stopwatch;
+
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -24,6 +26,16 @@ public class ResultWriter {
         return path;
     }
 
+    public static void PrintResult(Stopwatch sw, int maxIterationCount, int nrClusters,int nrMappers, String implementation, String outputFolderName){
+        long elapsedSeconds = sw.elapsed(TimeUnit.MILLISECONDS);
+
+        try {
+            ResultWriter.WriteResult(elapsedSeconds,TimeUnit.MILLISECONDS,maxIterationCount,nrClusters,nrMappers,implementation, outputFolderName);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        System.out.println(elapsedSeconds);
+    }
 
     public static void WriteResult(long time, TimeUnit unit, int nrIterations, int nrClusters, int nrMappers, String implementation, String outputFolder) throws IOException {
         String path = getPath();
@@ -57,7 +69,5 @@ public class ResultWriter {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-
-
     }
 }
