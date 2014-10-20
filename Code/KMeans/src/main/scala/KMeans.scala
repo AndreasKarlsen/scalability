@@ -11,7 +11,7 @@ import kmeans.clustering.{Cluster, Clustering, ClusteringService}
 import kmeans.datageneration.DataGenerator
 import kmeans.partitioning.{Partition, Partitioning, Partitioner}
 import kmeans.model.Vector
-import collection.JavaConversions._ //Required for the for (foreach) loops over collections
+import collection.JavaConversions._ //Required for the for loops over Java collections
 
 object KMeans extends App {
   val _nrClusters: Int = 5
@@ -95,10 +95,10 @@ object KMeans extends App {
         }
 
         consumedMessages += 1
-        if (nrActors == consumedMessages) {
-          //Barrier ensuring all messages are consumed before sending final result
+
+        if (nrActors == consumedMessages) { //Barrier ensuring all messages are consumed before sending final result
           System.out.println("Reducer finished")
-          context.parent ! ReducerResult(clustering) //Send final result to parent (which is the Master actor) TODO: Er ikke sikker på dette virker (ellers send Master ref med når Reducer oprettes)
+          context.parent ! ReducerResult(clustering) //Send final result to parent (which is the Master actor)
 
           //Reset the reducer for next iteration
           consumedMessages = 0
