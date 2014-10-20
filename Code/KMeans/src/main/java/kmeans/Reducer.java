@@ -17,15 +17,17 @@ public class Reducer implements Runnable{
     private ReentrantLock lock;
     private Queue<Clustering> queue;
     private int nrThreads;
+    private int nrClusters;
     private Clustering _clustering;
 
 
 
-    public Reducer(Semaphore semaphore, ReentrantLock lock, Queue<Clustering> queue, int nrThreads) {
+    public Reducer(Semaphore semaphore, ReentrantLock lock, Queue<Clustering> queue, int nrThreads, int nrClusters) {
         this.semaphore = semaphore;
         this.lock = lock;
         this.queue = queue;
         this.nrThreads = nrThreads;
+        this.nrClusters = nrClusters;
     }
 
     public Clustering getClustering() {
@@ -37,7 +39,7 @@ public class Reducer implements Runnable{
         System.out.println("Reducer started");
 
         int recieved = 0;
-        Clustering clustering = null; //intermediate result
+        Clustering clustering = new Clustering(nrClusters);; //intermediate result
         try {
             while (recieved != nrThreads) {
                 Clustering c;
@@ -47,21 +49,16 @@ public class Reducer implements Runnable{
                 lock.unlock();
                 recieved++;
                 System.out.println("Reducer recieved nr: "+recieved);
-                if (clustering == null){
-                    clustering = c;
-                }else{
-                    for (int i = 0, size = clustering.getClusters().size(); i < size; i++) {
-                        Cluster c1 = clustering.getClusters().get(i);
-                        Cluster c2 = c.getClusters().get(i);
-                        c1.mergeWith(c2);
-                    }
-                }
 
+                for (int i = 0, size = nrClusters; i < size; i++) {
+                    Cluster c1 = clustering.getClusters().get(i);
+                    Cluster c2 = c.getClusters().get(i);
+                    c1.mergeWith(c2);
+                }
             }
 
             for (Cluster c : clustering.getClusters()){
-                Vector mean = c.calcMean(c.getMeanSums());
-                String breakString = "";
+                c.calcMean(c.getMeanSums());
             }
 
 

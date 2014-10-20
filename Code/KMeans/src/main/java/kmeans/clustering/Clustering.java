@@ -18,6 +18,13 @@ public class Clustering {
         }
     }
 
+    public Clustering(int nrClusters){
+        clusters = new ArrayList<Cluster>();
+        for (int i = 0; i < nrClusters; i++) {
+            clusters.add(new Cluster());
+        }
+    }
+
     public Clustering(){
         this.clusters = new ArrayList<Cluster>();
     }
