@@ -108,7 +108,6 @@ public class Main {
         RunClustering(vectors,_nrClusters,5,_nrIterations, type);
         RunClustering(vectors,_nrClusters,6,_nrIterations, type);
         RunClustering(vectors,_nrClusters,7,_nrIterations, type);
-        RunClustering(vectors,_nrClusters,8,_nrIterations, type);
     }
 
     public static void RunClusteringDataScale(){
@@ -195,7 +194,7 @@ public class Main {
             itrCount++;
         }
         sw.stop();
-        PrintResult(sw,maxIterationCount,nrClusters,nrThreads, "Java", outputFolderName);
+        ResultWriter.PrintResult(sw,maxIterationCount,nrClusters,nrThreads, "Java", outputFolderName);
         executor.shutdown();
     }
 
@@ -214,7 +213,7 @@ public class Main {
             itrCount++;
         }
         sw.stop();
-        PrintResult(sw,maxIterationCount,nrClusters,0, "Java", "");
+        ResultWriter.PrintResult(sw,maxIterationCount,nrClusters,0, "Java", "");
 
     }
 
@@ -248,19 +247,7 @@ public class Main {
             itrCount++;
         }
         sw.stop();
-        PrintResult(sw,maxIterationCount, nrClusters, nrThreads, "JavaNaive", outputFolderName);
+        ResultWriter.PrintResult(sw,maxIterationCount, nrClusters, nrThreads, "JavaNaive", outputFolderName);
         executor.shutdown();
-    }
-
-
-    private static void PrintResult(Stopwatch sw, int maxIterationCount, int nrClusters,int nrMappers, String implementation, String outputFolderName){
-        long elapsedSeconds = sw.elapsed(TimeUnit.MILLISECONDS);
-
-        try {
-            ResultWriter.WriteResult(elapsedSeconds,TimeUnit.MILLISECONDS,maxIterationCount,nrClusters,nrMappers,implementation, outputFolderName);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        System.out.println(elapsedSeconds);
     }
 }

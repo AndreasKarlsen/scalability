@@ -18,6 +18,5 @@ object MainScala {
     //val vectors = DataGenerator.generateData()
     //val partitioning = new Partitioner[Vector].partition(vectors,5);
     // println("Hello, world!")
-    val system = ActorSystem("MySystem", ConfigFactory.load("application"))
   }
 }

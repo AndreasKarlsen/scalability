@@ -50,7 +50,7 @@ public class Reducer implements Runnable{
                 recieved++;
                 System.out.println("Reducer recieved nr: "+recieved);
 
-                for (int i = 0, size = nrClusters; i < size; i++) {
+                for (int i = 0; i < nrClusters; i++) {
                     Cluster c1 = clustering.getClusters().get(i);
                     Cluster c2 = c.getClusters().get(i);
                     c1.mergeWith(c2);
