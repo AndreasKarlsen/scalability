@@ -105,7 +105,6 @@ public class Main {
         RunClustering(vectors,_nrClusters,5,_nrIterations, type);
         RunClustering(vectors,_nrClusters,6,_nrIterations, type);
         RunClustering(vectors,_nrClusters,7,_nrIterations, type);
-        RunClustering(vectors,_nrClusters,8,_nrIterations, type);
     }
 
     public static void RunClusteringDataScale(){
