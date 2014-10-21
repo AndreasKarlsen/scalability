@@ -1,19 +1,25 @@
 \makeatletter \@ifundefined{rootpath}{\input{../../setup/preamble.tex}}\makeatother
 \worksheetstart{Characteristics}{1}{April 24, 2013}{Someone}{../../}
-This chapters presents the characteristic used to evaluate the chosen concurrency models.  Each characteristic will be presented along with a description of how it will be employed for evaluation. While many of the characteristic range from one extreme to another, all concurrency models do not have to reside at one of these extremes. Instead they can be position as some point in-between the two extremes.
+This chapters presents the characteristic used to evaluate the chosen concurrency models. 
 \label{chap:char}
 \section{Implicit or Explicit Concurrency}
 Implicit concurrency allow libraries or the compiler to handle concurrency. Concurrency is hidden from the programmer who retains the illusion of a sequential program\cite[p. 59]{sutter2005software}. While enabling fast development of concurrency implementations and letting novice programmer take advantage of concurrency, implicit concurrency also has the drawback of limiting the concurrent execution gain, due to not all optimizations being feasible for strictly implicit concurrency. Further more, more advanced programmers can not apply their domain knowledge to further improve the concurrency execution gain.
 
 Explicit parallelism is the opposite extreme of implicit parallelism. The programmer explicitly states where concurrency can occur as opposed to letting the runtime handle it\cite[p. 59]{sutter2005software}. As results programmers can now employ their domain knowledge to optimize the execution, allowing for utilization of the concurrent execution. The main drawback is however also closely tied to this. Programmers have to explicitly use concurrency abstractions to ensure correct behaviour in concurrent applications. Reasoning about concurrency is hard\cite[p. 56]{sutter2005software} and with explicit concurrency this burden is put unto the programmer.
-\section{Fault Restricted or Expressive Mode}
+
+\section{Fault Restrictive Expressive Model}
+When evaluating concurrency model one can distinguish between fault restrictive or expressive models. A Fault restrictive model restricts the programmers options in order to avoid concurrency related errors. Limiting the set of available options could potentially benefit programmers with limited experience in concurrent programming. On the other hand it could deter more advanced programmers as they might not be able to completely utilize their knowledge.
+
+On the other end of this scale lies expressive concurrency models. Where a fault restrictive model emphasizes correct a expressive model instead emphasizes expressive power. The added expressive power can also mean that programmer errors become more frequent. A expressive model enables the programmer to efficiently expressed concurrency. Which of the two extremes is the best depends on the problem that is to be solved as well as the knowledge of the programmer performing the task.
+ 
 \section{Pessimistic or Optimistic Concurrency Model}
 A concurrency models can either pessimistic or optimistic. A optimistic model assumes that issues are uncommon and seeks to rectify the issue that occur, instead of guarding against them. In order to rectify the issues are recovery mechanism, such as rollback, is required. Based on the assumption of concurrency issue being uncommon, a optimistic concurrency model might seek to run as many concurrent tasks as possible at an given time attempting to reach optimal utilization of the available \ac{CPU} cores. 
 
 A pessimistic concurrency model assumes that concurrency related issues are common and seeks to pro-actively guard against them. Because of this a pessimistic model might only run concurrent tasks when it can be guaranteed that they can will interfere with one another. Because a pessimistic model attempts to guard against concurrency issue occurring instead of letting them occur and then handling them, a recovery mechanism is not needed.
 
 Weather a pessimistic or optimistic model is preferred depends on the many things including the problem being solved. Generally however, if many errors occur the pessimistic model will perform better than a optimistic as the optimistic will have to do atleast as many recoveries as there are errors. If however very few errors occur a pessimistic model will make a effort to guard against errors that seldom occur and a optimistic having to make few recoveries will perform better.
-\section{Automatic or Manual Concurrency}
+%\section{Automatic or Manual Concurrency}
+
 \section{Readability}\label{sec:readability}
 Readability refers how easily a implementation is read and understood\cite[p. 8]{sebestaProLang}. It has been used as a characteristic for evaluating programming languages or implementations in a given programming language. We will employ it to evaluating readability of the general language constructs, for each of the selected concurrency models.
 
@@ -24,14 +30,33 @@ Simplicity refers to the overall simplicity of the model\cite[p. 8]{sebestaProLa
 Orthogonality measures the number of construct within a model versus how these construct can be combined\cite[p. 9]{sebestaProLang}. If a model uses only a few construct which can be combined in a large number of ways, we say that the model has high orthogonality. If on the other hand the model contains a high number of construct which can be combined in only a small number of ways we say the model has low orthogonality.
 
 \section{Writability}
-Writablility measures the ease with which a model can be used to solve a specific problem\cite[p. 13]{sebestaProLang}. As with readability, writability has been used to evaluate programming languages and is measured via a number of sub characteristics. In the case of writability these are: simplicity, orthogonality, data types, syntax design, support for abstraction and expressivity. Of these we argue that only simply, orthogonality, support for abstraction and expressivity are applicable to evaluating concurrency models.
+Writablility measures the ease with which a model can be used to solve a specific problem\cite[p. 13]{sebestaProLang}. As with readability, writability has been used to evaluate programming languages and is measured via a number of sub characteristics. In the case of writability these are: simplicity, orthogonality, data types, syntax design, support for abstraction and expressivity. Of these we argue that only simply, orthogonality and expressivity are applicable to evaluating concurrency models. Instead of reasoning about support for abstraction we will focus on the level of abstraction that a given model offers.
 
-Simplicity and orthogonality have largely the same meaning as was the case in \bsref{sec:readability}, the focus has however shifted from reading to writing code using the model. 
+Simplicity and orthogonality have largely the same meaning as was the case in \bsref{sec:readability}, the focus has however shifted from reading to writing concurrent implementations using the model. 
 
+Abstraction means hiding complicated details from the programmer in order for her to work efficiently on a higher level\cite[p. 14]{sebestaProLang}. Level of abstraction refers the about of low level details that a programmer has to reason about. If a model exposes very forces programmer to reason about very few low level details we say that it has a high level of abstraction. If it on the other hand forces programmer to reason about many low level details we say that it has a low level of abstraction.
+
+Expressivity refers to the option a model exposes for implementing concurrency. If the model exposes many convenient ways of handling common scenarios we say that the model has high expressivity or that the model is expressive. If the model on the other hand requires a large amount of code, in order to handle these common scenarios, we say that the model has low expressivity.
 
 %write about support for abstraction and expressivity.
 \section{Productivity}
+\kasper[inline]{Falder måske ind under read/writability og kan diskuteres der}
+
 \section{Scalability}
+\kasper[inline]{Var tiltænkt som hvor nemt det er for programmøren at skalere en implementation til at understøtte flere concurrent tasks}
+
 \section{Evaluation Method}
+For each of the selected models a evaluation of the chosen characteristic will be presented. While many of the characteristic range from one extreme to another, all concurrency models do not necessarily reside at one of these extremes. Instead they can be position as some point in-between the two extremes. In order to present where a given model fits on the spectrum a evaluation scale as the one presented in \bsref{fig:char_evel_example} will be employed. 
+
+\begin{figure}[ht!]
+\centering
+\includegraphics[scale=0.5]{\rootpath/worksheets/characteristics/figures/eval_example}
+\caption{Example of characteristic evaluation scale}\label{fig:char_evel_example}
+\end{figure}
+
+Here \bscode{X} and \bscode{Y} represents the two extremes of the spectrum while \bscode{Z} along with its indicator represents where the model \bscode{Z} can be found upon the given spectrum. As an example \bscode{X} and \bscode{Y} could be implicit and explicit concurrency and \bscode{Z} could be the actor model. Using the placement of the example \bsref{fig:char_evel_example} would indicate that the actor model is mostly towards the explicit concurrency extreme. This is of course just a example placement.
+
+Along with the placement of the selected model on the spectrum a description of why the the placement is as it is will follow. When every model has been examined a summary and comparison of the selected models will be presented.\kasper{Reference chapter when created/done}
+
 
 \worksheetend
