@@ -90,9 +90,15 @@ It is based on the idea of the Observer Pattern\cite{gamma1994design}. That is, 
 \subsection{\acl{STM}}
 \ac{STM} has been viewed by many people as a promising direction for solving concurrency issues\cite{sutter2005software}. There has been a lot of attention to this area, and there is still active research. Due to this, it is a natural candidate of interest.
 
-\ac{STM} takes an approach to concurrency, that is based on transactions as known from database theory\cite[p. 1]{shavit1997software}. \ac{STM} transitions are atomic and isolated. Atomic meaning that either all writes in a given transaction are committed, or non of them are, while isolated means that from a given transaction \bscode{T}, any other concurrently running transaction will have no impact on the values committed by \bscode{T} when \bscode{T} succeeds\cite[p. 102]{sevenModels}. These properties are similar to the \ac{ACID} properties known from databases\cite[p. 754]{elmasri2011fundamentals}.
+\ac{STM} takes an approach to concurrency, that is based on transactions as known from database theory\cite[p. 1]{shavit1997software}. \ac{STM} transitions are:
+\begin{inparaenum}[(1)]
+\item Atomic, all writes in a given transaction are committed, or non of them are
+\item Consistent, a transaction moves the application from one consistent state to another
+\item Isolated, transaction do not interfere with one another\cite[p. 14]{kalin2012clojure}.
+\end{inparaenum} 
+These properties are similar to the \ac{ACID} properties known from databases\cite[p. 754]{elmasri2011fundamentals}.
 
-\ac{STM} is implemented in a number of languages, including Clojure\cite[p. 101]{sevenModels}, Concurrent Haskell\cite{harris2005composable} and Scala\cite{goodman2011muts} either directly or using a library. Generally the idea is that programmers specify regions which are to be executed as a transaction. The compiler or library then takes care of ensuring that the \ac{STM} transaction principles are maintained and that the transactions are eventually committed\cite[p. 1]{saha2006mcrt}. The transaction will be retried if any other transactions read or modified the used data in the process. It is retried until it is successful.
+\ac{STM} is implemented in a number of languages, including Clojure\cite[p. 101]{sevenModels}, Concurrent Haskell\cite{harris2005composable} and Scala\cite{goodman2011muts} either directly or using a library. Generally the idea is that programmers specify regions which are to be executed as a transaction. The compiler or library then takes care of ensuring that the \ac{STM} transaction principles are maintained and that the transactions are eventually committed\cite[p. 1]{saha2006mcrt}. The transaction will be retried if any other transactions read or modified the used data in the process. It is retried until it is successful or some upper limit is reached.
 
 The strength of \ac{STM} lies in the avoidance of many of the issues mentioned in \bsref{subsec:tl} that plague the traditional \ac{TL} approach. \ac{STM} can avoid deadlocks, priority inversion and eliminates the issue of balancing lock granularity vs performance\cite[p. 1]{harris2005composable}.
 
