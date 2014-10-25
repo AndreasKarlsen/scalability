@@ -7,12 +7,12 @@ Implicit concurrency allow libraries or the compiler to handle concurrency. Conc
 
 Explicit parallelism is the opposite extreme of implicit parallelism. The programmer explicitly states where concurrency can occur as opposed to letting the runtime handle it\cite[p. 59]{sutter2005software}. As results programmers can now employ their domain knowledge to optimize the execution, allowing for utilization of the concurrent execution. The main drawback is however also closely tied to this. Programmers have to explicitly use concurrency abstractions to ensure correct behaviour in concurrent applications. Reasoning about concurrency is hard\cite[p. 56]{sutter2005software} and with explicit concurrency this burden is put unto the programmer.
 
-\section{Fault Restrictive Expressive Model}
-When evaluating concurrency model one can distinguish between fault restrictive or expressive models. A Fault restrictive model restricts the programmers options in order to avoid concurrency related errors. Limiting the set of available options could potentially benefit programmers with limited experience in concurrent programming. On the other hand it could deter more advanced programmers as they might not be able to completely utilize their knowledge.
+\section{Fault Restrictive or Expressive Model}
+When evaluating concurrency model one can distinguish between fault restrictive and expressive models. A Fault restrictive model restricts the programmers options in order to avoid concurrency related errors. Limiting the set of available options could potentially benefit programmers with limited experience in concurrent programming. On the other hand it could deter more advanced programmers as they might not be able to completely utilize their knowledge.
 
 On the other end of this scale lies expressive concurrency models. Where a fault restrictive model emphasizes correct a expressive model instead emphasizes expressive power. The added expressive power can also mean that programmer errors become more frequent. A expressive model enables the programmer to efficiently expressed concurrency. Which of the two extremes is the best depends on the problem that is to be solved as well as the knowledge of the programmer performing the task.
  
-\section{Pessimistic or Optimistic Concurrency Model}
+\section{Pessimistic or Optimistic Model}
 A concurrency models can either pessimistic or optimistic. A optimistic model assumes that issues are uncommon and seeks to rectify the issue that occur, instead of guarding against them. In order to rectify the issues are recovery mechanism, such as rollback, is required. Based on the assumption of concurrency issue being uncommon, a optimistic concurrency model might seek to run as many concurrent tasks as possible at an given time attempting to reach optimal utilization of the available \ac{CPU} cores. 
 
 A pessimistic concurrency model assumes that concurrency related issues are common and seeks to pro-actively guard against them. Because of this a pessimistic model might only run concurrent tasks when it can be guaranteed that they can will interfere with one another. Because a pessimistic model attempts to guard against concurrency issue occurring instead of letting them occur and then handling them, a recovery mechanism is not needed.
@@ -57,6 +57,4 @@ For each of the selected models a evaluation of the chosen characteristic will b
 Here \bscode{X} and \bscode{Y} represents the two extremes of the spectrum while \bscode{Z} along with its indicator represents where the model \bscode{Z} can be found upon the given spectrum. As an example \bscode{X} and \bscode{Y} could be implicit and explicit concurrency and \bscode{Z} could be the actor model. Using the placement of the example \bsref{fig:char_evel_example} would indicate that the actor model is mostly towards the explicit concurrency extreme. This is of course just a example placement.
 
 Along with the placement of the selected model on the spectrum a description of why the the placement is as it is will follow. When every model has been examined a summary and comparison of the selected models will be presented.\kasper{Reference chapter when created/done}
-
-
 \worksheetend

@@ -12,8 +12,8 @@ Two groups of threads exist: hardware threads and user library threads. Hardware
 
 User library threads are implemented purely in software on top of the hardware and \ac{OS}. They have no direct connection to the underlying hardware and \ac{OS} and because of this can not take advantage of their scheduling or use additional cores if available. Because of these limitations the content of this report is restricted to native threads.
 
-\subsection{Shared Memory}
-Threads have access to shared memory, in order to facilitate communication between them\cite[p. 93]{tanenbaum2008modern}. Threads can communicate by reading from and writing to the shared memory.  As described in \bsref{subsec:threads} once a program is started the \ac{OS} creates a single thread and along with that a memory space for the program. If more threads are created they have their own stack but otherwise share the same memory space.
+\subsection{Shared Memory}\label{sub:sec:shared_memory}
+Threads have access to shared memory, in order to facilitate communication between them\cite[p. 93]{tanenbaum2008modern}. Threads can communicate by reading from and writing to the shared memory. As described in \bsref{subsec:threads} once a program is started the \ac{OS} creates a single thread and along with that a memory space for the program. If more threads are created they have their own stack but otherwise share the same memory space.
 
 Accessing shared data facilitates fast communication between threads, but also presents a number of issues such as race conditions. If threads do not read data that can be modified from other threads, these issues are not present. So multiple threads can run without issue as long as they do not read any shared data or even as long as they do not modify any shared data.
 
@@ -75,6 +75,11 @@ If either \bscode{t1} or \bscode{t2} attempts to acquire the lock while the othe
     }
 	}
 \end{lstlisting}
+
+\subsection{Additional features}
+%Executor service
+%Futres
+%Still based on threads
 
 \section{Concurrency Issues}\label{sec:tl_ci}
 This section presents an overview of known issues related to \ac{TL} concurrency. Many of the issues arise as a result of access to shared memory and synchronization of this access. Some of the issues are also present in other concurrency models.
@@ -177,10 +182,37 @@ Starvation can be avoided using a \ac{FIFO} scheduling strategy\cite[p. 459]{tan
 
 \subsection{Composability}
 
-
 \section{\acl{TL} Characteristics}
-This section will present how the \ac{TL} concurrency models relates to the selected characteristics presented in \bsref{chap:char}.
+This section presents how the \ac{TL} concurrency models relates to the selected characteristics presented in \bsref{chap:char}.
 
+\subsection{Implicit or Explicit Concurrency}
+As described in \bsref{subsec:threads} and \bsref{sub:sec:shared_memory}, the \ac{TL} concurrency model specify concurrency and synchronization by starting threads and assessing shared memory. Correctness is assured by locking access critical regions. All of these operations are explicitly stated by the programmer. As such we say that the \ac{TL} concurrency model explicitly states concurrency. The placement is visualized in \bsref{fig:char_implicit_explicit}.
 
+\begin{figure}[htbp]
+\centering
+ \includegraphics[width=0.9\textwidth]{\rootpath/worksheets/threads_and_locks/figures/tl_char_implicit_explicit} 
+ \caption{\ac{TL} on the Implicit - Explicit concurrency spectrum}
+\label{fig:char_implicit_explicit}
+\end{figure}
+
+\subsection{Fault Restrictive or Expressive Model}
+\ac{TL} forces very little upon the programmer. The programmer is left alone to ensure correct execution using locks as well as deciding on a fitting lock granularity. The programmer is given a lot of freedom in expressing concurrency at the cost of having to ensure correct execution herself. Based on these observations we say that \ac{TL} is a expressive concurrency model as shown in \bsref{fig:char_fault_expressive}.
+
+\begin{figure}[htbp]
+\centering
+ \includegraphics[width=0.9\textwidth]{\rootpath/worksheets/threads_and_locks/figures/tl_char_fault_expressive} 
+ \caption{\ac{TL} on the Fault Restrictive - Expressive spectrum}
+\label{fig:char_fault_expressive}
+\end{figure}
+
+\subsection{Pessimistic or Optimistic Model}
+As described in \bsref{sec:locks_me}, the \ac{TL} concurrency model uses locks to ensure mutual exclusion in order to eliminate race conditions. That is, the \ac{TL} concurrency model uses locks to eliminate errors. \ac{TL} assumes that errors will occur and attempts to prevent them. Furthermore, \ac{TL} provides not options for recovery in case of an errors occurs. Based on these observations we say that \ac{TL} is a pessimistic model as shown in \bsref{fig:char_pes_opti}.
+
+\begin{figure}[htbp]
+\centering
+ \includegraphics[width=0.9\textwidth]{\rootpath/worksheets/threads_and_locks/figures/tl_char_pessimistic_optemistic} 
+ \caption{\ac{TL} on the Pessimistic - Optimistic spectrum}
+\label{fig:char_pes_opti}
+\end{figure}
 
 \worksheetend
