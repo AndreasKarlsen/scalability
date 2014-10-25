@@ -13,7 +13,7 @@ import kmeans.partitioning.{Partition, Partitioning, Partitioner}
 import kmeans.model.Vector
 import collection.JavaConversions._ //Required for the for loops over Java collections
 
-object KMeans extends App {
+object KMeansScala extends App {
   val _nrClusters: Int = 5
   val _nrIterations: Int = 1
   val vectors: java.util.List[Vector] = DataGenerator.generateRandomVectors(500000)
@@ -43,7 +43,7 @@ object KMeans extends App {
         System.out.println("Finishing iteration: " + (itrCount + 1))
         itrCount += 1
 
-        var newMeans: java.util.List[Vector] = new util.ArrayList[Vector]()
+        val newMeans: java.util.List[Vector] = new util.ArrayList[Vector]()
         for (c : Cluster <- finalClustering.getClusters()) {
           newMeans.add(c.getMean)
         }
@@ -79,6 +79,11 @@ object KMeans extends App {
       case MapperResult(c: Clustering) =>
         System.out.println("Reducer consumed actor message: " + (consumedMessages + 1))
 
+
+        clustering.mergeWith(c);
+        clustering.calcMeansUsingMeanSum();
+
+        /*
         var i: Int = 0;
 
         //Merge clusters
@@ -93,6 +98,7 @@ object KMeans extends App {
         for (c: Cluster <- clustering.getClusters()) {
           c.calcMean(c.getMeanSums)
         }
+        */
 
         consumedMessages += 1
 

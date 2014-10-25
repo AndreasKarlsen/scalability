@@ -55,4 +55,29 @@ public class Clustering {
 
         return meanSums;
     }
+
+    public void mergeWith(Clustering other){
+
+        if (this.clusters.size() != other.clusters.size()){
+            throw new  IllegalArgumentException("Clusterings do not have the same amount of clusters");
+        }
+
+        for (int i = 0; i < this.clusters.size(); i++) {
+            Cluster c1 = this.getClusters().get(i);
+            Cluster c2 = other.getClusters().get(i);
+            c1.mergeWith(c2);
+        }
+    }
+
+    public void calcMeans(){
+        for (Cluster c : clusters){
+            c.calcMean();
+        }
+    }
+
+    public void calcMeansUsingMeanSum(){
+        for (Cluster c : clusters){
+            c.calcMean(c.getMeanSums());
+        }
+    }
 }
