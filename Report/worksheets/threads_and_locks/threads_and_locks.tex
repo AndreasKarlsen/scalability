@@ -181,6 +181,57 @@ Starvation can be avoided using a \ac{FIFO} scheduling strategy\cite[p. 459]{tan
 \subsection{\ac{TL} and OOP}
 
 \subsection{Composability}
+As mentioned in \bsref{sec:locks_me}, lock based concurrent implementations are not composable. Creating new software by composing existing implementations, in the form of libraries, is a common practice in software development. If such libraries uses locks to correctly ensure mutual exclusion, it is not guaranteed that combining these libraries, results in a application free of concurrency related errors.
+
+Deadlocks are the primary reason for locks not composing\cite[p. 58]{sutter2005software}. Event based frameworks call code that has be defied by programmers using the framework to signal that some event occurred. If such frameworks uses locks to ensure correct synchronization, calling code which the framework itself knows nothing about, can lead to deadlocks.
+
+As a example consider the observer pattern\cite{gamma1994design} in which an object (the observable) is observed by a number of observers. Observers can register and unregister for notifications and the observable notifies any registered observers whenever some event occurs. \bsref{lst:observer} show the implementation of a observable that uses a semaphore to  
+
+\begin{lstlisting}[float,label=lst:observer,
+  caption={Observer pattern with locks},
+  language=Java,  
+  showspaces=false,
+  showtabs=false,
+  breaklines=true,
+  showstringspaces=false,
+  breakatwhitespace=true,
+  commentstyle=\color{greencomments},
+  keywordstyle=\color{bluekeywords},
+  stringstyle=\color{redstrings}]  % Start your code-block
+
+	public class ValueStore implements IObservable{
+
+    private int value = 0;
+    private List<IObserver> observers = new ArrayList<>();
+    private Semaphore sem = new Semaphore(1);
+
+    public void setValue(int newValue) throws InterruptedException {
+        sem.acquire();
+        value = newValue;
+        for (IObserver o : observers) {
+            o.notify(value);
+        }
+        sem.release();
+    }
+
+    @Override
+    public void register(IObserver observer) throws InterruptedException {
+        sem.acquire();
+        observers.add(observer);
+        sem.release();
+    }
+
+    @Override
+    public void unregister(IObserver observer) throws InterruptedException {
+        sem.acquire();
+        observers.remove(observer);
+        sem.release();
+    }
+	}
+
+\end{lstlisting}
+
+%As an example imagine if that the programmer defined code takes the attempts to acquire the same lock that the framework currently holds.  Because the framework holds the locks 
 
 \section{\acl{TL} Characteristics}
 This section presents how the \ac{TL} concurrency models relates to the selected characteristics presented in \bsref{chap:char}.
@@ -206,7 +257,7 @@ As described in \bsref{subsec:threads} and \bsref{sub:sec:shared_memory}, the \a
 \end{figure}
 
 \subsection{Pessimistic or Optimistic Model}
-As described in \bsref{sec:locks_me}, the \ac{TL} concurrency model uses locks to ensure mutual exclusion in order to eliminate race conditions. That is, the \ac{TL} concurrency model uses locks to eliminate errors. \ac{TL} assumes that errors will occur and attempts to prevent them. Furthermore, \ac{TL} provides not options for recovery in case of an errors occurs. Based on these observations we say that \ac{TL} is a pessimistic model as shown in \bsref{fig:char_pes_opti}.
+As described in \bsref{sec:locks_me}, the \ac{TL} concurrency model uses locks to ensure mutual exclusion in order to eliminate race conditions. That is, the \ac{TL} concurrency model uses locks to eliminate errors. \ac{TL} assumes that errors will occur and attempts to prevent them. Furthermore, \ac{TL} provides no options for recovery in case of an errors occurs. Based on these observations we say that \ac{TL} is a pessimistic model as shown in \bsref{fig:char_pes_opti}.
 
 \begin{figure}[htbp]
 \centering
