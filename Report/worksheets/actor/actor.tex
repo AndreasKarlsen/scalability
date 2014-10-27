@@ -1,5 +1,58 @@
 \makeatletter \@ifundefined{rootpath}{\input{../../setup/preamble.tex}}\makeatother
-\worksheetstart{Actor}{1}{April 24, 2013}{Andreas}{../../}
+\worksheetstart{Actor}{1}{April 24, 2013}{Someone}{../../}
+This chapter presents the actor concurrency model by describing the key concepts in \bsref{sec:actor_concepts}. Afterwards in \bsref{sec:actor_con_issues} we present how the actor model relates to the concurrency issues presented in the \ac{TL} model. Hereafter a discussion about the actor model is presented in \bsref{sec:actor_discussion}. Finally in \bsref{sec:actor_charac} we show how the actor model fits in terms of our characteristics previously defined in \bsref{chap:char}.
 
+\section{Key Concepts}\label{sec:actor_concepts}
+The actor model is an inherently concurrent model where the main abstraction and building block is actors. Actors are independent concurrently running entities that communicate with each other solely through asynchronous message passing. Each actor has a unique name which must be specified when other actors wants to send the given actor messages. One of the main differences from other concurrency models, such as \ac{TL}, is that there is no notion of  shared state.\toby{Skal vi lade være med at forholde os til de andre modeller i afsnittene?} Instead each actor has isolated mutable state 
+
+
+
+An illustration of such an actor system is presented in \bsref{fig:actor_overview}.
+
+
+
+
+
+%Hvordan kan en actor reagere.
+%Buffer receving messages in a mailbox.
+%Forklar ud fra modellen måske-.
+
+
+
+\begin{figure}[ht!]
+\centering
+\includegraphics[scale=0.5]{\rootpath/worksheets/actor/figures/actor_diagram_overview}
+\caption{Example of three actors. Each actor has its own mailbox, isolated state and methods. Actor responds to messages based on internal behaviour.}\label{fig:actor_overview}
+\end{figure}
+
+%lightweight threads (not mapped directly to a thread - men det er vel op til den enkelte der implementere actor modellen
+
+%Forklar eksempel; actor c created and it awaits messages for doing work
+
+%non-determinism arrival of messages
+
+%hvordan en actor kan reagere på en besked
+
+%can think of it as a lightweight thread (måske skal det gemmes til implementerings afsnitet (hvis dette skal holdes rent))
+
+%processing message atomic operation
+
+%concurrently executing entities bla bla. den samme forklaring som i preleiminary til at starte med (men med mindre fokus på history og hurtig gå ind til benet omkring key concepts)
+
+
+\section{Concurrency issues}\label{sec:actor_con_issues}
+%Hvordan forholder det sig til concurrency issues tidligere nævnt og skaber den evt. nye concurrency problemer
+
+\section{Discussion}\label{sec:actor_discussion}
+%Evt. noget fra artiklen om at man tit anvender andre concurrency værktøjer, end kun actors artikeln (sammen med actors)
+
+%Kritisk overfor actor modellen evt. brug "why has the actor model not succeeded"
+
+%Måske også valg af sprog
+
+%En disadvantage ved Actor kan være at communication overhead for høj? "Actors in scala" anden paragraf før 1.3
+	%Nogle actor frameworks implementerer message passing med reference istedet for kopier, hvilket kan intoducere race conditions (fx. Scala Actors - ved ikke med Akka - undersøg det)
+
+\section{Actor Characteristics}\label{sec:actor_charac}
 
 \worksheetend
