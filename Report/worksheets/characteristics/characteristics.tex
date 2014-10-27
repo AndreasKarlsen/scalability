@@ -1,6 +1,6 @@
 \makeatletter \@ifundefined{rootpath}{\input{../../setup/preamble.tex}}\makeatother
 \worksheetstart{Characteristics}{1}{April 24, 2013}{Someone}{../../}
-This chapters presents the characteristic used to evaluate the chosen concurrency models. 
+This chapters presents the characteristic used to evaluate the chosen concurrency models. \andreas{Follow the style of other intros}
 \label{chap:char}
 \section{Implicit or Explicit Concurrency}
 Implicit concurrency allow libraries or the compiler to handle concurrency. Concurrency is hidden from the programmer who retains the illusion of a sequential program\cite[p. 59]{sutter2005software}. While enabling fast development of concurrency implementations and letting novice programmer take advantage of concurrency, implicit concurrency also has the drawback of limiting the concurrent execution gain, due to not all optimizations being feasible for strictly implicit concurrency. Further more, more advanced programmers can not apply their domain knowledge to further improve the concurrency execution gain.
