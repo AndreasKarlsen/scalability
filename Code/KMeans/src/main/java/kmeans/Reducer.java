@@ -1,8 +1,6 @@
 package kmeans;
 
-import kmeans.clustering.Cluster;
 import kmeans.clustering.Clustering;
-import kmeans.model.Vector;
 
 import java.util.Queue;
 import java.util.concurrent.Semaphore;
@@ -42,25 +40,18 @@ public class Reducer implements Runnable{
         Clustering clustering = new Clustering(nrClusters);; //intermediate result
         try {
             while (recieved != nrThreads) {
-                Clustering c;
+                Clustering temp;
                 semaphore.acquire(1);
                 lock.lock();
-                c = queue.poll();
+                temp= queue.poll();
                 lock.unlock();
                 recieved++;
                 System.out.println("Reducer recieved nr: "+recieved);
 
-                for (int i = 0; i < nrClusters; i++) {
-                    Cluster c1 = clustering.getClusters().get(i);
-                    Cluster c2 = c.getClusters().get(i);
-                    c1.mergeWith(c2);
-                }
+                clustering.mergeWith(temp);
             }
 
-            for (Cluster c : clustering.getClusters()){
-                c.calcMean(c.getMeanSums());
-            }
-
+            clustering.calcMeansUsingMeanSum();
 
             _clustering = clustering;
 

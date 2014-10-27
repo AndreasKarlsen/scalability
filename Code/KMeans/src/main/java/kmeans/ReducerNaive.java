@@ -1,12 +1,8 @@
 package kmeans;
 
-import kmeans.clustering.Cluster;
 import kmeans.clustering.Clustering;
-import kmeans.model.Vector;
 
-import java.util.Queue;
 import java.util.concurrent.Semaphore;
-import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Created by Kasper on 29-09-2014.
@@ -41,10 +37,7 @@ public class ReducerNaive implements Runnable{
                 System.out.println("Reducer recieved nr: "+recieved);
             }
 
-            for (Cluster c :clustering.getClusters()){
-                Vector mean = c.calcMean(c.getMeanSums());
-                String breakString = "";
-            }
+            clustering.calcMeansUsingMeanSum();
 
         }catch (InterruptedException ex){
 
