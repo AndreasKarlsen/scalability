@@ -176,18 +176,29 @@ As an example, imagine a scheduler that gives concurrent tasks access to some re
 Starvation can be avoided using a \ac{FIFO} scheduling strategy\cite[p. 459]{tanenbaum2008modern}.
 
 \section{Discussion}
-\kasper[inline]{Discussion goes here}
-\subsection{Why locks are hard}
-\subsection{\ac{TL} and OOP}
+This section contains a discussion of a number of issues related to \ac{TL} concurrency. Why \ac{TL} concurrency is considered to be hard is discussed in \bsref{subsec:tl_lock_hard} which is followed by a discussion of the composability of the \ac{TL} concurrency model in \bsref{subsec:tl_lock_hard}.
+\subsection{Why locks are hard}\label{subsec:tl_lock_hard}
+Concurrency is generally considered to be hard, the same goes for using locks to provide mutual exclusion\cite[p. 56]{sutter2005software}. Several reason for this exists. One of them is that in order for locks to work, programmers have to strictly follow a set of conventions. If, for example, the programmer takes locks in the wrong order, it can potentially lead to deadlocks\cite[p. 58]{sutter2005software}. Furthermore the relationship between a lock and the shared data that is is protecting is implicit, that is, it is enforced by the programmer. If the programmer misses or leaks a reference to the shared data, mutual exclusion is no longer ensured and race conditions can occur. This is worsened by locking being a global property that requires local handling. That is, data might be shared between many parts of a system and each part have to locally reason about locking access to the data.
 
-\subsection{Composability}
+Locks also has the unfortunate problem of not mixing well some aspects of \ac{OOP}. Encapsulating data with objects that only allow modification to the data via the objects interface is well know concept from \ac{OOP}. Ensuring that multiple threads accessing a object does not corrupt its internal structure, can be done by encapsulating locking, along with the data, inside the object.
+
+\kasper[inline]{Non-deterministic/Deterministic}
+
+
+
+%Some locking constructs, such as Java's syncronized methods, provide object based locking.
+%\subsection{\ac{TL} and OOP}
+
+\subsection{Composability}\label{subsec:tl_composability}
 As mentioned in \bsref{sec:locks_me}, lock based concurrent implementations are not composable. Creating new software by composing existing implementations, in the form of libraries, is a common practice in software development. If such libraries uses locks to correctly ensure mutual exclusion, it is not guaranteed that combining these libraries, results in a application free of concurrency related errors.
 
-Deadlocks are the primary reason for locks not composing\cite[p. 58]{sutter2005software}. Event based frameworks call code that has be defied by programmers using the framework to signal that some event occurred. If such frameworks uses locks to ensure correct synchronization, calling code which the framework itself knows nothing about, can lead to deadlocks.
+Deadlocks are the primary reason for locks not composing\cite[p. 58]{sutter2005software}. Event based frameworks call code that has be defied by programmers using the framework to signal that some event occurred. If such frameworks uses locks to ensure correct synchronization, calling code which the framework itself knows nothing about, while holding locks, can lead to deadlocks.
 
-As a example consider the observer pattern\cite{gamma1994design} in which an object (the observable) is observed by a number of observers. Observers can register and unregister for notifications and the observable notifies any registered observers whenever some event occurs. \bsref{lst:observer} show the implementation of a observable that uses a semaphore to  
+As a example consider the observer pattern\cite{gamma1994design} in which an object (the observable) is observed by a number of observers. Observers can register and unregister for notifications and the observable notifies any registered observers whenever some event occurs. 
 
-\begin{lstlisting}[float,label=lst:observer,
+\bsref{lst:observer} show the implementation of a observable that attempts to use a semaphore in order to ensure thread safety. The \bscode{ValueStore} class implements the \bscode{Observable} interface, overriding the two methods \bscode{register} and \bscode{unregister} defined on the interface. Besides these two methods the  \bscode{ValueStore} class defines the set value method which allows others to set the stored value as well as triggering notification of all registered observers. As mentioned the \bscode{ValueStore} class uses a semaphore to ensure mutual exclusion. The semaphore locks access to the registering and unregistering of observers as seen on lines 18-20 and 25-27 respectively. Furthermore the \bscode{ValueStore} class locks setting the internal value and notifying all registered observers as seen on lines 8-13.
+
+\begin{lstlisting}[label=lst:observer,
   caption={Observer pattern with locks},
   language=Java,  
   showspaces=false,
@@ -199,36 +210,84 @@ As a example consider the observer pattern\cite{gamma1994design} in which an obj
   keywordstyle=\color{bluekeywords},
   stringstyle=\color{redstrings}]  % Start your code-block
 
-	public class ValueStore implements IObservable{
+	public class ValueStore implements Observable{
 
     private int value = 0;
-    private List<IObserver> observers = new ArrayList<>();
+    private List<Observer> observers = new ArrayList<>();
     private Semaphore sem = new Semaphore(1);
 
     public void setValue(int newValue) throws InterruptedException {
         sem.acquire();
         value = newValue;
-        for (IObserver o : observers) {
-            o.notify(value);
+        for (Observer o : observers) {
+            o.notify(this,value);
         }
         sem.release();
     }
 
     @Override
-    public void register(IObserver observer) throws InterruptedException {
+    public void register(Observer observer) throws InterruptedException {
         sem.acquire();
         observers.add(observer);
         sem.release();
     }
 
     @Override
-    public void unregister(IObserver observer) throws InterruptedException {
+    public void unregister(Observer observer) throws InterruptedException {
         sem.acquire();
         observers.remove(observer);
         sem.release();
     }
 	}
+	
+	public class ValueObserver implements Observer {
 
+    @Override
+    public void notify(Observable sender, int value) throws InterruptedException {
+        sender.unregister(this);
+    }
+	}
+
+	public class Main {
+
+    public static void main(String [ ] args) throws InterruptedException {
+        ValueStore observable = new ValueStore();
+        observable.register(new ValueObserver());
+        observable.setValue(5);
+        System.out.println("Done");
+    }
+	}
+\end{lstlisting}
+
+The \bscode{ValueObserver} class implements the observer interface and overrides its notify method. The notify method simply unregisters from the observable supplying the notification.
+
+The \bscode{Main} class and its \bscode{main} method defines the behaviour of the program. On line 42 a \bscode{ValueStore} is created followed by the registration of a \bscode{ValueObserver}, setting the value of the \bscode{ValueStore} to 5 and printing \bscode{"Done"} to the console. The printing will however never occur as the program deadlocks before it can happen. The deadlock occurs because the \bscode{ValueObserver} attempts to unregister from the \bscode{ValueStore} while the \bscode{ValueStore} hold the lock. As part of setting the value on line 44 the \bscode{ValueStore} acquires the lock sets the value and proceeds to notify all observes while still holding the lock, as seen on lines 8-13. Notifying a observer entail calling its \bscode{notify} method, which in the case of the \bscode{ValueObserver} means the \bscode{ValueObserver} unregistering from the observable. As the \bscode{unregister} method attempts to acquire the lock currently help by the \bscode{ValueStore} within the \bscode{setValue} method a deadlock is created resulting in the \bscode{"Done"} string never being printed.
+
+In order to remove the deadlock one could move the notification of observers in the \bscode{setValue} method outside of the locked section. This would however mean that access to the list of observers would not be thread safe as nothing prevents the registration and unregistration of observers while the \bscode{setValue} method iterating over it. One way to solve this, would be to produce a shallow copy of the obeserver list within the locked section and iterate over the copy outside the locked section. This eliminates the call to outside defined code while holding locks. This idea is exemplified in the update version of the \bscode{setValue} method depicted in \bsref{lst:observer_updated}.
+
+\begin{lstlisting}[float,label=lst:observer_updated,
+  caption={Observer pattern with locks},
+  language=Java,  
+  showspaces=false,
+  showtabs=false,
+  breaklines=true,
+  showstringspaces=false,
+  breakatwhitespace=true,
+  commentstyle=\color{greencomments},
+  keywordstyle=\color{bluekeywords},
+  stringstyle=\color{redstrings}]  % Start your code-block
+
+    public void setValue(int newValue) throws InterruptedException {
+        List<Observer> shallowCopy;
+        sem.acquire();
+        value = newValue;
+        shallowCopy = new ArrayList<>(observers);
+        sem.release();
+
+        for (Observer o : shallowCopy) {
+            o.notify(this,value);
+        }
+    }
 \end{lstlisting}
 
 %As an example imagine if that the programmer defined code takes the attempts to acquire the same lock that the framework currently holds.  Because the framework holds the locks 
@@ -266,4 +325,17 @@ As described in \bsref{sec:locks_me}, the \ac{TL} concurrency model uses locks t
 \label{fig:char_pes_opti}
 \end{figure}
 
+\subsection{Readability}
+As mentioned in \bsref{sec:readability} the evaluation of readability will be based upon that of simplicity and orthogonality as well as a number of other considerations. Simplicity and orthogonality is described in the following sections followed by a final evaluation of readability.
+\subsubsection{Simplicity}\label{subsec:tl_simplicity_read}
+\kasper[inline]{based heavily on discussion of why TL is hard in dicussion section }
+\subsubsection{Orthogonality}
+\subsubsection{Readability evaluation}
+
+\subsection{Writability}
+\subsubsection{Simplicity}
+\subsubsection{Orthogonality}
+\subsubsection{Level of abstraction}
+\subsubsection{Expressivity}
+\subsubsection{Writability evaluation}
 \worksheetend

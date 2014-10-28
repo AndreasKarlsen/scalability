@@ -35,6 +35,8 @@ Simplicity refers to the overall simplicity of the model\cite[p. 8]{sebestaProLa
 
 Orthogonality measures the number of constructs within a model versus how these constructs can be combined\cite[p. 9]{sebestaProLang}. If a model uses only a few constructs which can be combined in a large number of ways, we say that the model has high orthogonality. If on the other hand the model contains a high number of construct which can be combined in only a small number of ways we say the model has low orthogonality.
 
+The evaluation of readability will be based on the mentioned sub characteristics as well as a number considerations related directly to readability.
+
 \subsection{Writability}\label{sec:writablity}
 Writablility measures the ease with which a model can be used to solve a specific problem\cite[p. 13]{sebestaProLang}. As with readability, writability is used to evaluate programming languages and refers to a number of sub characteristics. In the case of writability these are: simplicity, orthogonality, data types, syntax design, support for abstraction and expressivity. Data types and syntax design are left out for the same reasons as described in \bsref{sec:readability} so that the evaluation of readability  covers simply, orthogonality and expressivity. Instead of reasoning about support for abstraction we will focus on the level of abstraction that a given model offers.
 
@@ -42,14 +44,12 @@ Simplicity and orthogonality have largely the same meaning as was the case in \b
 
 Abstraction means hiding complicated details from the programmer in order for her to work efficiently on a higher level\cite[p. 14]{sebestaProLang}. Level of abstraction refers the about of low level details that a programmer has to reason about. If a model exposes very forces programmer to reason about very few low level details we say that it has a high level of abstraction. If it on the other hand forces programmer to reason about many low level details we say that it has a low level of abstraction.
 
-Expressivity refers to the option a model exposes for implementing concurrency. If the model exposes many convenient ways of handling common scenarios we say that the model has high expressivity or that the model is expressive. If the model on the other hand requires a large amount of code, in order to handle these common scenarios, we say that the model has low expressivity.
+Expressivity refers to the options a model exposes for implementing concurrency, specifically the convenience of with which different concurrency scenarios can be expressed. If the model exposes many convenient ways of handling common scenarios we say that the model has high expressivity or that the model is expressive. If the model on the other hand requires a large amount of code, in order to handle these common scenarios, we say that the model has low expressivity.
 
-%write about support for abstraction and expressivity.
+As with was the case with the evaluation of readability the evaluation of writability will be based on the mentioned characteristic as well as a number of considerations related to writability directly.
+
 \section{Productivity}
 \kasper[inline]{Falder måske ind under read/writability og kan diskuteres der}
-
-\section{Scalability}
-\kasper[inline]{Var tiltænkt som hvor nemt det er for programmøren at skalere en implementation til at understøtte flere concurrent tasks}
 
 \section{Evaluation Method}
 For each of the selected models a evaluation of the chosen characteristic will be presented. While many of the characteristic range from one extreme to another, all concurrency models do not necessarily reside at one of these extremes. Instead they can be position as some point in-between the two extremes. In order to present where a given model fits on the spectrum a evaluation scale, a evaluation scale as presented in \bsref{fig:char_evel_example} will be employed. The evaluation scale is inspired by the work of Birthe Damborg and Anders Mørk Hansen in \cite{StudyInConcurrency}.
