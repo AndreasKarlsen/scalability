@@ -94,7 +94,7 @@ Consider the example presented in \bsref{lst:racecondition}, which is similar to
 Result is: 60
 \end{verbatim}
 instead of 30 as expected. The previous outputs of 0 and 30 are still possible, but the output now depends on the timing of the concurrent tasks. Race conditions can be very hard to find and remove as they can result in incorrect values instead of errors and because they do not necessarily occur on every program execution. Race conditions can be avoided by providing mutual exclusion as discussed in \bsref{sec:locks_me},
-\begin{lstlisting}[float,label=lst:racecondition,
+\begin{lstlisting}[label=lst:racecondition,
   caption={Race condition example},
   language=Java,  
   showspaces=false,
@@ -119,7 +119,7 @@ instead of 30 as expected. The previous outputs of 0 and 30 are still possible, 
         Thread t2 = new Thread(() -> number = 20);
         t1.start(); t2.start();
         t1.join(); t2.join();
-        System.out.println("Result is: "+result);
+        System.out.println("Result is: " + result);
     }
 	}
 \end{lstlisting}

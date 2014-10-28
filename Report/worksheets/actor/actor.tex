@@ -3,15 +3,45 @@
 This chapter presents the actor concurrency model by describing the key concepts in \bsref{sec:actor_concepts}. Afterwards in \bsref{sec:actor_con_issues} we present how the actor model relates to the concurrency issues presented in the \ac{TL} model. Hereafter a discussion about the actor model is presented in \bsref{sec:actor_discussion}. Finally in \bsref{sec:actor_charac} we show how the actor model fits in terms of our characteristics previously defined in \bsref{chap:char}.
 
 \section{Key Concepts}\label{sec:actor_concepts}
-The actor model is an inherently concurrent model where the main abstraction and building block is actors. Actors are independent concurrently running entities that communicate with each other solely through asynchronous message passing. Each actor has a unique name which must be specified when other actors wants to send the given actor messages. One of the main differences from other concurrency models, such as \ac{TL}, is that there is no notion of  shared state.\toby{Skal vi lade være med at forholde os til de andre modeller i afsnittene?} Instead each actor has isolated mutable state 
+The actor model is an inherently concurrent model where the main abstraction and building block is actors\cite[p. 2]{karmani2009actor}. An actor is an entity that has the following essential elements of computation\cite{actorLangNextVideo}: processing, storage, and communication. The actor is able to process instructions e.g. adding numbers together or concatenating strings. The actor is also able to store data on itself e.g. the result of some processing or some value communicated from another actor. We will explain the storage and communication elements in more detail throughout the section.
 
+Actors are independent concurrently running entities that communicate with each other solely through asynchronous message passing\cite[p. 304]{tasharofi2013scala}. Upon receiving a message the actor examines it and determines how it will react, which can be in a number of ways\cite[p. 2]{hewitt2014actor}:
+\begin{enumerate}
+\item Send messages to known actors
+\item Create new actors
+\item Modify internal state or behaviour
+\end{enumerate}
+An actor can choose to react by doing one or more of the above or none if the actor is not interested in the message it receives. Additionally the actor may also do some processing.\\
+In the first case an actor may send messages to other actors on the premise that is has the address of the actors. It is also allowed for an actor to send messages to itself. Each actor has a unique address which is represented in the actor model by a unique immutable name of an actor\cite[p. 2]{karmani2009actor}. It is then the responsibility of the chosen actor framework to map actor names to more direct addresses such as memory or network addresses, depending on implementation strategy and runtime location\cite[p. 3]{hewitt2014actor}. Addresses cannot be guessed but must be communicated. An actor \bscode{A} can know the address of another actor \bscode{B} if \bscode{A} creates \bscode{B} or receives the address of \bscode{B} as a message from an actor.\\
+In the second case an actor can choose to create one or more new actors, which it may delegate some work.\\
+In the last case an actor can choose to modify internal state or behaviour. Each actor has internal isolated state where only the actor itself is responsible and allowed to modify state. Furthermore actors have internal behaviour, typically in the form of behaviour methods, which describes how a certain type of message should be handled. For example if an actor receives an \bscode{A} message it will use the \bscode{A} behaviour method, similarly  if an actor receives a \bscode{B} message it will use the \bscode{B} behaviour method. When an actor modifies internal behaviour it will take effect for the next message to be processed. So in the third case an actor can modify internal state by updating state or change the internal behaviour by changing one or more behaviour methods.
+
+A single actor may receive many messages in a short time period which it must be able to handle without failing. To accommodate this, each actor has an associated mailbox where messages sent to the actor is buffered in\cite[Chap. 2.6]{haller2012actors}. Messages can arrive in the mailbox at any time and will hold the messages until the actor has processed them. An actor will retrieve one message at a time from its mailbox and process it in one atomic step\cite[p. 2]{karmani2009actor}. %hvorfor er det vigtigt at den kun tager en af gangen?
+
+The messages sent to an actor can take arbitrarily long to arrive
+%any order receiving - non determinsitic (in deterministic)
+%best efforts
+
+
+An actor will retrieve a message from its mailbox 
+
+
+%Cannot determine in adavance in which order messages are processed. non-deterministic
+
+
+
+%evt. flyt det nederst i afsnitet eller i starten af concurrency issues
+%husk også ascynchonuys natur sammen med no shared state!
+One of the main differences from other concurrency models, such as \ac{TL}, is that there is no notion of shared state.\toby{Skal vi lade være med at forholde os til de andre modeller i afsnittene?} Instead each actor has isolated state where only the actor itself is responsible and allowed to modify state. The reason that isolated state is preferable over shared state is that some of the concurrency issues presented earlier in \bsref{sec:tl_ci} is mitigated and some even gone. We will present which concurrency issues this affects in \bsref{sec:actor_con_issues}.
+%Måske noget med nemsis of the von neumann arcitecruhe = shared store (fra gul agha original)
 
 
 An illustration of such an actor system is presented in \bsref{fig:actor_overview}.
+%forklar den
 
+%se på nogle af fordele ved det måske (eller skal det være i diskussions afsnittet?) Evt. se hewitts artikel, hvor han har en række punkter også
 
-
-
+%location transparency - does not have to have physical addresses of where acotrs are but only their unique addresses often in the form of Actor names. This makes it easiyer to distribute etc. etc.
 
 %Hvordan kan en actor reagere.
 %Buffer receving messages in a mailbox.
@@ -22,7 +52,7 @@ An illustration of such an actor system is presented in \bsref{fig:actor_overvie
 \begin{figure}[ht!]
 \centering
 \includegraphics[scale=0.5]{\rootpath/worksheets/actor/figures/actor_diagram_overview}
-\caption{Example of three actors. Each actor has its own mailbox, isolated state and methods. Actor responds to messages based on internal behaviour.}\label{fig:actor_overview}
+\caption{Example of three actors. Each actor has its own mailbox, isolated state and methods. Actors responds to messages based on internal behaviour. Actor A sends Actor B a message which then creates Actor C.}\label{fig:actor_overview}
 \end{figure}
 
 %lightweight threads (not mapped directly to a thread - men det er vel op til den enkelte der implementere actor modellen
