@@ -180,11 +180,65 @@ This section contains a discussion of a number of issues related to \ac{TL} conc
 \subsection{Why locks are hard}\label{subsec:tl_lock_hard}
 Concurrency is generally considered to be hard, the same goes for using locks to provide mutual exclusion\cite[p. 56]{sutter2005software}. Several reason for this exists. One of them is that in order for locks to work, programmers have to strictly follow a set of conventions. If, for example, the programmer takes locks in the wrong order, it can potentially lead to deadlocks\cite[p. 58]{sutter2005software}. Furthermore the relationship between a lock and the shared data that is is protecting is implicit, that is, it is enforced by the programmer. If the programmer misses or leaks a reference to the shared data, mutual exclusion is no longer ensured and race conditions can occur. This is worsened by locking being a global property that requires local handling. That is, data might be shared between many parts of a system and each part have to locally reason about locking access to the data.
 
-Locks also has the unfortunate problem of not mixing well some aspects of \ac{OOP}. Encapsulating data with objects that only allow modification to the data via the objects interface is well know concept from \ac{OOP}. Ensuring that multiple threads accessing a object does not corrupt its internal structure, can be done by encapsulating locking, along with the data, inside the object.
+Locks also has the unfortunate problem of not mixing well some aspects of \ac{OOP}. Encapsulating data with objects that only allow modification to the data via the objects interface, is well know concept from \ac{OOP}. Ensuring that multiple threads accessing a object does not corrupt its internal structure, can be done by encapsulating locking, along with the data, inside the object. As an example consider the \bscode{Account} class presented in \bsref{lst:account_example}. The \bscode{Account} class uses a internal lock, which is defined on line 4, to ensure that only a single thread, can modify the balance of the account at a time. This solution does however have a number of issues. Firstly, if a programmer where the extend the \bscode{Account} class and provides a overridden version of the credit or debit methods, she would have to ensure that mutual exclusion on the balance was maintained. In this simple example such as task could be achieved without to much trouble, assuming that the programmer extending the account class knows about the lock. If however it had been a more complex class, using more sophisticated locking, providing a overridden method might not be a simple task. In any case it is a task with a high potential for programmer error, especially if the programmer does not have access to the source code of the class that is to be extended.
+
+\begin{lstlisting}[float,label=lst:account_example,
+  caption={Encapsulated locking},
+  language=Java,  
+  showspaces=false,
+  showtabs=false,
+  breaklines=true,
+  showstringspaces=false,
+  breakatwhitespace=true,
+  commentstyle=\color{greencomments},
+  keywordstyle=\color{bluekeywords},
+  stringstyle=\color{redstrings}]  % Start your code-block
+
+	public class Account {
+
+    private int balance;
+    protected final Lock lock = new ReentrantLock();
+
+    public Account(int balance){
+       this.balance = balance;
+    }
+
+    public void credit(int amount){
+        lock.lock();
+        balance += amount;
+        lock.unlock();
+    }
+
+    public void debit(int amount){
+        lock.lock();
+        balance -= amount;
+        lock.unlock();
+    }
+	}
+\end{lstlisting}
+
+Secondly consider the example of transferring funds from one account to another. \bsref{lst:account_example_transfer} shows one way in which this could be achieved. The two accounts \bscode{a1} and \bscode{a2} are created with balances of 500 and 100 respectively. 200 is debited from \bscode{a1} followed by crediting \bscode{a2} with 200 completing the transfer. The problem arises because the encapsulated locking only protects each call to debit and credit but not the state in between them\cite[p. 59]{sutter2005software}. A thread can read the inconsistent state of the accounts in between the debiting of \bscode{a1} and crediting of \bscode{a2}. Additional locking has to be provided  if this is to be avoided.
+
+\begin{lstlisting}[float,label=lst:account_example_transfer,
+  caption={Funds transfer between two accounts},
+  language=Java,  
+  showspaces=false,
+  showtabs=false,
+  breaklines=true,
+  showstringspaces=false,
+  breakatwhitespace=true,
+  commentstyle=\color{greencomments},
+  keywordstyle=\color{bluekeywords},
+  stringstyle=\color{redstrings}]  % Start your code-block
+
+    Account a1 = new Account(500);
+    Account a2 = new Account(100);
+    a1.debit(200);
+    a2.credit(200);
+\end{lstlisting}
+
 
 \kasper[inline]{Non-deterministic/Deterministic}
-
-
 
 %Some locking constructs, such as Java's syncronized methods, provide object based locking.
 %\subsection{\ac{TL} and OOP}
