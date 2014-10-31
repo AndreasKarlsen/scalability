@@ -383,12 +383,17 @@ As described in \bsref{sec:locks_me}, the \ac{TL} concurrency model uses locks t
 \subsection{Readability}
 As mentioned in \bsref{sec:readability} the evaluation of readability will be based upon that of simplicity and orthogonality as well as a number of other considerations. Simplicity and orthogonality is described in the following sections followed by a final evaluation of readability.
 \subsubsection{Simplicity}\label{subsec:tl_simplicity_read}
-\kasper[inline]{based heavily on discussion of why TL is hard in dicussion section }
+As described in \bsref{subsec:tl_lock_hard} and \bsref{subsec:tl_composability} the \ac{TL} concurrency model has a number of issue which contributes negatively to its simplicity. When taking multiple locks, taking them in incorrect order might result in a deadlock. Locking is however, as describe in \bsref{subsec:tl_lock_hard}, a global property and the correct order might not be directly discernible by the reader, from within the local context. As such it is no easy task for the reader to reason about whether the order of locking is correct.
+
+\bsref{subsec:tl_composability} describes how how the \ac{TL} model is not composable. Implementing the observer pattern in a thread safe manner was shown to entail a number of issues.
+
+\kasper[inline]{based heavily on discussion of why TL is hard in dicussion section}
 \subsubsection{Orthogonality}
 \subsubsection{Readability evaluation}
 
 \subsection{Writability}
 \subsubsection{Simplicity}
+ The programmer is largely left alone to insure that a concurrent implementation executes correctly and there for also left alone to tackle the issues that the \ac{TL} model has. 
 \subsubsection{Orthogonality}
 \subsubsection{Level of abstraction}
 \subsubsection{Expressivity}
