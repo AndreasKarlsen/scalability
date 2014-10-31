@@ -11,29 +11,49 @@ Actors are independent concurrently running entities that communicate with each 
 \item Create new actors
 \item Modify internal state or behaviour
 \end{enumerate}
-An actor can choose to react by doing one or more of the above or none if the actor is not interested in the message it receives. Additionally the actor may also do some processing.\\
-In the first case an actor may send messages to other actors on the premise that is has the address of the actors. It is also allowed for an actor to send messages to itself. Each actor has a unique address which is represented in the actor model by a unique immutable name of an actor\cite[p. 2]{karmani2009actor}. It is then the responsibility of the chosen actor framework to map actor names to more direct addresses such as memory or network addresses, depending on implementation strategy and runtime location\cite[p. 3]{hewitt2014actor}. Addresses cannot be guessed but must be communicated. An actor \bscode{A} can know the address of another actor \bscode{B} if \bscode{A} creates \bscode{B} or receives the address of \bscode{B} as a message from an actor.\\
-In the second case an actor can choose to create one or more new actors, which it may delegate some work.\\
+An actor can choose to react by doing one or more of the above or none if the actor is not interested in the message it receives. Additionally the actor may also do some processing.
+
+In the first case an actor may send messages to other actors on the premise that is has the address of the actors. It is also allowed for an actor to send messages to itself. Each actor has a unique address which is represented in the actor model by a unique immutable name of an actor\cite[p. 2]{karmani2009actor}. It is then the responsibility of the chosen actor framework to map actor names to more direct addresses such as memory or network addresses, depending on implementation strategy and runtime location\cite[p. 3]{hewitt2014actor}. Addresses cannot be guessed but must be communicated. An actor \bscode{A} can know the address of another actor \bscode{B} if \bscode{A} creates \bscode{B} or receives the address of \bscode{B} as a message from an actor. Typically the exclamation mark (!) is used as the symbol to indicate sending a message. This is shown in the following example where the hello message is sent to actor \bscode{A}:
+\begin{verbatim}
+A ! "hello"
+\end{verbatim}
+
+In the second case an actor can choose to create one or more new actors, the new actors will then be child actors of the creating actor. This may be attractive when an actor receives a compute intensive task as it then can create a number of new child actors and delegate the work amongst them. \bsref{fig:actor_lifecycle} presents an illustration of the life cycle of an actor. When an actor is created it is typically started also which brings the actor into an active phase. In the active phase an actor awaits messages until it retrieves a message which it will then process and upon completion the actor will again be ready to receive a new message. At some point an actor may be stopped which brings it to an inactive phase where no messages are processed and it will only go into the active phase again if it is started.
+
+\begin{figure}[ht!]
+\centering
+\includegraphics[scale=0.5]{\rootpath/worksheets/actor/figures/actor_lifecycle}
+\caption{Lifecycle of an actor inspired by \cite[Figure 12]{subramaniam2011programming}}\label{fig:actor_lifecycle}
+\end{figure}
 In the last case an actor can choose to modify internal state or behaviour. Each actor has internal isolated state where only the actor itself is responsible and allowed to modify state. Furthermore actors have internal behaviour, typically in the form of behaviour methods, which describes how a certain type of message should be handled. For example if an actor receives an \bscode{A} message it will use the \bscode{A} behaviour method, similarly  if an actor receives a \bscode{B} message it will use the \bscode{B} behaviour method. When an actor modifies internal behaviour it will take effect for the next message to be processed. So in the third case an actor can modify internal state by updating state or change the internal behaviour by changing one or more behaviour methods.
 
-A single actor may receive many messages in a short time period which it must be able to handle without failing. To accommodate this, each actor has an associated mailbox where messages sent to the actor is buffered in\cite[Chap. 2.6]{haller2012actors}. Messages can arrive in the mailbox at any time and will hold the messages until the actor has processed them. An actor will retrieve one message at a time from its mailbox and process it in one atomic step\cite[p. 2]{karmani2009actor}. %hvorfor er det vigtigt at den kun tager en af gangen?
+A single actor may receive many messages in a short time period which it must be able to handle without failing. To accommodate this, each actor has an associated mailbox where messages sent to the actor is buffered in\cite[Chap. 2.6]{haller2012actors}. Messages can arrive in the mailbox at any time and will hold the messages until the actor has processed them. An actor will retrieve one message at a time from its mailbox and process it in one atomic step\cite[p. 2]{karmani2009actor}. This reduces concurrency issues and make programs easier to reason about as multiple messages will not conflict with one another e.g. if two messages wants to update the isolated state of an actor there will be no concurrency issues as one message will be processed at a time.\toby{Skal vi vente med at snakke om det til næste section omkring con issues?}
+
+The order in which messages are received in an actors mailbox is non deterministic.
+
+As actors are concurrently running entities messages can arrive in any order in the mailbox of an actor.
+
+The order in which messages are processed affects the 
+
+%the actor model assums message will be delivered eventaully, but that is the conceptual model and in a real implementation faliures can cause starvation and then it is up to the indivivudal implementation of the actor model to adhere the principles of the actor model. (en af kilderne) actors in scala kap. 2.5 (anden sidste paragraf)
+
+%message order is non-determinit as it may take arbitarily long time for a message to arrive in the mailbox and we must therefore make sure an actor does not depend on a speicifc message order.
+	%``You can often alleviate reliance on message ordering by refactoring the actor communication, i.e., reworking the messages' contents'' - quotue actors in scala s. 34
+
+%actor lifecycle created and then it starts, start = awaiting message, stop = end  %måske kig på figur 12 i 8.2 JVM Mastering
 
 The messages sent to an actor can take arbitrarily long to arrive
 %any order receiving - non determinsitic (in deterministic)
 %best efforts
 
 
-An actor will retrieve a message from its mailbox 
-
-
 %Cannot determine in adavance in which order messages are processed. non-deterministic
-
-
 
 %evt. flyt det nederst i afsnitet eller i starten af concurrency issues
 %husk også ascynchonuys natur sammen med no shared state!
 One of the main differences from other concurrency models, such as \ac{TL}, is that there is no notion of shared state.\toby{Skal vi lade være med at forholde os til de andre modeller i afsnittene?} Instead each actor has isolated state where only the actor itself is responsible and allowed to modify state. The reason that isolated state is preferable over shared state is that some of the concurrency issues presented earlier in \bsref{sec:tl_ci} is mitigated and some even gone. We will present which concurrency issues this affects in \bsref{sec:actor_con_issues}.
 %Måske noget med nemsis of the von neumann arcitecruhe = shared store (fra gul agha original)
+
 
 
 An illustration of such an actor system is presented in \bsref{fig:actor_overview}.
@@ -43,11 +63,8 @@ An illustration of such an actor system is presented in \bsref{fig:actor_overvie
 
 %location transparency - does not have to have physical addresses of where acotrs are but only their unique addresses often in the form of Actor names. This makes it easiyer to distribute etc. etc.
 
-%Hvordan kan en actor reagere.
-%Buffer receving messages in a mailbox.
-%Forklar ud fra modellen måske-.
-
-
+%Forklar modellen
+	%While this is happening there may be other actors concurrently running sending messages around and processing.
 
 \begin{figure}[ht!]
 \centering
@@ -61,17 +78,13 @@ An illustration of such an actor system is presented in \bsref{fig:actor_overvie
 
 %non-determinism arrival of messages
 
-%hvordan en actor kan reagere på en besked
-
-%can think of it as a lightweight thread (måske skal det gemmes til implementerings afsnitet (hvis dette skal holdes rent))
-
-%processing message atomic operation
-
-%concurrently executing entities bla bla. den samme forklaring som i preleiminary til at starte med (men med mindre fokus på history og hurtig gå ind til benet omkring key concepts)
-
-
 \section{Concurrency issues}\label{sec:actor_con_issues}
 %Hvordan forholder det sig til concurrency issues tidligere nævnt og skaber den evt. nye concurrency problemer
+
+%en actor processer messages i et atomic step, det afhælper concurrency issues men det kan også skade concurrency fordi hvis det kun er read operationer må de jo gerne udføres samtidigt (se JVM mastering bogen)
+
+%event-based computation model avoids blocking waits for specific messages, which helps to keep clear of deadlocks in the system. But still able to livelock as actors can await messages from one another
+
 
 \section{Discussion}\label{sec:actor_discussion}
 %Evt. noget fra artiklen om at man tit anvender andre concurrency værktøjer, end kun actors artikeln (sammen med actors)
