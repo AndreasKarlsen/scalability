@@ -10,17 +10,16 @@ namespace DataGenerator
     class Program
     {
         public static string path = @"..\..\..\..\Data";
-        public static string extension = ".testdata";
-        private static readonly object lock_obj = new object();
+        public static string extension = ".txt";
 
         static void Main(string[] args)
         {
-            Random random = new Random((int)DateTime.Now.Ticks);
-            string[] lines = new string[500000];
-            for (int i = 0; i < 500000; i++)
+            var random = new Random((int)DateTime.Now.Ticks);
+            var lines = new string[5];
+            for (int i = 0; i < lines.Length; i++)
             {
-                string[] lineList = new string[100];
-                for (int j = 0; j < 100; j++)
+                var lineList = new string[100];
+                for (var j = 0; j < 100; j++)
                 {
                     lineList[j] = random.Next(100).ToString();
                 }
@@ -37,7 +36,8 @@ namespace DataGenerator
             }
 
             
-            File.WriteAllLines(Path.Combine(path,"Data"+extension), lines);
+            File.WriteAllLines(Path.Combine(path,"staticdatameans"+extension), lines);
+
             /*
             List<Partitioning> partitionings = new List<Partitioning>();
             Console.WriteLine("Creating partitionings:");

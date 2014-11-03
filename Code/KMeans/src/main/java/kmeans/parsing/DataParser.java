@@ -1,5 +1,6 @@
 package kmeans.parsing;
 
+import kmeans.Vars;
 import kmeans.model.Vector;
 
 import java.io.*;
@@ -14,37 +15,33 @@ import java.util.List;
  */
 public class DataParser {
 
-    private static String path = null;
 
-    public static String getPath(){
-        if(path == null){
-            File f = new File(".");
-            path = f.getAbsoluteFile().getParentFile().getAbsoluteFile().getParentFile().getAbsolutePath();
-            path = path + "\\Data\\Data.testdata";
-        }
-
-        return path;
+    public static List<Vector> parseStaticData()  throws IOException{
+        return parseData("staticdata.txt");
     }
 
+    public static List<Vector> parseStaticDataMeans()  throws IOException{
+        return parseData("staticdatameans.txt");
+    }
 
-    public static List<Vector> parseData() throws IOException {
+    public static List<Vector> parseData(String filename) throws IOException {
+        String path = Vars.getPath();
+        Path p = Paths.get(path);
+        if (Files.notExists(p)){
+            Files.createDirectory(p);
+        }
 
-        File f = new File(getPath());
-        if(!f.exists())
-        {
+        p = Paths.get(path,filename);
+        if (Files.notExists(p)){
             throw new IOException("The data is not present");
         }
 
+
         List<Vector> vectors = new ArrayList<Vector>();
 
-        InputStream fis;
-        BufferedReader br;
-        String         line;
 
-        fis = new FileInputStream(f);
-        br = new BufferedReader(new InputStreamReader(fis, Charset.forName("UTF-8")));
-        while ((line = br.readLine()) != null) {
-
+        List<String> lines = Files.readAllLines(p);
+        for (String line : lines){
             int[] items = new int[100];
             String[] splits = line.split(",");
             for (int i = 0; i < 100; i++) {
@@ -52,11 +49,6 @@ public class DataParser {
             }
             vectors.add(new Vector(items));
         }
-
-// Done with the file
-        br.close();
-        br = null;
-        fis = null;
 
         return vectors;
     }

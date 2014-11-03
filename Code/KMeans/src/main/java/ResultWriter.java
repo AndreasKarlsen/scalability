@@ -1,4 +1,6 @@
 import com.google.common.base.Stopwatch;
+import kmeans.Vars;
+import kmeans.model.Vector;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -6,6 +8,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -13,18 +16,9 @@ import java.util.concurrent.TimeUnit;
  */
 public class ResultWriter {
 
-    private static String path = null;
     private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
 
-    public static String getPath(){
-        if(path == null){
-            File f = new File(".");
-            path = f.getAbsoluteFile().getParentFile().getAbsoluteFile().getParentFile().getAbsolutePath();
-            path = Paths.get(path, "Data").toString();
-        }
 
-        return path;
-    }
 
     public static void PrintResult(Stopwatch sw, int maxIterationCount, int nrClusters,int nrMappers, String implementation, String outputFolderName){
         long elapsedSeconds = sw.elapsed(TimeUnit.MILLISECONDS);
@@ -38,7 +32,7 @@ public class ResultWriter {
     }
 
     public static void WriteResult(long time, TimeUnit unit, int nrIterations, int nrClusters, int nrMappers, String implementation, String outputFolder) throws IOException {
-        String path = getPath();
+        String path = Vars.getPath();
         Path p = Paths.get(path);
         if (Files.notExists(p)){
             Files.createDirectory(p);
@@ -68,6 +62,18 @@ public class ResultWriter {
             writer.println();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
+        }
+    }
+
+    public static void printVectors(List<Vector> vectors){
+        for (Vector v : vectors){
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < v.size(); i++){
+                sb.append(","+v.itemAt(i));
+
+            }
+            sb.deleteCharAt(0);
+            System.out.println(sb.toString());
         }
     }
 }

@@ -1,5 +1,6 @@
 import com.google.common.base.Stopwatch;
 
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -17,6 +18,7 @@ import kmeans.clustering.Clustering;
 import kmeans.clustering.ClusteringService;
 import kmeans.datageneration.DataGenerator;
 import kmeans.model.Vector;
+import kmeans.parsing.DataParser;
 import kmeans.partitioning.Partition;
 import kmeans.partitioning.Partitioner;
 import kmeans.partitioning.Partitioning;
@@ -32,10 +34,12 @@ public class Main {
     public static void main(String[] args) {
         try {
 
-            List<Vector> vectors = DataGenerator.generateData();
+            RunStaticTest();
+
+            //List<Vector> vectors = DataGenerator.generateData();
             //RunClusteringSingleThread(vectors,5,1);
             //RunClusteringNaive(vectors, 5, 7, 1);
-            RunClustering(vectors, 5, 4, 1);
+            //RunClustering(vectors, 5, 4, 1);
 
             //"Best" implementation
             /*
@@ -91,6 +95,14 @@ public class Main {
         }
 
 
+    }
+
+    public static void RunStaticTest() throws IOException {
+
+        List<Vector> staticVectors = DataParser.parseStaticData();
+        List<Vector> staticMeans = DataParser.parseStaticDataMeans();
+        RunClustering(staticVectors,staticMeans,7,1,"");
+        ResultWriter.printVectors(staticMeans);
     }
 
 
@@ -170,9 +182,15 @@ public class Main {
 
     public static void RunClustering(List<Vector> vectors, int nrClusters, int nrThreads, int maxIterationCount, String outputFolderName) {
 
+        List<Vector> means = DataGenerator.generateRandomVectors(nrClusters);
+        RunClustering(vectors,means,nrThreads,maxIterationCount,outputFolderName);
+    }
+
+    public static void RunClustering(List<Vector> vectors, List<Vector> means, int nrThreads, int maxIterationCount, String outputFolderName) {
+        int nrClusters = means.size();
         ExecutorService executor = Executors.newFixedThreadPool(nrThreads);
         Partitioning<Vector> partitioning = new Partitioner<Vector>().partition(vectors, nrThreads);
-        List<Vector> means = DataGenerator.generateRandomVectors(nrClusters);
+
         Semaphore sem = new Semaphore(0);
         ReentrantLock lock = new ReentrantLock();
         Queue<Clustering> queue = new LinkedList<>();
