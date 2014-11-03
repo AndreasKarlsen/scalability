@@ -1,10 +1,9 @@
 package kmeans.clustering;
 
-import kmeans.model.Vector;
-
 import java.util.List;
 import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
+
+import kmeans.model.Vector;
 
 /**
  * Created by Kasper on 23-09-2014.
@@ -39,13 +38,13 @@ public class ClusteringService {
 
     private static Cluster ClusteringInternal(Clustering clustering, Vector v){
         Cluster cluster = null;
-        double distance = 999999999999999.0;
+        double distance = -999999999999999.0;
         for (Cluster c : clustering.getClusters()){
-            double manhattanDistance = v.manhattanDistanceTo(c.getMean());
-            //double pearsons = v.pearsonCorrelationWith(c.getMean());
-            if (manhattanDistance < distance){
+            //double manhattanDistance = v.manhattanDistanceTo(c.getMean());
+            double pearsons = v.pearsonCorrelationWith(c.getMean());
+            if (pearsons > distance){
                 cluster = c;
-                distance = manhattanDistance;
+                distance = pearsons;
             }
         }
 
