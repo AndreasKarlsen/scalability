@@ -42,8 +42,9 @@ Executable
 .idea/highlighting.xml
 *.class
 out
-target
+*target
 build
 .DS_Store
 *~
+*.iml
 

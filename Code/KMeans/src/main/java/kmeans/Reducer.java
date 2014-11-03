@@ -1,10 +1,10 @@
 package kmeans;
 
-import kmeans.clustering.Clustering;
-
 import java.util.Queue;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.locks.ReentrantLock;
+
+import kmeans.clustering.Clustering;
 
 /**
  * Created by Kasper on 23-09-2014.
