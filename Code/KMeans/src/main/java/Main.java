@@ -1,16 +1,17 @@
 import com.google.common.base.Stopwatch;
 
-import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
-import kmeans.*;
+import kmeans.Mapper;
+import kmeans.MapperNaive;
+import kmeans.Reducer;
+import kmeans.ReducerNaive;
 import kmeans.clustering.Cluster;
 import kmeans.clustering.Clustering;
 import kmeans.clustering.ClusteringService;
@@ -34,7 +35,7 @@ public class Main {
             List<Vector> vectors = DataGenerator.generateData();
             //RunClusteringSingleThread(vectors,5,1);
             //RunClusteringNaive(vectors, 5, 7, 1);
-            RunClustering(vectors, 5, 7, 1);
+            RunClustering(vectors, 5, 4, 1);
 
             //"Best" implementation
             /*

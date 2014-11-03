@@ -399,14 +399,44 @@ Based on the issued mentioned here, as well as the sheer number of concurrency r
 \end{figure}
 
 \kasper[inline]{based heavily on discussion of why TL is hard in dicussion section}
-\subsubsection{Orthogonality}
+\subsubsection{Orthogonality}\label{sec:tl_orthogonality}
+The \ac{TL} concurrency model consists of only a few constructs. Threads are started in order to introduce concurrency and synchronization is achieved using some form of locking. These basic constructs can be combined in a large number of ways, in order to produce concurrent programs. As such the \ac{TL} concurrency model seams to be orthogonal as it consists of a small number of constructs, which can be combined in a large number of ways. Each of the constructs do however have their own distinct purpose, which means that only certain combinations of the constructs are useful. In fact some erroneous combinations can lead to serious issue such as deadlocks. We say that the \ac{TL} concurrency model is towards the high orthogonality end of the low - high orthogonal spectrum. This was chosen based on the number of constructs and combinations of these. The fact that some combinations can lead program errors which are hard to detect has however kept the \ac{TL} concurrency model from being considered truly orthogonal. The placement of the \ac{TL} concurrency model on the the low - high orthogonal spectrum is depicted in \bsref{fig:char_tl_orthogonality}.
+
+\begin{figure}[htbp]
+\centering
+ \includegraphics[width=0.9\textwidth]{\rootpath/worksheets/threads_and_locks/figures/tl_char_orthogonality} 
+ \caption{\ac{TL} on the low - high orthogonality spectrum}
+\label{fig:char_tl_orthogonality}
+\end{figure}
+
 \subsubsection{Readability evaluation}
+As described in \bsref{subsec:tl_simplicity_read} describe the simplicity of the \ac{TL} model as residing in the low end of the low - high simplicity spectrum. In \bsref{sec:tl_orthogonality} say that the the orthogonality resides slightly towards the high end of the low - high orthogonality spectrum. These results directly influence the readability of the \ac{TL} concurrency model.
+
+\ac{TL} based concurrency implementations can be very fragmented. Shared memory can be accessed from different parts of the program and requires locking in each of these places. When a programmer reads the code presents at one of these places, she can chose to focus only on understanding this part of the code, reducing the scope of what she has to reason about. Doing so will however only allow the programmer to understand the code that was written, but not reason about its correctness as this depends on the code presents at every place where the shared memory is accessed. Reasoning about the correctness of a \ac{TL} based implementation, requires knowledge of all these places and is generally consider to be a non trivial task.
+
+Considering this as well as the evaluation of simplicity and orthogonality we say that the \ac{TL} concurrency model is on the low end of the low - high readability spectrum. The main reason for this assessment its the low simplicity of the model, which makes it hard to reason about the correctness of a implementation. Gathering the intent of a code segment locking access to some shared memory is relatively straight forward, but determining of the shared memory is accessed correctly with respect to every other place its access is much harder. The number of issues that the programmer has to reason about when determining correctness further exacerbate the issue. The placement of the \ac{TL} concurrency model on the low - high readability spectrum is depicted in \bsref{fig:char_tl_readability}.
+
+\begin{figure}[htbp]
+\centering
+ \includegraphics[width=0.9\textwidth]{\rootpath/worksheets/threads_and_locks/figures/tl_char_readability} 
+ \caption{\ac{TL} on the low - high readability spectrum}
+\label{fig:char_tl_readability}
+\end{figure}
 
 \subsection{Writability}
 \subsubsection{Simplicity}
- The programmer is largely left alone to insure that a concurrent implementation executes correctly and there for also left alone to tackle the issues that the \ac{TL} model has. 
+ The programmer is largely left alone to ensure that a concurrent implementation executes correctly and there for also left alone to tackle the issues that the \ac{TL} model has, limiting its simplicity.
 \subsubsection{Orthogonality}
 \subsubsection{Level of abstraction}
+The \ac{TL} concurrency model is tightly coupled with the underlying hardware architecture. Threads are part of the process model used in hardware and the \ac{TL} concurrency model directly uses threads in order to introduce concurrency. Synchronization happens via shared memory which is also part of the process model. The locking is done via supporting hardware instructions such as Test-and-set or Compare-and-swap\cite[p. 1990]{scott2011sync}. Many languages now include more high level abstractions, such as Java's ExecutorService\footnote{\url{http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/ExecutorService.html}}, which hides the underlying threads from the programmer. However, generally such abstractions still use threads underneath. Because the abstractions which the \ac{TL} concurrency model offers is so tightly coupled with the hardware, we say that the \ac{TL} concurrency model has a low level of abstraction. The placement of the \ac{TL} concurrency model on the low - high level of abstraction spectrum is depicted in \bsref{fig:char_tl_readability}.
+
+\begin{figure}[htbp]
+\centering
+ \includegraphics[width=0.9\textwidth]{\rootpath/worksheets/threads_and_locks/figures/tl_char_level_of_abstraction} 
+ \caption{\ac{TL} on the low - high level of abstraction spectrum}
+\label{fig:char_tl_level_of_abstraction}
+\end{figure}
+
 \subsubsection{Expressivity}
 \subsubsection{Writability evaluation}
 \worksheetend
