@@ -7,11 +7,10 @@ import java.util.concurrent.locks.ReentrantLock;
 public class Account {
 
     private int balance;
-    private final Lock lock;
+    private final Lock lock = new ReentrantLock();
 
     public Account(int balance){
        this.balance = balance;
-       lock = new ReentrantLock();
     }
 
     public void credit(int amount){
