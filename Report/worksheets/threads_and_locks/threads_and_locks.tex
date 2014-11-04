@@ -239,7 +239,7 @@ Secondly consider the example of transferring funds from one account to another.
     a2.credit(200);
 \end{lstlisting}
 
-In \cite{lee2006problem} the authors argue that introducing threads into a program makes the program nondeterministic, that is, the program can produce different results for each time its run. This is exactly the effect race conditions, described in \cite{subsec:race_coditions}, have on a program. The authors argue that it becomes the job of the programmer to prune away this nondeterminism in order to produce a deterministic program. Using the \ac{TL} concurrency model this is done using different forms of lock. However such pruning is not easy task and suing the \ac{TL} model introduces a number of other issues such as deadlocks and starvation.
+In \cite{lee2006problem} the author argue that introducing threads into a program makes the program nondeterministic, that is, the program can produce different results for each time its run. This is exactly the effect race conditions, described in \cite{subsec:race_coditions}, have on a program. The authors argue that it becomes the job of the programmer to prune away this nondeterminism in order to produce a deterministic program. Using the \ac{TL} concurrency model this is done using different forms of lock. However such pruning is not easy task and suing the \ac{TL} model introduces a number of other issues such as deadlocks and starvation.
 
 %Some locking constructs, such as Java's syncronized methods, provide object based locking.
 %\subsection{\ac{TL} and OOP}
@@ -385,9 +385,20 @@ As mentioned in \bsref{sec:readability} and \bsref{sec:writablity}, the evaluati
 
 %that of simplicity and orthogonality as well as a number of other considerations. Simplicity and orthogonality is described in the following sections followed by a final evaluation of readability.
 \subsubsection{Simplicity}\label{subsec:tl_simplicity_read}
-As described in \bsref{subsec:tl_lock_hard} and \bsref{subsec:tl_composability} the \ac{TL} concurrency model has a number of issue which contributes negatively to its simplicity. When taking multiple locks, taking them in incorrect order might result in a deadlock. Locking is however, as describe in \bsref{subsec:tl_lock_hard}, a global property and the correct order might not be directly discernible by the reader, from within the local context. As such it is no easy task for the reader to reason about whether the order of locking is correct.
+As described in \bsref{subsec:tl_lock_hard} and \bsref{subsec:tl_composability} the \ac{TL} concurrency model has a number of issue which contributes negatively to its simplicity. When taking multiple locks, taking them in incorrect order might result in a deadlock. Locking is however, as describe in \bsref{subsec:tl_lock_hard}, a global property and the correct order might not be directly discernible by the reader, from within the local context. As such it is no simple task for the reader to reason about whether the order of locking is correct.
 
-\bsref{subsec:tl_composability} describes how how the \ac{TL} model is not composable. Implementing the observer pattern in a thread safe manner was shown to entail a number of issues.
+\bsref{subsec:tl_composability} describes how how the \ac{TL} model is not composable. Implementing the observer pattern in a thread safe manner was shown to entail a number of issues. The potential for concurrency related programmer errors in similar implementations are high and identifying these errors can potentially be even harder.
+
+In \cite{lee2006problem} the author describes development of the Ptolemy project\cite{lee1999overview}, which involved a significant portion of concurrency. During the development phase of this project, the software engineering approaches of design reviews, code reviews, nightly builds, regression tests, and automated code coverage metrics where employed in order to produce a bug free program \cite[p. 8]{lee2006problem}. Event though the team achieved 100\% code coverage and all code was reviewed by experts, the system still deadlocked after having been in production for four years. Indicating that employing good software engineering principles, might not be enough to catch all concurrency related errors, even among experts.
+
+Based on the issued mentioned here, as well as the sheer number of concurrency related issue that can arise when using the \ac{TL} concurrency model, we say that the \ac{TL} model has low simplicity. Its placements on the readability simplicity spectrum is depicted in \bsref{fig:char_read_simplicity}.
+
+\begin{figure}[htbp]
+\centering
+ \includegraphics[width=0.9\textwidth]{\rootpath/worksheets/threads_and_locks/figures/tl_char_read_simplicity} 
+ \caption{\ac{TL} on the Low - High simplicity spectrum}
+\label{fig:char_read_simplicity}
+\end{figure}
 
 \kasper[inline]{based heavily on discussion of why TL is hard in dicussion section}
 \subsubsection{Orthogonality}\label{sec:tl_orthogonality}
