@@ -1,5 +1,5 @@
 \makeatletter \@ifundefined{rootpath}{\input{../../setup/preamble.tex}}\makeatother
-\worksheetstart{Actor}{1}{April 24, 2013}{Someone}{../../}
+\worksheetstart{Actor}{1}{April 24, 2013}{Tobias}{../../}
 This chapter presents the actor concurrency model by describing the key concepts in \bsref{sec:actor_concepts}. Afterwards in \bsref{sec:actor_con_issues} we present how the actor model relates to the concurrency issues presented in the \ac{TL} model. Hereafter a discussion about the actor model is presented in \bsref{sec:actor_discussion}. Finally in \bsref{sec:actor_charac} we show how the actor model fits in terms of our characteristics previously defined in \bsref{chap:char}.
 
 \section{Key Concepts}\label{sec:actor_concepts}
@@ -29,31 +29,42 @@ In the last case an actor can choose to modify internal state or behaviour. Each
 
 A single actor may receive many messages in a short time period which it must be able to handle without failing. To accommodate this, each actor has an associated mailbox where messages sent to the actor is buffered in\cite[Chap. 2.6]{haller2012actors}. Messages can arrive in the mailbox at any time and it will hold the messages until the actor has processed them. An actor will retrieve one message at a time from its mailbox and process it in one atomic step\cite[p. 2]{karmani2009actor}. This reduces concurrency issues and make programs easier to reason about as multiple messages will not conflict with one another e.g. if two messages wants to update the isolated state of an actor there will be no concurrency issue in terms of race condition as only a single message will be processed at a time.\toby{Skal vi vente med at snakke om det til næste section omkring con issues?}
 
-The arrival order of messages to an actor is non-deterministic due to the asynchronous message passing communication between actors\cite[p. 2]{karmani2011actors}. The reason for this is that messages may take arbitrary long time to arrive because of arbitrary communication de-lays on the network. The actor model assumes that messages sent are eventually received by the target actor\cite[Chap. 2.5]{haller2012actors}. However in a real system a computer may crash resulting in lost messages which means the target actor will never receive these messages which can cause starvation. It is up to the individual actor framework to adhere to the actor models principle of reliable message passing which is often accomplished through redundancy and replication\cite[Chap. 2.5]{haller2012actors}. Another reason that message arrival is non-deterministic is that there can be many concurrently running actors which may send messages in between two messages from an actor as in the following example:
+The arrival order of messages to an actor is non-deterministic due to the asynchronous message passing communication between actors\cite[p. 2]{karmani2011actors}. The reason for this is that messages may take arbitrary long time to arrive because of arbitrary communication de-lays on the network. The actor model assumes a notion of fairness which means that messages sent are eventually received by the target actor and no actor is starved\cite[Chap. 2.5]{haller2012actors}\cite[p. 3]{karmani2009actor}. This makes reasoning about actor programs easier\cite{tasharofi2013scala}. However, in a real system a computer may crash resulting in lost messages which means the target actor will never receive these messages which can cause starvation. It is up to the individual actor framework to adhere to the actor models principle of reliable message passing which is often accomplished through redundancy and replication\cite[Chap. 2.5]{haller2012actors}. Another reason that message arrival is non-deterministic is that there can be many concurrently running actors which may send messages in between two messages from an actor as in the following example:
 \begin{verbatim}
 B ! "hello"
 B ! "there"
 \end{verbatim}
-Suppose an actor \bscode{A} sends the two messages ``hello'' and ``there'' to an actor \bscode{B}. Another concurrently running actor \bscode{C} may then send a message in-between the ``hello'' and ``there'' messages to actor \bscode{B} thereby changing the message order.
-
-%se på nogle af fordele ved det måske (eller skal det være i diskussions afsnittet?) Evt. se hewitts artikel, hvor han har en række punkter også
-%location transparency - does not have to have physical addresses of where acotrs are but only their unique addresses often in the form of Actor names. This makes it easiyer to distribute etc. etc.
+Suppose an actor \bscode{A} sends the two messages ``hello'' and ``there'' to an actor \bscode{B}. Another concurrently running actor \bscode{C} may then send a message in-between the ``hello'' and ``there'' messages to actor \bscode{B} thereby changing the message order. That the message order is non-deterministic means that an actor must not rely on a specific message order, however according to \cite[p. 35]{haller2012actors}: \textit{``You can often alleviate reliance on message ordering by refactoring the actor communication, i.e., reworking the messages' contents''}.
 
 \subsection{Illustration}
-\bsref{fig:actor_overview} presents an illustration of the life cycle within an actor system. Each actor has an associated mailbox, isolated state and a number of behaviour methods. In the figure, actor \bscode{A} starts by sending a message to actor \bscode{B} which is stored in the mailbox associated to actor \bscode{B}. Then at some point when actor \bscode{B} is ready he retrieves the message from actor \bscode{A} from his mailbox and processes it based on which behaviour method the message corresponds to. In this case it corresponds to a behaviour method which creates a new actor, namely actor \bscode{C}. Actor \bscode{C} is now live and running with the other two actors awaiting messages. This is just a small view of what may happen in an actor system, meanwhile there may be other different actors concurrently running, sending messages, modifying isolated state and processing.
+An actor system consists of a collection of actors. \bsref{fig:actor_overview} presents an illustration of the life cycle within an actor system. Each actor has an associated mailbox, isolated state and a number of behaviour methods. In the figure, actor \bscode{A} starts by sending a message to actor \bscode{B} which is stored in the mailbox associated to actor \bscode{B}. Then at some point when actor \bscode{B} is ready he retrieves the message from actor \bscode{A} from his mailbox and processes it based on which behaviour method the message corresponds to. In this case it corresponds to a behaviour method which creates a new actor, namely actor \bscode{C}. Actor \bscode{C} is now live and running with the other two actors awaiting messages. This is just a small view of what may happen in an actor system, meanwhile there may be other different actors concurrently running, sending messages, modifying isolated state and processing.
 
-\begin{figure}[ht!]
+\begin{figure}[h!]
 \centering
 \includegraphics[scale=0.5]{\rootpath/worksheets/actor/figures/actor_diagram_overview}
 \caption{Example of three actors. Each actor has its own mailbox, isolated state and methods. Actors responds to messages based on internal behaviour. Actor A sends Actor B a message which then creates Actor C.}\label{fig:actor_overview}
 \end{figure}
 
+\subsection{Semantic Properties}\toby{Does this work with having some of the properties explain already? I don't like to explain them again and not sure i can get all down here without something is missing further up}
+The actor model has several important semantic properties some of which we have already covered, namely atomic processing of messages and fairness, additionally we will now look further at encapsulation and location transparency which we have only briefly described until now\cite{karmani2011actors}.
+
+\subsubsection{Encapsulation}\toby{Atomicity også? i forhold til en message af gangen?}
+Each actor must be perfectly isolated from one another, only communicating through asynchronous message passing. An actor can therefore only modify the state and behaviour methods belonging to itself. Furthermore message passing must also adhere to the principle of encapsulation by not sharing state between actors, so message passing should have call by value semantics which is often done by making a copy of the message contents\cite[p. 2]{karmani2009actor}. Encapsulation makes it easier to reason about programs modelled with the actor model\cite[p. 3]{karmani2009actor} and reduces concurrency issues which we will look at shortly in \bsref{sec:actor_con_issues}.
+
+\subsubsection{Location Transparency}
+Actors know each other only by unique address, often in the form of an actor name, disjointed from the physical location. Location transparency provides an abstraction where the programmer does not have to worry about or specify the actual physical location of the message receiver. An actor can communicate with another actor which exists on the same core, on the same machine or on an entirely different machine across the network\cite[p. 3]{karmani2009actor}. Location transparency gives the ability to at runtime distribute execution across a cluster of machines which eases scaling beyond a single machine.
+
 \section{Concurrency issues}\label{sec:actor_con_issues}
 %evt. flyt det nederst i afsnitet eller i starten af concurrency issues
 %husk også ascynchonuys natur sammen med no shared state!
 One of the main differences from other concurrency models, such as \ac{TL}, is that there is no notion of shared state.\toby{Skal vi lade være med at forholde os til de andre modeller i afsnittene?} Instead each actor has isolated state where only the actor itself is responsible and allowed to modify state. The reason that isolated state is preferable over shared state is that some of the concurrency issues presented earlier in \bsref{sec:tl_ci} is mitigated and some even gone. We will present which concurrency issues this affects in \bsref{sec:actor_con_issues}.
-%Måske noget med nemsis of the von neumann arcitecruhe = shared store (fra gul agha original)
+%raceconditions med messages processed in one atomic step
+%isolated state mean that we wont have deadlocks but can instead have livelocks
 
+%Se actors in scala chap. 1.2
+
+
+%Måske noget med nemsis of the von neumann arcitecruhe = shared store (fra gul agha original)
 
 %Hvordan forholder det sig til concurrency issues tidligere nævnt og skaber den evt. nye concurrency problemer
 
@@ -62,13 +73,18 @@ One of the main differences from other concurrency models, such as \ac{TL}, is t
 %event-based computation model avoids blocking waits for specific messages, which helps to keep clear of deadlocks in the system. But still able to livelock as actors can await messages from one another
 
 \section{Discussion}\label{sec:actor_discussion}
-%Cannot determine in adavance in which order messages are processed. non-deterministic
-%message order is non-determinit as it may take arbitarily long time for a message to arrive in the mailbox and we must therefore make sure an actor does not depend on a speicifc message order.
-	%``You can often alleviate reliance on message ordering by refactoring the actor communication, i.e., reworking the messages' contents'' - quotue actors in scala s. 34
-	%Måske skal det her op i key concetps afsnittet hvis det ikke er så meget kød på det
+
+%Unfortunately, actor frameworks on the JVM cannot sufficiently constrain the programming environment to avoid the concurrency pitfalls that the actor model should help you avoid. After all, within the thread you are simply writing plain old java (or scala or clojure). There’s no real way to limit what that code can do, unless it is explicitly disallowed from calling into other code or looping. Therefore, even the actor frameworks which use bytecode weaving to implement cooperative multi-tasking amongst actors cannot fully guarantee non-blocking behavior. This point bears repetition: without fundamental changes in how the JVM works, one cannot guarantee that an arbitrary piece of code will not block. fra: http://boundary.com/blog/2014/09/03/no-you-cant-have-a-pony/
+%you need green threads to do this Acotrs fanciness because the native threads have too much overhead (in memory cost, creation time, etc. etc.) to be created that much
+
+%Noget fra artiklen om at man tit anvender andre concurrency værktøjer, end kun actors artikeln (sammen med actors).
+	%bl.a. actor model og libray inadequecies og evt. også konklussionen
 
 
-%Evt. noget fra artiklen om at man tit anvender andre concurrency værktøjer, end kun actors artikeln (sammen med actors)
+%Not all actor framworks enforce all the rules of the actor model but makes that the job of the developer in some cases to improve peformance. But as it is the job of the developer now to ensure the properties of the actor model it makes til harder to write (se blue handbook actors under Semantic Properties)
+
+%Cannot determine in adavance in which order messages are processed. non-deterministic - can be hard to grasp at first
+
 
 %Kritisk overfor actor modellen evt. brug "why has the actor model not succeeded"
 
@@ -82,5 +98,7 @@ One of the main differences from other concurrency models, such as \ac{TL}, is t
 	%lightweight threads (not mapped directly to a thread - men det er vel op til den enkelte der implementere actor modellen
 
 \section{Actor Characteristics}\label{sec:actor_charac}
+
+% since an actor can only respond to a single message at a time you get implicit locking around all of the local state for that actor.
 
 \worksheetend
