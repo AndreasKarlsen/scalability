@@ -1,0 +1,39 @@
+\makeatletter \@ifundefined{rootpath}{\input{../../setup/preamble.tex}}\makeatother
+\worksheetstart{Concurrency Basics}{1}{April 24, 2013}{Someone}{../../}
+This chapter presents the basic constructs related to concurrency. \bsref{sec:concurrency_parallelism} presents the relationship between concurrency and parallelism. \bsref{sec:processes_threads} presents the operating system principle that make up the foundation for concurrency models and \bsref{sec:synchronization} describes the concept of synchronization.
+\section{Concurrency \& Parallelism}\label{sec:concurrency_parallelism}
+This sections describes the process of producing a definition of concurrency and parallelism, which will be employed within the project. The definition is based on relevant literature.
+
+Concurrency and parallelism are two highly connected yet different concepts. While both deal with running multiple computations simultaneously, their reasons for doing so are different. \bsref{sec:basics_concurrency} presents a investigation into concurrency, followed by a investigation into parallelism in 
+\bsref{sec:basics_parallelism} and a presentation of the concurrency and parallelism definitions in \bsref{sec:basics_concurrency_parallelism_def}.
+
+\subsection{Concurrency}\label{sec:basics_concurrency}
+\cite[p. 330]{papadopoulos1998coordination} states that concurrency is \textit{``cooperation among very large numbers of active entities that comprise a single application''} while \cite[p. 607]{cleaveland1996strategic}
+says \textit{``Concurrency is concerned with the fundamental aspects of systems of multiple, simultaneous active computing agents that interact with one another''}. Both emphasises that concurrent applications consists of multiple computation agents, collaborating with one another.
+
+\cite[p. 579]{sebestaProLang} states that concurrency can be either physical or logical. Physical concurrency is directly supported by a multicore processor, providing true simultaneous execution. Logical concurrency on the other hand, executes on a single core processor and concurrency is achieved by interleaving the execution of task.
+
+\subsection{Parallelism}\label{sec:basics_parallelism}
+Parallelism is closely related to concurrency. As with concurrency, it deals with executing computations simultaneously. \cite{introPar} states that in using parallelism \textit{``A problem is broken into discrete parts that can be solved concurrently''}, indicating that parallelism builds upon concurrency. A prerequisite for parallelism is that the problem at hand can be divided into the described discrete parts. Such problems are refereed to as embarrassingly parallel tasks\cite{sutter2005software}. Here operations can be applied independently to each data point.
+
+\subsection{Definitions}\label{sec:basics_concurrency_parallelism_def}
+In \cite[p. 24]{sevenModels} the author states that concurrency deals with handling multiple tasks simultaneously, while parallelism is dividing a single task up into multiple parts and computing these parts simultaneously. The difference lies in the tasks that is to be performed. Performing multiple multiple tasks simultaneously is considered concurrency, while splitting up a tasks is smaller parts and performing these parts simultaneously is considered   parallelism.
+
+Based on the the considerations presented here we give the definition of concurrency shown in Definition \ref{def:concurrency}.
+
+\begin{defn}\label{def:concurrency}
+\emph{Concurrency is executing multiple task simultaneously}
+\end{defn}
+as well as the definition of concurrency presented in Definition \ref{def:parallelism}.
+
+\begin{defn}\label{def:parallelism}
+\emph{Parallelism is dividing a single task into multiple independent parts, which are then executed simultaneously}
+\end{defn}
+As an example, handling multiple requests to a webservice, which are executed simultaneously, is considered concurrency. On the other hand calculating the sum of a list of integers, by dividing it into multiple smaller lists and calculating their sums simultaneously, is considered parallelism.
+
+\kasper[inline]{possibly talk about how one can be viewed as the other depending on what is defined as the task to be executed}
+\kasper[inline]{possibly talk about concurrency programs being non deterministic}
+\section{Processes \& Threads}\label{sec:processes_threads}
+
+\section{Synchronization}\label{sec:synchronization}
+\worksheetend
