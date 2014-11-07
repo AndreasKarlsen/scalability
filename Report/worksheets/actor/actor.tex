@@ -73,12 +73,33 @@ One of the main differences from other concurrency models, such as \ac{TL}, is t
 %event-based computation model avoids blocking waits for specific messages, which helps to keep clear of deadlocks in the system. But still able to livelock as actors can await messages from one another
 
 \section{Discussion}\label{sec:actor_discussion}
-%8.13 Limitations of the Actor-Based Model i JVM Mastering syncrhonization
+This section discusses a number of issues and weaknesses related to the actor model. In bla we will discuss bla \toby{Indsæt mere her når sektionen er skrevet}
 
+%Why has the actor model not succeeded yet:
+%One of the key features of actors, their ability to create other actors as part of their behaviour, has the potential to dramatically change the state of the system at any particular time. The decisions of where to store and execute newly created actors is important to overall performance, and will require records to be kept of what is executing and where.
+	%In at distributed setting involing different locations can affect performance if communication is acorss the remote locations many times if they could be optimized and be local
+	%The behaviour methods of an actor is dynamic and can be changed at runtime - which makes optimisation f.x. compiler optimisations hard. However in some implementations you must write the different behvaiour methods beforehand
+	%Asynchronous message passing can cause problems for certain problems
+		%For example, manipulation of a stack-like structure using asynchronous message passing could be problematic if the messages do not arrive in the correct order
+		%Men som anden kilde siger så kan man tit komme udenom dette problem ved at remodellere sine actors
+	
 
+%unbounded mailboxes 
+	%implies some form of infinite stack or pointer structure, but it cannot be assumed that this is available in all architectures
+%node failue in the system can lead to problems starvation
+
+%Måkse at man ikke kan genbruge logik i form af metoder arv ved f.eks. arv hvor at to actors måske har samme logik bortset fra en message type
+
+%8.13 s. 269 Limitations of the Actor-Based Model i JVM Mastering syncrhonization
+
+%Seven models p. 152 weaknesses
+%Although a program constructed with actors is easier to debug than one constructed with threads and locks, actors are still susceptible to problems like deadlock plus a few failure modes unique to actors (such as overflowing an actor’s mailbox).
+
+%actors provide no direct support for parallelism. Parallel solutions need to be built from concurrent building blocks, raising the specter of nondeterminism. And because actors do not share state and can only communicate through message passing, they are not a suitable choice if you need fine-grained parallelism.
 
 %Unfortunately, actor frameworks on the JVM cannot sufficiently constrain the programming environment to avoid the concurrency pitfalls that the actor model should help you avoid. After all, within the thread you are simply writing plain old java (or scala or clojure). There’s no real way to limit what that code can do, unless it is explicitly disallowed from calling into other code or looping. Therefore, even the actor frameworks which use bytecode weaving to implement cooperative multi-tasking amongst actors cannot fully guarantee non-blocking behavior. This point bears repetition: without fundamental changes in how the JVM works, one cannot guarantee that an arbitrary piece of code will not block. fra: http://boundary.com/blog/2014/09/03/no-you-cant-have-a-pony/
 %you need green threads to do this Acotrs fanciness because the native threads have too much overhead (in memory cost, creation time, etc. etc.) to be created that much
+	%Istedet foreksempel erlang eller elxlir kan overholde disse kriterier.
 
 %Noget fra artiklen om at man tit anvender andre concurrency værktøjer, end kun actors artikeln (sammen med actors).
 	%bl.a. actor model og libray inadequecies og evt. også konklussionen
@@ -88,9 +109,6 @@ One of the main differences from other concurrency models, such as \ac{TL}, is t
 
 %Cannot determine in adavance in which order messages are processed. non-deterministic - can be hard to grasp at first
 
-
-%Kritisk overfor actor modellen evt. brug "why has the actor model not succeeded"
-
 %the argument for using actor-based programming languages is not simply that they are a good match for distributed computing platforms; it is thatActors is a goodmodel in which to think about concurrency. Actors simplify the task of programming by extending object-based design to concurrent (parallel, distributed, mobile) systems (nye blue hand book lige før biblografi)
 
 %Måske også valg af sprog
@@ -99,6 +117,9 @@ One of the main differences from other concurrency models, such as \ac{TL}, is t
 	%Nogle actor frameworks implementerer message passing med reference istedet for kopier, hvilket kan intoducere race conditions (fx. Scala Actors - ved ikke med Akka - undersøg det)
 	
 	%lightweight threads (not mapped directly to a thread - men det er vel op til den enkelte der implementere actor modellen
+	
+	
+%Actors simplify the task of programming by extending object-based design to concurrent (parallel, distributed, mobile) systems.
 
 \section{Actor Characteristics}\label{sec:actor_charac}
 
