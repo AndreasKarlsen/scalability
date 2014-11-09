@@ -29,11 +29,36 @@ as well as the definition of concurrency presented in Definition \ref{def:parall
 \begin{defn}\label{def:parallelism}
 \emph{Parallelism is dividing a single task into multiple independent parts, which are then executed simultaneously}
 \end{defn}
-As an example, handling multiple requests to a webservice, which are executed simultaneously, is considered concurrency. On the other hand calculating the sum of a list of integers, by dividing it into multiple smaller lists and calculating their sums simultaneously, is considered parallelism.
+As an example, handling multiple requests to a webservice simultaneously, is considered concurrency. On the other hand calculating the sum of a list of integers, by dividing the list into multiple smaller lists and calculating their sums simultaneously, is considered parallelism.
 
 \kasper[inline]{possibly talk about how one can be viewed as the other depending on what is defined as the task to be executed}
 \kasper[inline]{possibly talk about concurrency programs being non deterministic}
 \section{Processes \& Threads}\label{sec:processes_threads}
+\acp{OS} have to run multiple programs simultaneously. In order to do so, the \ac{OS} use a abstraction of a running program, called a process\cite[p. 81]{tanenbaum2008modern}\cite[p. 16]{bryant2011computer}. Multiple processes can be executed concurrently and the \ac{OS} provides processes with the illusion of having exclusive access to the hardware\cite[p. 16]{bryant2011computer}. 
+
+A single \ac{CPU} core can only execute a single process at a time. On such single core system, the \ac{OS} interleaves the instructions of processes, producing the illusions, of processes being executed simultaneously\cite[p. 16]{bryant2011computer}. On more modern multi core systems, each core can execute a single process at a time. In such systems, interleaving is still be performed if the number of processes is greater than the number of cores.
+
+Interleaving of processes is performed using what is called a context switch\cite[p. 16]{bryant2011computer}. A context switch is the act of the \ac{OS} saving the currently running process's context and restoring the context of the process that is to run instead. The context is the state of the process, including information such as, its registers and variables\cite[p. 82]{tanenbaum2008modern}. As such a context switch from process \bscode{A} to process \bscode{B} is essentially saving the state of \bscode{A} and restoring the state of \bscode{B}, allowing \bscode{B} to resume where it left off, at the expense of \bscode{A}.\kasper{Possible explain what exactly interleaving is}
+
+Processes consists of two separate concepts: resources and execution \cite[p. 98]{tanenbaum2008modern}. The resources of a process include a address space in memory, the program code as well as information on open files etc. The execution of a process is handled by what is called a thread\cite[p. 98]{tanenbaum2008modern}. A thread is an abstraction for a part of a process, that executes sequentially. A thread has its own program counter, tracing where in the program code the thread currently resides, as well as a stack that tracks the threads execution history\cite[p. 99]{tanenbaum2008modern}. Threads are the part of a process, that is scheduled for execution upon the \ac{CPU}.
+
+A process has atleast one thread which handles its execution, but can have more. Having multiple threads facilitates concurrency within the process. Threads within the same process share the address space of the process and can communicate by, reading from and writing to the memory within that address space. Threads are the basic construct for concurrency with programs and concurrency models build upon threads in some form.
+
+\kasper[inline]{Figure of process thread relationship}
+
+\subsection{Hardware \& Software Threads}
+The threads discussed in \bsref{sec:processes_threads} are refereed to as hardware threads, as they are directly supported by the hardware and \ac{OS}. The hardware must support a set of instructions which the \ac{OS} uses to maintain the thread abstraction. Hardware threads can utilize multiple cores and take advantage of the \ac{OS}'s scheduling.
+
+Another type of thread is what is called a software thread. Software threads are implemented purely in software, on top of the hardware and \ac{OS}. They have no direct connection to the underlying hardware and \ac{OS} and because of this can not take advantage of the scheduling provided by the \ac{OS} or use additional cores if available. 
 
 \section{Synchronization}\label{sec:synchronization}
+Threads within the same process are executed concurrently. Synchronization is the act of using language or library constructs to restrict the concurrent execution, in order to remove invalid interleaving of threads\cite[p. 1989]{scott2011sync}.
+
+Two main types of synchronization exists: atomicity and condition synchronization. Atomicity ensures that, the execution of a set of instructions or statements, executed by some thread, is seen as single step, from the point of view of every other thread\cite[p. 1989]{scott2011sync}.
+
+Condition synchronization forces the executing thread, to wait until some locally observable precondition is true\cite[p. 1989]{scott2011sync}. Conditional synchronization can, for example, be used for waiting on some parallel work to finish, before reading the result.
+
+From the point of view of the programmer, providing synchronization differs greatly depending on the chosen concurrency model. For concurrency model based on message passing, synchronization is generally embedded in the message parsing constructs. On the other hand, concurrency model based on shared memory generally require the programmer to use additional construct for synchronization\cite[p. 1989]{scott2011sync}.
+
+\kasper[inline]{Threads and concurrency discussion}
 \worksheetend
