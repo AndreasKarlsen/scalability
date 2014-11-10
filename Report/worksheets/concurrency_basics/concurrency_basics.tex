@@ -56,7 +56,7 @@ Threads within the same process are executed concurrently. Synchronization is th
 
 Two main types of synchronization exists: atomicity and condition synchronization. Atomicity ensures that, the execution of a set of instructions or statements, executed by some thread, is seen as single step, from the point of view of every other thread\cite[p. 1989]{scott2011sync}.
 
-Condition synchronization forces the executing thread, to wait until some locally observable precondition is true\cite[p. 1989]{scott2011sync}. Conditional synchronization can, for example, be used for waiting on some parallel work to finish, before reading the result.
+Condition synchronization forces the executing thread to wait until some locally observable precondition is true\cite[p. 1989]{scott2011sync}. Conditional synchronization can, for example, be used for waiting on some parallel work to finish, before reading the result.
 
 From the point of view of the programmer, providing synchronization differs greatly depending on the chosen concurrency model. For concurrency model based on message passing, synchronization is generally embedded in the message parsing constructs. On the other hand, concurrency model based on shared memory generally require the programmer to use additional construct for synchronization\cite[p. 1989]{scott2011sync}.
 
