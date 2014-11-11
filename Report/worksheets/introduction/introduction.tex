@@ -93,8 +93,8 @@ It is based on the idea of the Observer Pattern\cite{gamma1994design}. That is, 
 
 \ac{STM} takes an approach to concurrency, that is based on transactions as known from database theory\cite[p. 1]{shavit1997software}. \ac{STM} transitions are:
 \begin{inparaenum}[(1)]
-\item Atomic, all writes in a given transaction are committed, or non of them are
-\item Consistent, a transaction moves the application from one consistent state to another
+\item Atomic, all writes in a given transaction are committed, or none of them are.
+\item Consistent, a transaction moves the application from one consistent state to another.
 \item Isolated, transaction do not interfere with one another\cite[p. 14]{kalin2012clojure}.
 \end{inparaenum} 
 These properties are similar to the \ac{ACID} properties known from databases\cite[p. 754]{elmasri2011fundamentals}.

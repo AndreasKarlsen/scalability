@@ -1,5 +1,57 @@
 \makeatletter \@ifundefined{rootpath}{\input{../../setup/preamble.tex}}\makeatother
-\worksheetstart{Software Transactional Memory}{1}{April 24, 2013}{Andreas}{../../}
+\worksheetstart{Software Transactional Memory}{1}{November 7, 2013}{Andreas}{../../}
+This chapter describes the concept of \acl{STM}. In \bsref{sec:stm_keyconcepts}, the key concepts of \ac{STM} is described. \bsref{sec:stm_issues} documents the concurrency issues introduces by \ac{STM}. \bsref{sec:stm_discussion} discusses the properties of \ac{STM}. Finally, in \bsref{sec:stm_eval} an evaluation of \ac{STM} as a concurrency model is conducted.
 
+\section{Key Concepts}
+\label{sec:stm_keyconcepts}
+\subsection{Transactions}
+\ac{TM} is based on the concept of a transaction. A transaction is a finite sequence of machine instructions, executed by a single process, satisfying the properties: Atomicity, Consistency, and Isolation\cite[p. 2]{herlihy1993transactional}\cite[p. 14]{kalin2012clojure}. A transaction \ac{TM} can perform a group of memory-operations atomically\cite[48]{harris2005composable}. By utilizing the transactional approach, \ac{TM} serves as a concurrency control mechanism. By adhering to the aforementioned properties, \ac{TM} enables concurrent execution, while being semantically equivalent to serial execution of the same program.
+
+To clarify how a transaction works, \bsref{} visualizes the flow of an example of a transaction.
+
+\subsection{Software or Hardware}
+In \cite{herlihy1993transactional} the Authors presents \ac{TM} as a straight forward extension to any multiprocessor cache-coherent protocol. Most \ac{HTM} proposals are based on straightforward modifications to standard multiprocessor cache-coherence protocols\cite{scott2011sync}. Due to the inflexible properties of existing hardware, i.e. fixed instruction set, \ac{TM} implemented on hardware is limited to existing instructions. This causes high implementation and verification costs\cite{cascaval2008software}. \ac{HTM} also exposes low level hardware details and limitations\cite{scott2011sync}, which preferably should be abstracted away from the programmer, to ensure semantic correctness of the transactions regardless of the hardware limitations. Due to this, a software based solution is presented by \cite{shavit1997software}. This solution, entirely implemented as software, is known as \acl{STM}. Being implemented as a software solution, \ac{STM} does not suffer the same issues as \ac{HTM}, but still provides the transactional semantics. Due to this, \ac{STM} is in interesting as a concurrency mechanism.
+
+\subsection{\ac{STM}}
+STM is a software system that provides programmers with a transactional model through a library or compiler interface\cite{scott2011sync}.
+
+% Design criteria for STM (Thomas Stig fremlæggelse)
+\subsection{Atomicity}
+
+\subsection{Isolation level}
+Strong vs Weak\\
+
+
+%Transactions (Concept known from databases. HTM, STM)
+%%ACI(D) properties
+
+% STM
+%%
+%% Shared memory
+%%% How to access shared data?
+
+% Composition is possible
+
+A number of programming languages and libraries have emerged to support TM. These include Clojure, .Net , Haskell. Java, C++\\
+STM is easier to use: Pankratius, Rossbach\\
+Speculative transactions\\
+
+Exceptions\\
+Interaction with code that cannot be transactionalized\\
+Livelock\\
+\section{Concurrency Issues}
+\label{sec:stm_issues}
+Structuring concurrent programs that seeks to provide better scalability and ease-of-use than conventional approaches based on locks and conditions.
+
+\section{Discussion}
+\label{sec:stm_discussion}
+% Raceconditions. Transaction ensures atomicity (clojure got strong atomicity), and isolation. Due to this, the result of concurrent calculations will be the same, as if it was executed sequencially. 
+% Deadlocks...
+
+% Composition is possible in STM. Reference to Kaspers example about composition.
+
+\section{Evaluation of Characteristics}
+\label{sec:stm_eval}
+% Optimistic (retry, not wait)
 
 \worksheetend
