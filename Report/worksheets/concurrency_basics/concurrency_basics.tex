@@ -1,6 +1,6 @@
 \makeatletter \@ifundefined{rootpath}{\input{../../setup/preamble.tex}}\makeatother
 \worksheetstart{Concurrency Basics}{1}{April 24, 2013}{Someone}{../../}
-This chapter presents the basic constructs related to concurrency. \bsref{sec:concurrency_parallelism} presents the relationship between concurrency and parallelism leading to a definition of the concepts. \bsref{sec:processes_threads} presents the process thread model on which concurrency is build and \bsref{sec:synchronization} describes the concept of synchronization.
+This chapter presents the basic constructs\andreas{concepts?} related to concurrency. \bsref{sec:concurrency_parallelism} presents the relationship between concurrency and parallelism leading to a definition of the concepts. \bsref{sec:processes_threads} presents the process thread model on which concurrency is build and \bsref{sec:synchronization} describes the concept of synchronization.
 \section{Concurrency \& Parallelism}\label{sec:concurrency_parallelism}
 This sections describes the process of producing a definition of concurrency and parallelism, which will be employed within the project. The definition is based on relevant literature.
 
@@ -17,14 +17,14 @@ says \textit{``Concurrency is concerned with the fundamental aspects of systems 
 Parallelism is closely related to concurrency. As with concurrency, it deals with executing computations simultaneously. \cite{introPar} states that in using parallelism \textit{``A problem is broken into discrete parts that can be solved concurrently''}, indicating that parallelism builds upon concurrency. A prerequisite for parallelism is that the problem at hand can be divided into the described discrete parts. Such problems are refereed to as embarrassingly parallel tasks\cite{sutter2005software}. Here operations can be applied independently to each data point.
 
 \subsection{Definitions}\label{sec:basics_concurrency_parallelism_def}
-In \cite[p. 24]{sevenModels} the author states that concurrency deals with handling multiple tasks simultaneously, while parallelism is dividing a single task up into multiple parts and computing these parts simultaneously. The difference lies in the tasks that is to be performed. Performing multiple multiple tasks simultaneously is considered concurrency, while splitting up a tasks is smaller parts and performing these parts simultaneously is considered   parallelism.
+In \cite[p. 24]{sevenModels} the author states that concurrency deals with handling multiple tasks simultaneously, while parallelism is dividing a single task up into multiple parts and computing these parts simultaneously. The difference lies in the task that is to be performed. Performing multiple tasks simultaneously is considered concurrency, while splitting up a task in smaller parts and performing these parts simultaneously is considered   parallelism.
 
-Based on the the considerations presented here we give the definition of concurrency shown in Definition \ref{def:concurrency}.
+Based on the considerations presented here we give the definition of concurrency shown in \bsref{def:concurrency}.
 
 \begin{defn}\label{def:concurrency}
 \emph{Concurrency is executing multiple task simultaneously}
 \end{defn}
-as well as the definition of concurrency presented in Definition \ref{def:parallelism}.
+as well as the definition of concurrency presented in \bsref{def:parallelism}.\andreas{Move this up, so the defs are together?}
 
 \begin{defn}\label{def:parallelism}
 \emph{Parallelism is dividing a single task into multiple independent parts, which are then executed simultaneously}
@@ -34,13 +34,13 @@ As an example, handling multiple requests to a webservice simultaneously, is con
 \kasper[inline]{possibly talk about how one can be viewed as the other depending on what is defined as the task to be executed}
 \kasper[inline]{possibly talk about concurrency programs being non deterministic}
 \section{Processes \& Threads}\label{sec:processes_threads}
-\acp{OS} have to run multiple programs simultaneously. In order to do so, the \ac{OS} use a abstraction of a running program, called a process\cite[p. 81]{tanenbaum2008modern}\cite[p. 16]{bryant2011computer}. Multiple processes can be executed concurrently and the \ac{OS} provides processes with the illusion of having exclusive access to the hardware\cite[p. 16]{bryant2011computer}. 
+\acp{OS} have to run multiple programs simultaneously. In order to do so, the \ac{OS} use an abstraction of a running program, called a process\cite[p. 81]{tanenbaum2008modern}\cite[p. 16]{bryant2011computer}. Multiple processes can be executed concurrently and the \ac{OS} provides processes with the illusion of having exclusive access to the hardware\cite[p. 16]{bryant2011computer}. 
 
 A single \ac{CPU} core can only execute a single process at a time. On such single core system, the \ac{OS} interleaves the instructions of processes, producing the illusions, of processes being executed simultaneously\cite[p. 16]{bryant2011computer}. On more modern multi core systems, each core can execute a single process at a time. In such systems, interleaving is still be performed if the number of processes is greater than the number of cores.
 
 Interleaving of processes is performed using what is called a context switch\cite[p. 16]{bryant2011computer}. A context switch is the act of the \ac{OS} saving the currently running process's context and restoring the context of the process that is to run instead. The context is the state of the process, including information such as, its registers and variables\cite[p. 82]{tanenbaum2008modern}. As such a context switch from process \bscode{A} to process \bscode{B} is essentially saving the state of \bscode{A} and restoring the state of \bscode{B}, allowing \bscode{B} to resume where it left off, at the expense of \bscode{A}.\kasper{Possible explain what exactly interleaving is}
 
-Processes consists of two separate concepts: resources and execution \cite[p. 98]{tanenbaum2008modern}. The resources of a process include a address space in memory, the program code as well as information on open files etc. The execution of a process is handled by what is called a thread\cite[p. 98]{tanenbaum2008modern}. A thread is an abstraction for a part of a process, that executes sequentially. A thread has its own program counter, tracing where in the program code the thread currently resides, as well as a stack that tracks the threads execution history\cite[p. 99]{tanenbaum2008modern}. Threads are the part of a process, that is scheduled for execution upon the \ac{CPU}.
+Processes consists of two separate concepts: resources and execution \cite[p. 98]{tanenbaum2008modern}. The resources of a process include an address space in memory, the program code as well as information on open files etc. The execution of a process is handled by what is called a thread\cite[p. 98]{tanenbaum2008modern}. A thread is an abstraction for a part of a process, that executes sequentially. A thread has its own program counter, tracing where in the program code the thread currently resides, as well as a stack that tracks the threads execution history\cite[p. 99]{tanenbaum2008modern}. Threads are the part of a process, that is scheduled for execution upon the \ac{CPU}.
 
 A process has atleast one thread which handles its execution, but can have more. Having multiple threads facilitates concurrency within the process. Threads within the same process share the address space of the process and can communicate by, reading from and writing to the memory within that address space. Threads are the basic construct for concurrency within programs and concurrency models build upon threads in some form.
 
