@@ -3,6 +3,7 @@ import kmeans.Vars;
 import kmeans.model.Vector;
 
 import java.io.*;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -66,14 +67,40 @@ public class ResultWriter {
     }
 
     public static void printVectors(List<Vector> vectors){
+        StringBuilder sb = buildOutput(vectors);
+        System.out.println(sb.toString());
+    }
+
+    public static void writeVectorsToDisk(List<Vector> vectors, String impl) throws IOException {
+        String path = Vars.getPath();
+        Path p = Paths.get(path);
+        if (Files.notExists(p)){
+            Files.createDirectory(p);
+        }
+
+        String filename = "staticoutput_"+impl+".td";
+        path = Paths.get(path, filename).toString();
+        StringBuilder sb = buildOutput(vectors);
+        try (PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(path,true)))) {
+            writer.println(sb);
+            writer.println();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static StringBuilder buildOutput(List<Vector> vectors){
+        StringBuilder sb = new StringBuilder();
         for (Vector v : vectors){
-            StringBuilder sb = new StringBuilder();
+
             for (int i = 0; i < v.size(); i++){
-                sb.append(","+v.itemAt(i));
+                sb.append(v.itemAt(i)+",");
 
             }
-            sb.deleteCharAt(0);
-            System.out.println(sb.toString());
+            sb.deleteCharAt(sb.length()-1);
+            sb.append('\n');
         }
+
+        return sb;
     }
 }

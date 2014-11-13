@@ -9,6 +9,7 @@ import akka.routing.RoundRobinRouter
 import com.google.common.base.Stopwatch
 import kmeans.clustering.{Cluster, Clustering, ClusteringService}
 import kmeans.datageneration.DataGenerator
+import kmeans.parsing.DataParser
 import kmeans.partitioning.{Partition, Partitioning, Partitioner}
 import kmeans.model.Vector
 import collection.JavaConversions._ //Required for the for loops over Java collections
@@ -18,7 +19,8 @@ object KMeansScala extends App {
   val _nrIterations: Int = 1
   val vectors: java.util.List[Vector] = DataGenerator.generateRandomVectors(500000)
 
-  RunClustering(vectors, _nrClusters, 2, _nrIterations)
+  RunStaticTest();
+  //RunClustering(vectors, _nrClusters, 2, _nrIterations)
 
   //Message types
   case class Calculate(means: java.util.List[Vector])
@@ -27,7 +29,7 @@ object KMeansScala extends App {
   case class ReducerResult(finalClustering: Clustering)
 
   //Both master and listener for final result
-  class Master(nrActors: Int, partitioning: Partitioning[Vector], nrClusters: Int, nrIterations: Int) extends Actor {
+  class Master(nrActors: Int, partitioning: Partitioning[Vector], nrClusters: Int, nrIterations: Int, printMeans: Boolean) extends Actor {
     var itrCount: Int = 0
     val mapperRouter = context.actorOf(Props[Mapper].withRouter(RoundRobinRouter(nrActors)), name = "mapperRouter")
     val sw: Stopwatch = Stopwatch.createStarted
@@ -55,6 +57,8 @@ object KMeansScala extends App {
           sw.stop();
           ResultWriter.PrintResult(sw, nrIterations, nrClusters, nrActors, "Akka", "")
           context.system.shutdown() // Stop the actor system
+          ResultWriter.printVectors(newMeans)
+          ResultWriter.writeVectorsToDisk(newMeans,"Akka")
         }
     }
   }
@@ -113,18 +117,30 @@ object KMeansScala extends App {
     }
   }
 
-  def RunClustering(vectors: java.util.List[Vector], nrClusters: Int, nrActors: Int, nrIterations: Int) = {
-    val partitioning: Partitioning[Vector] = new Partitioner[Vector]().partition(vectors, nrActors) //Paritionining of data to given number of mapper actors
+  def RunClustering(vectors: java.util.List[Vector], nrClusters: Int, nrActors: Int, nrIterations: Int) : Unit = {
     val means: java.util.List[Vector] = DataGenerator.generateRandomVectors(nrClusters) // Generate initial means
+    RunClustering(vectors,means,nrActors,nrIterations,false)
+  }
+
+  def RunClustering(vectors: java.util.List[Vector], means : java.util.List[Vector],  nrActors: Int, nrIterations: Int, printMeans: Boolean) : Unit = {
+    val partitioning: Partitioning[Vector] = new Partitioner[Vector]().partition(vectors, nrActors) //Paritionining of data to given number of mapper actors
 
     // Create an Akka system
     val system = ActorSystem("KMeansSystem")
 
     // create the master
-    val master = system.actorOf(Props(new Master(nrActors, partitioning, nrClusters, nrIterations)), name = "master")
+    val master = system.actorOf(Props(new Master(nrActors, partitioning, means.size, nrIterations, printMeans)), name = "master")
 
     // start the calculation
-    master ! Calculate(means)
+     master ! Calculate(means)
+
+
+  }
+
+  def RunStaticTest(): Unit ={
+    val staticVectors = DataParser.parseStaticData
+    val staticMeans = DataParser.parseStaticDataMeans
+    RunClustering(staticVectors, staticMeans,5,2,true)
   }
 
 }
