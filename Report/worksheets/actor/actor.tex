@@ -89,9 +89,9 @@ That an actor processes messages in one isolated atomic operation reduces concur
 %event-based computation model avoids blocking waits for specific messages, which helps to keep clear of deadlocks in the system. But still able to livelock as actors can await messages from one another
 
 \section{Discussion}\label{sec:actor_discussion}
-This section discusses a number of issues and weaknesses related to the actor model. In bla we will discuss bla \toby{Indsæt mere her når sektionen er skrevet}
+This section discusses a number of issues and weaknesses related to the actor model. Behaviour sharing in the actor model is discussed in \bsref{ssec:share_behaviour}, followed by a discussion of actor modelling in \bsref{ssec:actor_modelling} and lastly the non-deterministic nature of actor programs is discussed in \bsref{ssec:nondeter_msg_order}.\toby{Hvis der kommer flere sektioner, indsæt her.}
 
-\subsection{Sharing Behaviour Among Actors}
+\subsection{Sharing Behaviour Among Actors}\label{ssec:share_behaviour}
 Inheritance is a popular and valuable mechanism often used in object-oriented programming which allows sharing of the same behaviour inside one class across multiple classes\cite{kafura1989inheritance}. So if two classes have some common functionality, it can be written only once in a super class that they both inherit from. Sharing of behaviour avoids code duplication and code reuse which also improves maintainability as the functionality should only be maintained in a single place.
 
 In the actor model there is no direct notion of inheritance\cite{mackay1997has}. This means that it is not possible to share behaviour among actors which hurts code reuse, maintainability and makes it more time consuming to write actor programs with common behaviour. The problem of inheritance in the actor model is that actors may change behaviour over time so it is difficult to locate or copy methods at run-time in systems without shared memory\cite{kafura1989inheritance}.\toby{kig på evt. på "inheritance in actor based concurrency object-oriented lanuages" de mener der er et mere fundamentalt problem, se afsnit "4. the actor-inheritane problem" - jeg forstår det dog ikke helt - måske en anden skal se om de kan forstå det. (de har også en mulig løsning - som dog har en limitation)}
@@ -102,14 +102,11 @@ An indirect way to share behaviour among actors is to use the features of the la
 %Måske brug den her også
 %Kilde også om inheritance \cite[Chap. 1.2]{agha1986overview}
 
-\subsection{Actor modelling}
+\subsection{Actor modelling}\label{ssec:actor_modelling}
 One of the main properties of the actor model is that an actor processes only a single message at at time. This means that no matter what type of messages that are in the mailbox, they are processed sequentially, which can result in lower concurrency for several messages only interested in ``reading'' the internal state of an actor. Messages should be fairly coarse-grained so actors can process sufficiently many tasks concurrently without having to spend time waiting for each other\cite[p. 269]{karmani2009actor}. Furthermore as the communication is through message passing it is more attractive to have coarse-grained messages to avoid unnecessary overhead by sending a lot of small messages. However messages should not be too coarse-grained as that will hurt the dynamic among actors in the system e.g. if an actor \bscode{A} is processing a very time consuming message and another actor \bscode{B} needs a simple read of actor \bscode{A's} isolated state to continue, actor \bscode{B} must await until actor \bscode{A} is finished processing.
-
-%because actors do not share state and can only communicate through message passing, they are not a suitable choice if you need fine-grained parallelism.
-
-Not all problems are well suited for modelling with the actor model bla bla.
-
-%Better suited for coarse-grained messages frem for fine-graind (siger både seven models og jvm sync bogen)
+%Extra (the essence of it is described above i think)
+	%because actors do not share state and can only communicate through message passing, they are not a suitable choice if you need fine-grained parallelism. (seven models)
+	%not all applications are well-suited for an actor-based model. Actors serve well when we can divide the problem into parts that can run quite independently and need to communicate only sporadically. If frequent interaction is required or the parts or tasks need to coordinate to form a quorum, the actor-based model is not suitable. We may have to mix other concurrency models or consider significant redesign. (jvm mastering bogen)
 
 \subsection{Non-deterministic message order}\label{ssec:nondeter_msg_order}
 The asynchronous message passing is a key source to the non-determinism present in the actor model, as earlier mentioned in \bsref{ssec:mailbox_and_message_order}. That the message order is non-deterministic means that an actor must not rely on a specific message order, however according to \cite[p. 35]{haller2012actors}: \textit{``You can often alleviate reliance on message ordering by refactoring the actor communication, i.e., reworking the messages' contents''}. In some cases that do not suffice and the programmer must prune some of the non-determinism by restricting the order in which messages are processed. For example an actor \bscode{A} requests a stock quote from a broker actor \bscode{B}, then actor \bscode{A} must await the response of actor \bscode{B} to be able to decide whether to buy the stock or not. An illustration of the example is illustrated in \bsref{fig:request_reply_pattern}. The scenario described uses the request-reply pattern which is one of the most common patterns of messaging and synchronization in actor programs\cite[p. 5]{karmani2009actor}.
@@ -156,13 +153,22 @@ There exists a number of other different programming abstractions for communicat
 
 %Actors simplify the task of programming by extending object-based design to concurrent (parallel, distributed, mobile) systems.
 
+%pga. message passing = dyrt at kopiere messages rundt and can only procees one message at a time
+
+\subsection{Title something - look in comments}
+%Hard to model with threads but just because we use actors we do no remove this problem entirely - we still have to model it with actors
+%evt. kig på Bent's præsentation
+
 \subsection{Adhering to Actor Properties}
 \toby[inline]{Måske hav den i implementations afsnittet og tag udgangspunkt i jvm comparsion of actors artiklen til at beskrive problematikken. Evt. prøv at finde ud af hvilke semantic properties akka understøtter}
+
+%Kig i artiklen om jvm actor frameworks comparison og hvad de semantic properties har af implikationer på performacne og diskuter lidt overvejninger for og imod at adherede completly til actor modellen.
+
+%Not all actor framworks enforce all the rules of the actor model but makes that the job of the developer in some cases to improve peformance. But as it is the job of the developer now to ensure the properties of the actor model it makes til harder to write (se blue handbook actors under Semantic Properties)
+
 %Unfortunately, actor frameworks on the JVM cannot sufficiently constrain the programming environment to avoid the concurrency pitfalls that the actor model should help you avoid. After all, within the thread you are simply writing plain old java (or scala or clojure). There’s no real way to limit what that code can do, unless it is explicitly disallowed from calling into other code or looping. Therefore, even the actor frameworks which use bytecode weaving to implement cooperative multi-tasking amongst actors cannot fully guarantee non-blocking behavior. This point bears repetition: without fundamental changes in how the JVM works, one cannot guarantee that an arbitrary piece of code will not block. fra: http://boundary.com/blog/2014/09/03/no-you-cant-have-a-pony/
 %you need green threads to do this Acotrs fanciness because the native threads have too much overhead (in memory cost, creation time, etc. etc.) to be created that much
 	%Istedet foreksempel erlang eller elxlir kan overholde disse kriterier.
-
-%Not all actor framworks enforce all the rules of the actor model but makes that the job of the developer in some cases to improve peformance. But as it is the job of the developer now to ensure the properties of the actor model it makes til harder to write (se blue handbook actors under Semantic Properties)
 
 %Some frameworks does not fulfill all the properties of the actor model to have better performance
 
@@ -170,10 +176,14 @@ There exists a number of other different programming abstractions for communicat
 
 %En disadvantage ved Actor kan være at communication overhead for høj? "Actors in scala" anden paragraf før 1.3
 	%Nogle actor frameworks implementerer message passing med reference istedet for kopier, hvilket kan intoducere race conditions (fx. Scala Actors - ved ikke med Akka - undersøg det)
+	
+%Også i forhold til mapper en actor til en jvm thread eller light weight actors
 
 %i frameworks der ikke enforcer immutability skal udvikleren passe på ikke at komme til at kalde behaviour metoder der er isoleret inde i actors og sikre messages er immutable, så man ikke sharer state.
 	%Kom med eksemplet om en counter. (fra comparative jvm artiklen)
-	
+	%In languages that do not enfore call-by-value semantics in we must be sure not to break state encapsulation.
+
+
 \toby[inline]{Evt. også hav en subsektion hvor der fortælles om at actor modellen tit blandes med andre concurrency modeller (tag udgangspunkt i den artikel i droppen)}
 %Noget fra artiklen om at man tit anvender andre concurrency værktøjer, end kun actors artikeln (sammen med actors).
 	%bl.a. actor model og libray inadequecies og evt. også konklussionen
