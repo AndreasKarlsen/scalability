@@ -1,6 +1,6 @@
 \makeatletter \@ifundefined{rootpath}{\input{../../setup/preamble.tex}}\makeatother
 \worksheetstart{Concurrency Basics}{1}{April 24, 2013}{Someone}{../../}
-This chapter presents the basic constructs\andreas{concepts?} related to concurrency. \bsref{sec:concurrency_parallelism} presents the relationship between concurrency and parallelism leading to a definition of the concepts. \bsref{sec:processes_threads} presents the process thread model on which concurrency is build and \bsref{sec:synchronization} describes the concept of synchronization.
+This chapter presents the basic concepts related to concurrency. \bsref{sec:concurrency_parallelism} presents the relationship between concurrency and parallelism leading to a definition of the concepts. \bsref{sec:processes_threads} presents the process thread model on which concurrency is build and \bsref{sec:synchronization} describes the concept of synchronization.
 \section{Concurrency \& Parallelism}\label{sec:concurrency_parallelism}
 This sections describes the process of producing a definition of concurrency and parallelism, which will be employed within the project. The definition is based on relevant literature.
 
@@ -19,12 +19,12 @@ Parallelism is closely related to concurrency. As with concurrency, it deals wit
 \subsection{Definitions}\label{sec:basics_concurrency_parallelism_def}
 In \cite[p. 24]{sevenModels} the author states that concurrency deals with handling multiple tasks simultaneously, while parallelism is dividing a single task up into multiple parts and computing these parts simultaneously. The difference lies in the task that is to be performed. Performing multiple tasks simultaneously is considered concurrency, while splitting up a task in smaller parts and performing these parts simultaneously is considered   parallelism.
 
-Based on the considerations presented here we give the definition of concurrency shown in \bsref{def:concurrency}.
+Based on the considerations presented here we give the definition of concurrency shown in \bsref{def:concurrency}, followed by the definition of concurrency presented in \bsref{def:parallelism}.
+
 
 \begin{defn}\label{def:concurrency}
 \emph{Concurrency is executing multiple task simultaneously}
 \end{defn}
-as well as the definition of concurrency presented in \bsref{def:parallelism}.\andreas{Move this up, so the defs are together?}
 
 \begin{defn}\label{def:parallelism}
 \emph{Parallelism is dividing a single task into multiple independent parts, which are then executed simultaneously}
