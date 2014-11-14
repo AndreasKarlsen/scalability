@@ -50,11 +50,61 @@ The implementations will follow a template similar to that of Map-Reduce\cite{de
 A large part of the computations involved in the $k$-means algorithm, lies in calculating the distance between each of the data points and the cluster centroids. Different ways of calculating this distance exists. Simple, yet efficient, calculations such as Manhattan and Euclidean\cite[p. 41]{amatriain2011data} distances are fast to compute. Where the more complex similarity measures such as Pearson Correlation Coefficient and Cosine similarity\cite[p. 42]{amatriain2011data}\cite{breese1998empirical} are slower to compute but provide a more accurate result.
 
 \kasper[inline]{Remember to draw in the choice of distance measure in reflection}
-The \ac{PCC} will be used for the performance test, as it represents one of the most complex computations. Having a complex distance calculation will increase the workload which will be run concurrently, increasing the focus on the concurrency aspect of the performance test. We are aware that choosing a complex calculation, pushes the results towards favoring concurrent execution over sequential execution. The \ac{PCC} is defined as:
+The \ac{PCC} will be used for the performance test, as it represents one of the most complex computations. Having a complex distance calculation will increase the workload which will be run concurrently, increasing the focus on the concurrency aspect of the performance test. We are aware that choosing a complex calculation, pushes the results towards favoring concurrent execution over sequential execution. The \ac{PCC} is 
+defined as:
 
 \begin{equation}\label{pearsonverbose}
 \frac{cov(a,i)}{\sigma_a \times \sigma_i} = \frac{\sum_j(v_{a,j}-\bar{v}_a)(v_{i,j}-\bar{v}_i)}{\sqrt{{\sum_j}(v_{a,j}-\bar{v}_a)^2 \sum_j(v_{i,j}-\bar{v}_i)^2}}
 \end{equation}
 
-where $cov(a,i)$ is the covariance between the two vectors $a$ and $i$ and $\sigma_a \times \sigma_i$ is the product of the vectors standard deviations.
+where $cov(a,i)$ is the covariance between the two vectors $a$ and $i$ and $\sigma_a \times \sigma_i$ is the product of the vectors standard deviations. 
+\section{Test Implementations}
+Presentation of \ac{TL}, \ac{STM}, and Actor test implementations.
+
+\section{Test Results}
+\begin{tikzpicture}
+	\begin{axis}[
+		legend entries={\ac{TL},Actor,\ac{STM}},
+		legend pos=outer north east,
+		grid = both,
+		xlabel=\#vectors,
+		ylabel=Miliseconds,
+		xmin=0,
+		ymin=0, 
+		title=Test results for scaling \#vectors,
+		label=fig:tr_scale_vectors]		
+	\addplot[color=red,mark=x] coordinates {
+		(100000,2)
+		(200000,4)
+		(500000,10)
+		(1000000,22)
+		(2000000,47)
+		(3000000,63)
+		(4000000,83)
+		(5000000,113)
+	};
+	\addplot[color=blue,mark=x] coordinates {
+		(100000,10)
+		(200000,20)
+		(500000,30)
+		(1000000,40)
+		(2000000,50)
+		(3000000,60)
+		(4000000,70)
+		(5000000,80)
+	};
+	\addplot[color=green,mark=x] coordinates {
+		(100000,20)
+		(200000,30)
+		(500000,40)
+		(1000000,50)
+		(2000000,60)
+		(3000000,70)
+		(4000000,80)
+		(5000000,90)
+	};
+	\end{axis}
+\end{tikzpicture}
+
+
 \worksheetend

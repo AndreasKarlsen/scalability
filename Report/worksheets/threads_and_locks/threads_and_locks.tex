@@ -52,7 +52,7 @@ Due to the concurrent execution of the two thread multiple results are possible.
 
 \begin{figure}[htbp]
 \centering
- \includegraphics[width=1\textwidth]{\rootpath/worksheets/threads_and_locks/figures/race_interleaving1} 
+ \includegraphics[width=0.65\textwidth]{\rootpath/worksheets/threads_and_locks/figures/race_interleaving1} 
  \caption{First possible interleaving of threads}
 \label{fig:race_interleaving1}
 \end{figure}
@@ -65,7 +65,7 @@ Result is: 30
 The second possible result occurs if \bscode{t2} is executed before \bscode{t1}. This interleaving is depicted in \bsref{fig:race_interleaving2}.
 \begin{figure}[htbp]
 \centering
- \includegraphics[width=1\textwidth]{\rootpath/worksheets/threads_and_locks/figures/race_interleaving2} 
+ \includegraphics[width=0.65\textwidth]{\rootpath/worksheets/threads_and_locks/figures/race_interleaving2} 
  \caption{Second possible interleaving of threads}
 \label{fig:race_interleaving2}
 \end{figure}
@@ -78,11 +78,11 @@ The final possible result occurs if \bscode{t1} evaluates the precondition for t
 \begin{verbatim}
 Result is: 60
 \end{verbatim}
-The final possible interleaving is shown in \bsref{fig:race_interleaving3}. 
+The third possible interleaving is shown in \bsref{fig:race_interleaving3}. 
 \begin{figure}[htbp]
 \centering
- \includegraphics[width=1\textwidth]{\rootpath/worksheets/threads_and_locks/figures/race_interleaving3} 
- \caption{Final possible interleaving of threads}
+ \includegraphics[width=0.65\textwidth]{\rootpath/worksheets/threads_and_locks/figures/race_interleaving3} 
+ \caption{Third possible interleaving of threads}
 \label{fig:race_interleaving3}
 \end{figure}
 
@@ -97,7 +97,7 @@ Locks are a general class of constructs used for providing mutual exclusion. Loc
 Consider the example presented in \bsref{lst:mutualexclusion}, which is a modified version of the exampled presented in \bsref{lst:racecondition}. As it can be seen on lines 11-15 and 18-19, the two threads have had their critical regions locked, limiting the access to one thread at a time. If either \bscode{t1} or \bscode{t2} attempts to acquire the lock while the other already holds it, they would block, ensuring mutual exclusion. As a result the interleaving presented in \bsref{fig:race_interleaving3} is no longer possible and the race condition has been removed. 
 
 %\bsref{lst:mutualexclusion} depicts a modified version of the example presented in \bsref{lst:racecondition}. The two threads have had their critical regions locked, limiting the access to one thread at a time. Because of this, the case where \bscode{t1} runs just until its about to compute the result and  \bscode{t2} taking over will no longer occur. \bscode{t2} will now not be able to change the value of number as \bscode{t2} still holds the lock on the critical region, even though it is paused. As a result the output result is: 60, can no longer occur. The output does however still depend on the order in which access to the critical regions is acquired.
-\begin{lstlisting}[float,label=lst:mutualexclusion,
+\begin{lstlisting}[label=lst:mutualexclusion,
   caption={Mutual exclusion in Java using a lock},
   language=Java,  
   showspaces=false,
