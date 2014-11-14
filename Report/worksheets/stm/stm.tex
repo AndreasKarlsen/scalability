@@ -4,6 +4,7 @@ This chapter describes the concept of \acl{STM}. In \bsref{sec:stm_keyconcepts},
 
 \section{Key Concepts}
 \label{sec:stm_keyconcepts}
+\kasper[inline]{Maybe stress the fact that the only different between \ac{TL} and \ac{STM} is in the way synchronization is done eg. locks vs transactions. Still shared memory leading to race conditions.}
 \subsection{Transactions}
 \ac{TM} is based on the concept of a transaction. A transaction is a finite sequence of machine instructions, executed by a single process, satisfying the properties: Atomicity, Consistency, and Isolation\cite[p. 2]{herlihy1993transactional}\cite[p. 14]{kalin2012clojure}. A transaction \ac{TM} can perform a group of memory-operations atomically\cite[48]{harris2005composable}. By utilizing the transactional approach, \ac{TM} serves as a concurrency control mechanism. By adhering to the aforementioned properties, \ac{TM} enables concurrent execution, while being semantically equivalent to serial execution of the same program.
 
