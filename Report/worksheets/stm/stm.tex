@@ -51,10 +51,21 @@ Speculative transactions\\
 Exceptions\\
 Interaction with code that cannot be transactionalized\\
 Livelock\\
+
+\subsection{\ac{STM} Design Issues}
+
+\subsubsection{Isolation}
+\subsubsection{Eager vs Lazy Updating}
+\subsubsection{Conflict Detection}
+\subsubsection{Visible vs Invisible Reads}
+\subsubsection{Contention Manager}
+
+
 \section{Concurrency Issues}
 \label{sec:stm_issues}
 Structuring concurrent programs that seeks to provide better scalability and ease-of-use than conventional approaches based on locks and conditions.
 
+\kasper[inline]{STM og eksterne side effects. Så som skrive til fil i transaktion.}
 \section{Discussion}
 \label{sec:stm_discussion}
 % Raceconditions. Transaction ensures atomicity (clojure got strong atomicity), and isolation. Due to this, the result of concurrent calculations will be the same, as if it was executed sequencially. 
