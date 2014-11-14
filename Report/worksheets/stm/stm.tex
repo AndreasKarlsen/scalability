@@ -1,19 +1,30 @@
 \makeatletter \@ifundefined{rootpath}{\input{../../setup/preamble.tex}}\makeatother
 \worksheetstart{Software Transactional Memory}{1}{November 7, 2013}{Andreas}{../../}
-This chapter describes the concept of \acl{STM}. In \bsref{sec:stm_keyconcepts}, the key concepts of \ac{STM} is described. \bsref{sec:stm_issues} documents the concurrency issues introduces by \ac{STM}. \bsref{sec:stm_discussion} discusses the properties of \ac{STM}. Finally, in \bsref{sec:stm_eval} an evaluation of \ac{STM} as a concurrency model is conducted.
+This chapter investigates \ac{STM} as a concurrency model. In \bsref{sec:stm_keyconcepts}, the key concepts of \ac{STM} is described. \bsref{sec:stm_issues} documents the concurrency issues introduces by \ac{STM}. \bsref{sec:stm_discussion} discusses the properties of \ac{STM}. Finally, in \bsref{sec:stm_eval} an evaluation of \ac{STM} as a concurrency model is conducted.
 
 \section{Key Concepts}
 \label{sec:stm_keyconcepts}
-\subsection{Transactions}
-\ac{TM} is based on the concept of a transaction. A transaction is a finite sequence of machine instructions, executed by a single process, satisfying the properties: Atomicity, Consistency, and Isolation\cite[p. 2]{herlihy1993transactional}\cite[p. 14]{kalin2012clojure}. A transaction \ac{TM} can perform a group of memory-operations atomically\cite[48]{harris2005composable}. By utilizing the transactional approach, \ac{TM} serves as a concurrency control mechanism. By adhering to the aforementioned properties, \ac{TM} enables concurrent execution, while being semantically equivalent to serial execution of the same program.
+This section presents the key concepts of \ac{STM}. It sets the setting, and clarifies the concepts of \ac{STM}, so the following sections will be able to base a comparison and discussion upon these concepts, without having to explain details.
 
-To clarify how a transaction works, \bsref{} visualizes the flow of an example of a transaction.
+\subsection{Transactions}
+\ac{TM} is based on the concept of a transaction. A transaction is a finite sequence of machine instructions, executed by a single process, satisfying the properties: Atomicity, Consistency, and Isolation\cite[p. 2]{herlihy1993transactional}\cite[p. 14]{kalin2012clojure}\andreas{Should we explain the properties again, in more details? Its explained in the preliminary investigation}. \ac{TM} can perform a group of memory-operations atomically\cite[48]{harris2005composable}. By utilizing the transactional approach, \ac{TM} serves as a concurrency control mechanism. By adhering to the aforementioned properties, \ac{TM} enables concurrent execution, while being semantically equivalent to serial execution of the same program.
+
+Race conditions \bsnameref{subsec:race_coditions}
 
 \subsection{Software or Hardware}
 In \cite{herlihy1993transactional} the Authors presents \ac{TM} as a straight forward extension to any multiprocessor cache-coherent protocol. Most \ac{HTM} proposals are based on straightforward modifications to standard multiprocessor cache-coherence protocols\cite{scott2011sync}. Due to the inflexible properties of existing hardware, i.e. fixed instruction set, \ac{TM} implemented on hardware is limited to existing instructions. This causes high implementation and verification costs\cite{cascaval2008software}. \ac{HTM} also exposes low level hardware details and limitations\cite{scott2011sync}, which preferably should be abstracted away from the programmer, to ensure semantic correctness of the transactions regardless of the hardware limitations. Due to this, a software based solution is presented by \cite{shavit1997software}. This solution, entirely implemented as software, is known as \acl{STM}. Being implemented as a software solution, \ac{STM} does not suffer the same issues as \ac{HTM}, but still provides the transactional semantics. Due to this, \ac{STM} is in interesting as a concurrency mechanism.
 
 \subsection{\ac{STM}}
 STM is a software system that provides programmers with a transactional model through a library or compiler interface\cite{scott2011sync}.
+
+To clarify the effect of using \ac{STM}, \bsref{fig:transaction} visualizes the flow of an example of two transactions running concurrently\andreas{Or in parallel?}. Both transactions \bscode{t1} and \bscode{t2} is in the same process, and therefore have access to a shared pool of memory. The variable \bscode{x} is stored in this memory. Both transactions have a reference to variable x. First off, the 
+
+\begin{figure}[h!]
+\centering
+\includegraphics[scale=0.5]{\rootpath/worksheets/stm/figures/transaction}
+\caption{Two transactions share memory and both have a reference to variable x. They have a racecondition, both doing calculations based on x, and writing back to x. \ac{STM} ensures that there is no lost update when t2 attempts to write, and enforces a recalculation with the new x value.}\label{fig:transaction}
+\end{figure}
+
 
 % Design criteria for STM (Thomas Stig fremlæggelse)
 \subsection{Atomicity}
@@ -49,6 +60,8 @@ Structuring concurrent programs that seeks to provide better scalability and eas
 % Deadlocks...
 
 % Composition is possible in STM. Reference to Kaspers example about composition.
+% STM compared to locks
+%% Easier to use (Troels' study)
 
 \section{Evaluation of Characteristics}
 \label{sec:stm_eval}
