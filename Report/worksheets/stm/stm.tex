@@ -16,7 +16,7 @@ Race conditions \bsnameref{subsec:race_coditions}
 In \cite{herlihy1993transactional} the Authors presents \ac{TM} as a straight forward extension to any multiprocessor cache-coherent protocol. Most \ac{HTM} proposals are based on straightforward modifications to standard multiprocessor cache-coherence protocols\cite{scott2011sync}. Due to the inflexible properties of existing hardware, i.e. fixed instruction set, \ac{TM} implemented on hardware is limited to existing instructions. This causes high implementation and verification costs\cite{cascaval2008software}. \ac{HTM} also exposes low level hardware details and limitations\cite{scott2011sync}, which preferably should be abstracted away from the programmer, to ensure semantic correctness of the transactions regardless of the hardware limitations. Due to this, a software based solution is presented by \cite{shavit1997software}. This solution, entirely implemented as software, is known as \acl{STM}. Being implemented as a software solution, \ac{STM} does not suffer the same issues as \ac{HTM}, but still provides the transactional semantics. Due to this, \ac{STM} is in interesting as a concurrency mechanism.
 
 \subsection{\ac{STM}}
-STM is a software system that provides programmers with a transactional model through a library or compiler interface\cite{scott2011sync}.
+STM is a software system that provides programmers with a transactional model through a library or compiler interface\cite{scott2011sync}.\kasper{Tror du referrer den forkerte del af bogen. herlihy2011tm er den del som handler om TM.}
 
 To clarify the effect of using \ac{STM}, \bsref{fig:transaction} visualizes the flow of an example of two transactions running concurrently\andreas{Or in parallel?}. Both transactions \bscode{t1} and \bscode{t2} is in the same process, and therefore have access to a shared pool of memory. The variable \bscode{x} is stored in this memory. Both transactions have a reference to variable x. First off, the 
 
@@ -25,7 +25,6 @@ To clarify the effect of using \ac{STM}, \bsref{fig:transaction} visualizes the 
 \includegraphics[scale=0.5]{\rootpath/worksheets/stm/figures/transaction}
 \caption{Two transactions share memory and both have a reference to variable x. They have a racecondition, both doing calculations based on x, and writing back to x. \ac{STM} ensures that there is no lost update when t2 attempts to write, and enforces a recalculation with the new x value.}\label{fig:transaction}
 \end{figure}
-
 
 % Design criteria for STM (Thomas Stig fremlæggelse)
 \subsection{Atomicity}
@@ -53,9 +52,16 @@ Interaction with code that cannot be transactionalized\\
 Livelock\\
 
 \subsection{\ac{STM} Design Issues}
-
+This section describes a number of design issues related to \ac{STM}.
 \subsubsection{Isolation}
 \subsubsection{Eager vs Lazy Updating}
+Updating memory in a \ac{STM} implementation can be done using one of two different approaches. These approaches are: eager and lazy updating.
+
+Eager updating updates the memory associated with a variable directly. Eager updating is also referred to as in-place-updating, as updates are written into the existing memory location\cite[p. 35]{afek2011lowering}. \ac{STM} implementations using eager updating, must maintain a undo log, which stores information about any writes made within transactions. The undo log is used to undo the effects of a transaction when a transaction conflicts\cite[p. 2084]{herlihy2011tm}.
+
+Lazy updating takes the opposite perspective and writes updates to local versions of the effected data\cite[p. 2084]{herlihy2011tm}. If the transaction commits, the local changes are written to the actual memory locations, while a abort causes the local changes to be discarded.
+
+Eager updating allows efficient commit of transactions but makes it harder to ensure that so called zombie transactions, that is transaction witch will eventually abort but have not yet discovered so, sees consistent state\cite[p. 2084]{herlihy2011tm}\kasper{Mere om dette.}. A zombie transaction is a transaction which will eventually abort, but have not yet discovered so.
 \subsubsection{Conflict Detection}
 \subsubsection{Visible vs Invisible Reads}
 \subsubsection{Contention Manager}
