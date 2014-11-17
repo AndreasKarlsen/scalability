@@ -7,16 +7,16 @@ This chapter presents the \ac{TL} concurrency model. Describing its key concepts
 \kasper[inline]{Section on more advanced locking constructs, such as java synchronized}
 \label{chap:threads_locks}
 \section{Key Concepts}
-This section will present the key concept of the \ac{TL} concurrency model. 
+This section will present the key concept of the \ac{TL} concurrency model. \bsref{subsec:threads_shared_memory} describes how \ac{TL} relies on threads and shared memory while \bsref{subsec:race_coditions} describes the issue of race conditions. Finally \bsref{sec:locks_me} describes concepts of mutual exclusion and locks.
 \subsection{Threads and Shared Memory}\label{subsec:threads_shared_memory}
 As the name implies the \ac{TL} concurrency model builds upon the concept of threads, discussed in \bsref{sec:processes_threads}. Threads are started to introduce concurrency. Some implementations map the started threads directly to hardware threads in the underlying \ac{OS}, while others rely on software threads.
 
-The \ac{TL} concurrency model uses on the shared memory of threads, to facilitate communicate between them. Communication is achieved by reading from and writing to he the shared memory\cite[p. 93]{tanenbaum2008modern}. Accessing shared data facilitates fast communication between threads, but presents the issue of race conditions. If threads do not read data that can be modified from other threads, these issues are not present. So multiple threads can run without introducing race conditions, as long as they do not modify any shared data.
+The \ac{TL} concurrency model uses the shared memory of threads, to facilitate communication between them. Communication is achieved by reading from and writing to he the shared memory\cite[p. 93]{tanenbaum2008modern}. Accessing shared data facilitates fast communication between threads, but presents the issue of race conditions. If threads do not read data that can be modified from other threads, these issues are not present. So multiple threads can run without introducing race conditions, as long as they do not modify any shared data.
 
 \subsection{Race Conditions}\label{subsec:race_coditions}
 One issue that can arise in concurrent applications, is that the result of a computation, consisting of two or more threads which share data, depends on how the threads are scheduled. That is, the behaviour of the application depends on the timing of the threads. This issue is called a race condition\cite[p. 983]{bryant2011computer}\cite[p. 115]{tanenbaum2008modern}\cite[p. 44]{sevenModels}.
 
-Consider the example presented in \bsref{lst:racecondition} using Java threads. Here we see a small Java\lone{Hvorfor Java?} program that starts the two threads \bscode{t1} and \bscode{t2} and waits for each of them to finish, printing out the result of their computations before exiting. Both threads access the shared number variable. The first thread \bscode{T1} checks if the static variable \bscode{number} is equal to ten (which is its initial value) on on line 7. If the condition is true it set the sets the \bscode{result} variable to \bscode{number} times three as seen on line 8. As can be seen on line 11 the second thread \bscode{t2}, simply sets the value of \bscode{number} to 20.
+Consider the example presented in \bsref{lst:racecondition} using Java threads. Here we see a small Java\lone{Hvorfor Java?} program that starts the two threads \bscode{t1} and \bscode{t2} and waits for each of them to finish, printing out the result of their computations before exiting. Both threads access the shared number variable. The first thread \bscode{T1} checks if the static variable \bscode{number} is equal to ten (which is its initial value) on line 7. If the condition is true, it sets the \bscode{result} variable to \bscode{number} times three, as seen on line 8. As can be seen on line 11 the second thread \bscode{t2}, simply sets the value of \bscode{number} to 20.
 
 \begin{lstlisting}[label=lst:racecondition,
   caption={Race condition example},
@@ -48,7 +48,7 @@ Consider the example presented in \bsref{lst:racecondition} using Java threads. 
 	}
 \end{lstlisting}
 
-Due to the concurrent execution of the two thread multiple results are possible. The first possible result occurs if \bscode{t1} is executed before \bscode{t2}. This interleaving is shown in \bsref{fig:race_interleaving1}. 
+Due to the concurrent execution of the two threads, multiple results are possible. The first possible result occurs if \bscode{t1} is executed before \bscode{t2}. This interleaving is shown in \bsref{fig:race_interleaving1}. 
 
 \begin{figure}[htbp]
 \centering
@@ -57,7 +57,7 @@ Due to the concurrent execution of the two thread multiple results are possible.
 \label{fig:race_interleaving1}
 \end{figure}
 
-Here it can be seen that \bscode{t1} executes both the evaluation of the if statement and the assignment to result before \bscode{t2} changes value of the umber variable. The result is:
+Here it can be seen that \bscode{t1} executes both the evaluation of the if statement and the assignment to result before \bscode{t2} changes value of the number variable. The result is:
 \begin{verbatim}
 Result is: 30
 \end{verbatim}
@@ -69,12 +69,12 @@ The second possible result occurs if \bscode{t2} is executed before \bscode{t1}.
  \caption{Second possible interleaving of threads}
 \label{fig:race_interleaving2}
 \end{figure}
-Here it is shown how \bscode{t2} changes the value of to number variable to 20 before \bscode{t1} has evaluated its precondition. Because of this \bscode{t1} never evaluates the assignment to the result variable and the printed result becomes:
+Here it is shown how \bscode{t2} changes the value of the number variable to 20, before \bscode{t1} has evaluated its precondition. Because of this \bscode{t1} never evaluates the assignment to the result variable and the printed result becomes:
 \begin{verbatim}
 Result is: 0
 \end{verbatim}
 
-The final possible result occurs if \bscode{t1} evaluates the precondition for the if statement on line 7, after which it is paused by the operating system, and \bscode{t2} gets to run instead. \bscode{t2} then changes the value of the number variable which \bscode{t1} just evaluated to be equal to 10. \bscode{t2} then exists and \bscode{t1} is resumed calculating the value assigned to the result variable based on the value of the number value set by \bscode{2}. The result of this is:
+The final possible result occurs if \bscode{t1} evaluates the precondition for the if statement on line 7, after which it is paused by the operating system, and \bscode{t2} gets to run instead. \bscode{t2} then changes the value of the number variable which \bscode{t1} just evaluated to be equal to 10. \bscode{t2} then exits and \bscode{t1} is resumed calculating the value assigned to the result variable based on the value of the number value set by \bscode{2}. The result of this is:
 \begin{verbatim}
 Result is: 60
 \end{verbatim}
@@ -86,12 +86,12 @@ The third possible interleaving is shown in \bsref{fig:race_interleaving3}.
 \label{fig:race_interleaving3}
 \end{figure}
 
-While the threads in \bsref{fig:race_interleaving1} and \bsref{fig:race_interleaving2} have exclusive access to the number variable, this is not the case in \bsref{fig:race_interleaving3}. The interleaving shown in \bsref{fig:race_interleaving3} does not provide threads with atomic access to the shared number variable, as described in \bsref{sec:synchronization}. As a result, it is not guaranteed that other threads wont access the shared data while a threads is using it, resulting in unintended behaviour by the program.
+While the threads in \bsref{fig:race_interleaving1} and \bsref{fig:race_interleaving2} have exclusive access to the number variable, this is not the case in \bsref{fig:race_interleaving3}. The interleaving shown in \bsref{fig:race_interleaving3} does not provide threads with atomic access to the shared number variable, as described in \bsref{sec:synchronization}. As a result, it is not guaranteed that other threads will not access the shared data while a thread is using it, resulting in unintended behaviour by the program.
 
-\subsection{Locks and Mutual Exclusion}\label{sec:locks_me}
-Mutual exclusion is the property of shared memory concurrency which ensures that only a single thread can access a given critical region at a time\cite[p. 117]{tanenbaum2008modern}\cite[p. 962]{bryant2011computer}, a critical region being a thread accessing some memory that is shared with other threads\cite[p. 117]{tanenbaum2008modern}\cite[p. 961]{bryant2011computer}. Mutual exclusion provides atomicity synchronization as dicussed in \bsref{sec:synchronization}. Having only a single thread execute within all critical regions at a time, ensures that the program will behave as if it runs sequentially, even though this might not be the case. Access to critical regions are often restricted by the use of different forms of locks\cite[p. 58]{sutter2005software}. 
+\subsection{Mutual Exclusion \& Locks}\label{sec:locks_me}
+Mutual exclusion is the property of shared memory concurrency which ensures that only a single thread can access a given critical region at a time\cite[p. 117]{tanenbaum2008modern}\cite[p. 962]{bryant2011computer}\cite[p. 6]{herlihy2012art}, a critical region being a thread accessing some memory that is shared with other threads\cite[p. 117]{tanenbaum2008modern}\cite[p. 961]{bryant2011computer}. Mutual exclusion provides atomicity synchronization as dicussed in \bsref{sec:synchronization}. Having only a single thread execute within all critical regions at a time, ensures that the program will behave as if it runs sequentially, even though this might not be the case. Access to critical regions is often restricted by the use of different forms of locks\cite[p. 58]{sutter2005software}. 
 
-Locks are a general class of constructs used for providing mutual exclusion. Locks come in a variety of different fashions such a Mutex, Monitor, and Semaphore. Each of these operate in their own way, but the overall goal remains the same. Locks provide mutual exclusion by allowing only a single thread to enter its critical region at a time. When a thread \bscode{t1} attempts to acquire a lock that is already held by another task \bscode{t2},\bscode{t1} blocks, effectively waiting for the \bscode{t2} to exit its critical region and release the lock before proceeding. Locks prevent race conditions but introduce other issues such as: deadlocks, priority inversion, and starvation, which will be presented in \bsref{sec:tl_ci}, and leads to threads spending time blocked instead of executing parts of the program. Furthermore, the programmer is left alone to place the locks in the correct place and the correct order, which in itself is hard. If he succeeds of using locks as synchronization mechanism, a major caveat is that they are not composable\cite[p. 58]{sutter2005software}. That is, you cannot compose two correct lock-based pieces of code and know the result is still correct. This significantly limits the reuseability of software components, and therefore lowers the productivity of the programmer.
+Locks are a general class of constructs used for providing mutual exclusion. Locks come in a variety of different forms such a Mutex, Monitor, and Semaphore. Each of these operate in their own way, but the overall goal remains the same. Locks provide mutual exclusion by allowing only a single thread to enter its critical region at a time. When a thread \bscode{t1} attempts to acquire a lock that is already held by another task \bscode{t2},\bscode{t1} blocks, effectively waiting for the \bscode{t2} to exit its critical region and release the lock before proceeding. Locks prevent race conditions but introduce other issues such as: deadlocks, priority inversion, and starvation, which will be presented in \bsref{sec:tl_ci}, and leads to threads spending time blocked instead of executing parts of the program. Furthermore, it is up to the programmer to apply locking to the correct places and in the correct order, which in itself is hard. If he succeeds of using locks as synchronization mechanism, a major caveat is that they are not composable\cite[p. 58]{sutter2005software}. That is, you cannot compose two correct lock-based pieces of code and know the result is still correct. This significantly limits the reuseability of software components.%, and therefore lowers the productivity of the programmer.
 \kasper{Maybe move parts of above paragraph to characteristics chapter discussion chapter later}
 
 Consider the example presented in \bsref{lst:mutualexclusion}, which is a modified version of the exampled presented in \bsref{lst:racecondition}. As it can be seen on lines 11-15 and 18-19, the two threads have had their critical regions locked, limiting the access to one thread at a time. If either \bscode{t1} or \bscode{t2} attempts to acquire the lock while the other already holds it, they would block, ensuring mutual exclusion. As a result the interleaving presented in \bsref{fig:race_interleaving3} is no longer possible and the race condition has been removed. 
@@ -143,8 +143,7 @@ Consider the example presented in \bsref{lst:mutualexclusion}, which is a modifi
 %Still based on threads
 
 \section{Concurrency Issues}\label{sec:tl_ci}
-\andreas{Lock issues?}
-This section presents an overview of known issues related to \ac{TL} concurrency. Many of the issues arise as a result of locking access to shared memory. Some of the issues are also present in other concurrency models.
+This section presents an overview of known issues related to \ac{TL} concurrency. Many of the issues arise as a result of locking access to shared memory. Some of the issues are also present in other concurrency models. The overview is used for evaluating the characteristics of the \ac{TL} concurrency model. Furthermore knowing what issues can arise for each of the selected concurrency models, will assist in comparing their complexity.
 %Some of the issues are related mainly to shared memory concurrency while others apply to a broader spectrum, including asynchronous message passing.
  
 \subsection{Deadlocks}

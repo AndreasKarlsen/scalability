@@ -1,7 +1,7 @@
 \makeatletter \@ifundefined{rootpath}{\input{../../setup/preamble.tex}}\makeatother
 \worksheetstart{Software Transactional Memory}{1}{November 7, 2013}{Andreas}{../../}
 This chapter investigates \ac{STM} as a concurrency model. In \bsref{sec:stm_keyconcepts}, the key concepts of \ac{STM} is described. \bsref{sec:stm_issues} documents the concurrency issues introduces by \ac{STM}. \bsref{sec:stm_discussion} discusses the properties of \ac{STM}. Finally, in \bsref{sec:stm_eval} an evaluation of \ac{STM} as a concurrency model is conducted.
-
+\label{chap:stm}
 \section{Key Concepts}
 \kasper[inline]{Maybe stress the fact that the only different between \ac{TL} and \ac{STM} is in the way synchronization is done eg. locks vs transactions. Still shared memory leading to race conditions.}
 \label{sec:stm_keyconcepts}

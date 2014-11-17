@@ -1,50 +1,46 @@
 \makeatletter \@ifundefined{rootpath}{\input{../../setup/preamble.tex}}\makeatother
 \worksheetstart{Concurrency Basics}{1}{April 24, 2013}{Someone}{../../}
-This chapter presents the basic concepts related to concurrency. \bsref{sec:concurrency_parallelism} presents the relationship between concurrency and parallelism leading to a definition of the concepts. \bsref{sec:processes_threads} presents the process thread model on which concurrency is build and \bsref{sec:synchronization} describes the concept of synchronization.
+This chapter presents the basic concepts related to concurrency. The goals of the chapter is to ensure common ground between the authors and the reader. Furthermore describing these basis constructs separately allows for more concise description of related topics in \bsref{chap:threads_locks}, \bsref{chap:stm} and \bsref{chap:actor}, describing the selected concurrency models. 
+
+\bsref{sec:concurrency_parallelism} presents how the literature describes the concepts of concurrency and parallelism as well as giving a definition of the two concepts. \bsref{sec:processes_threads} presents the process thread model on which concurrency is build and \bsref{sec:synchronization} describes the concept of synchronization.
 \section{Concurrency \& Parallelism}\label{sec:concurrency_parallelism}
-This sections describes the process of producing a definition of concurrency and parallelism, which will be employed within the project. The definition is based on relevant literature.
+Concurrency and parallelism are two highly connected yet different concepts. While both deal with running multiple computations simultaneously, their reasons for doing so are different. Both concepts have varying definitions throughout the literature. As such we will present our definition of the concepts in order to clarify their meaning within this report. The definitions are based on relevant description of concurrency and parallelism within the literature.
 
-Concurrency and parallelism are two highly connected yet different concepts. While both deal with running multiple computations simultaneously, their reasons for doing so are different. \bsref{sec:basics_concurrency} presents a investigation into concurrency, followed by a investigation into parallelism in 
-\bsref{sec:basics_parallelism}. \bsref{sec:basics_concurrency_parallelism_def} presents the definitions of concurrency and parallelism definitions employed within this project.
+In \cite[p. 330]{papadopoulos1998coordination} concurrency is \textit{``cooperation among very large numbers of active entities that comprise a single application''} while \cite[p. 607]{cleaveland1996strategic}
+says \textit{``Concurrency is concerned with the fundamental aspects of systems of multiple, simultaneous active computing agents that interact with one another''}. Both emphasises that concurrent applications consists of multiple computation entities, collaborating with one another.
 
-\subsection{Concurrency}\label{sec:basics_concurrency}
-\cite[p. 330]{papadopoulos1998coordination} states that concurrency is \textit{``cooperation among very large numbers of active entities that comprise a single application''} while \cite[p. 607]{cleaveland1996strategic}
-says \textit{``Concurrency is concerned with the fundamental aspects of systems of multiple, simultaneous active computing agents that interact with one another''}. Both emphasises that concurrent applications consists of multiple computation agents, collaborating with one another.
+Regarding concurrency \cite[p. 579]{sebestaProLang} states that concurrency can be either physical or logical. Physical concurrency is directly supported by a multicore processor, providing true simultaneous execution. Logical concurrency on the other hand, executes on a single core processor and concurrency is achieved by interleaving the execution of task.
 
-\cite[p. 579]{sebestaProLang} states that concurrency can be either physical or logical. Physical concurrency is directly supported by a multicore processor, providing true simultaneous execution. Logical concurrency on the other hand, executes on a single core processor and concurrency is achieved by interleaving the execution of task.
+Parallelism is closely related to concurrency. \cite{introPar} states that in using parallelism \textit{``A problem is broken into discrete parts that can be solved concurrently''}, indicating that parallelism builds upon concurrency. A prerequisite for parallelism is that the problem at hand can be divided into the described discrete parts. Such problems are referred to as embarrassingly parallel tasks\cite{sutter2005software}. Here operations can be applied independently to each data point.
 
-\subsection{Parallelism}\label{sec:basics_parallelism}
-Parallelism is closely related to concurrency. As with concurrency, it deals with executing computations simultaneously. \cite{introPar} states that in using parallelism \textit{``A problem is broken into discrete parts that can be solved concurrently''}, indicating that parallelism builds upon concurrency. A prerequisite for parallelism is that the problem at hand can be divided into the described discrete parts. Such problems are refereed to as embarrassingly parallel tasks\cite{sutter2005software}. Here operations can be applied independently to each data point.
+In \cite[p. 24]{sevenModels} the author states that concurrency deals with handling multiple tasks simultaneously, while parallelism is dividing a single task up into multiple parts and computing these parts simultaneously. The difference lies in the task that is to be performed. Performing multiple tasks simultaneously is considered concurrency, while splitting up a task in smaller parts and performing these parts simultaneously is considered parallelism.
 
-\subsection{Definitions}\label{sec:basics_concurrency_parallelism_def}
-In \cite[p. 24]{sevenModels} the author states that concurrency deals with handling multiple tasks simultaneously, while parallelism is dividing a single task up into multiple parts and computing these parts simultaneously. The difference lies in the task that is to be performed. Performing multiple tasks simultaneously is considered concurrency, while splitting up a task in smaller parts and performing these parts simultaneously is considered   parallelism.
-
-Based on the considerations presented here we give the definition of concurrency shown in \bsref{def:concurrency}, followed by the definition of concurrency presented in \bsref{def:parallelism}.
-
-
+Based on the descriptions of concurrency and parallelism presented here we give the definition of concurrency shown in \bsref{def:concurrency}, followed by the definition of concurrency presented in \bsref{def:parallelism}. The definition of parallelism is based on that of concurrency, reflecting the strong connection between the concepts. The description of parallelism found in \cite{introPar} supports such a connection.
 \begin{defn}\label{def:concurrency}
-\emph{Concurrency is executing multiple task simultaneously}
+\emph{Concurrency is executing multiple tasks simultaneously}
 \end{defn}
 
 \begin{defn}\label{def:parallelism}
-\emph{Parallelism is dividing a single task into multiple independent parts, which are then executed simultaneously}
+\emph{Parallelism is dividing a single task into multiple independent parts, which are then executed concurrently}
 \end{defn}
+The distinguishing between concurrency and parallelism is based on what is considered the task to solve. If a single task is divided into multiple smaller parts, it is considered parallelism. On the other hand solving multiple task simultaneously is considered concurrency.
+
 As an example, handling multiple requests to a webservice simultaneously, is considered concurrency. On the other hand calculating the sum of a list of integers, by dividing the list into multiple smaller lists and calculating their sums simultaneously, is considered parallelism.
 
 \kasper[inline]{possibly talk about how one can be viewed as the other depending on what is defined as the task to be executed}
 \kasper[inline]{possibly talk about concurrency programs being non deterministic}
 \section{Processes \& Threads}\label{sec:processes_threads}
-\acp{OS} have to run multiple programs simultaneously. In order to do so, the \ac{OS} use an abstraction of a running program, called a process\cite[p. 81]{tanenbaum2008modern}\cite[p. 16]{bryant2011computer}. Multiple processes can be executed concurrently and the \ac{OS} provides processes with the illusion of having exclusive access to the hardware\cite[p. 16]{bryant2011computer}. 
+A \ac{OS} has to run multiple programs simultaneously. In order to do so, the \ac{OS} use an abstraction of a running program, called a process\cite[p. 81]{tanenbaum2008modern}\cite[p. 16]{bryant2011computer}. Multiple processes can be executed concurrently and the \ac{OS} provides processes with the illusion of having exclusive access to the hardware\cite[p. 16]{bryant2011computer}. 
 
-A single \ac{CPU} core can only execute a single process at a time. On such single core system, the \ac{OS} interleaves the instructions of processes, producing the illusions, of processes being executed simultaneously\cite[p. 16]{bryant2011computer}. On more modern multi core systems, each core can execute a single process at a time. In such systems, interleaving is still be performed if the number of processes is greater than the number of cores.
+A single \ac{CPU} core can only execute a single process at a time. On such single a core system, the \ac{OS} interleaves the instructions of processes producing the illusions, of processes being executed simultaneously\cite[p. 16]{bryant2011computer}. On more modern multi core systems, each core can execute a single process at a time. In such systems, interleaving is still performed if the number of processes is greater than the number of cores.
 
 Interleaving of processes is performed using what is called a context switch\cite[p. 16]{bryant2011computer}. A context switch is the act of the \ac{OS} saving the currently running process's context and restoring the context of the process that is to run instead. The context is the state of the process, including information such as, its registers and variables\cite[p. 82]{tanenbaum2008modern}. As such a context switch from process \bscode{A} to process \bscode{B} is essentially saving the state of \bscode{A} and restoring the state of \bscode{B}, allowing \bscode{B} to resume where it left off, at the expense of \bscode{A}.\kasper{Possible explain what exactly interleaving is}
 
-Processes consists of two separate concepts: resources and execution \cite[p. 98]{tanenbaum2008modern}. The resources of a process include an address space in memory, the program code as well as information on open files etc. The execution of a process is handled by what is called a thread\cite[p. 98]{tanenbaum2008modern}. A thread is an abstraction for a part of a process, that executes sequentially. A thread has its own program counter, tracing where in the program code the thread currently resides, as well as a stack that tracks the threads execution history\cite[p. 99]{tanenbaum2008modern}. Threads are the part of a process, that is scheduled for execution upon the \ac{CPU}.
+Processes consists of two separate concepts: resources and execution \cite[p. 98]{tanenbaum2008modern}. The resources of a process include an address space in memory, the program code as well as information on open files etc. The execution of a process is handled by what is called a thread\cite[p. 98]{tanenbaum2008modern}. A thread is an abstraction for a part of a process, that executes sequentially. A thread has its own program counter, tracking where in the program code the thread currently resides, as well as a stack that tracks the threads execution history\cite[p. 99]{tanenbaum2008modern}. Threads are the part of a process, that is scheduled for execution upon the \ac{CPU}.
 
-A process has atleast one thread which handles its execution, but can have more. Having multiple threads facilitates concurrency within the process. Threads within the same process share the address space of the process and can communicate by, reading from and writing to the memory within that address space. Threads are the basic construct for concurrency within programs and concurrency models build upon threads in some form.
+A process has at least one thread which handles its execution, but can have more. Having multiple threads facilitates concurrency within the process. Threads within the same process share the address space of the process and can communicate by, reading from and writing to the memory within that address space. Threads are the basic construct for concurrency within programs and concurrency models build upon threads in some form.
 
-The process thread model is exemplified in \bsref{fig:classic_process_thread}. Here the processes \bscode{A} and \bscode{B} are shown. Process \bscode{A} has a single thread while process \bscode{B} has three. Process \bscode{B}'s threads share the address space assigned to process \bscode{B} and can communicate by reading from and writing to the memory within that address space. The threads of process \bscode{B} does not share memory with the thread of process \bscode{A}.
+The process thread model is exemplified in \bsref{fig:classic_process_thread}. Here the processes \bscode{A} and \bscode{B} are shown. Process \bscode{A} has a single thread while process \bscode{B} has three. Process \bscode{B}'s threads share the address space assigned to process \bscode{B} and can communicate by reading from and writing to the memory within that address space. The threads of process \bscode{B} do not share memory with the thread of process \bscode{A}.
 
 \begin{figure}[htbp]
 \centering
@@ -64,9 +60,14 @@ Threads within the same process are executed concurrently. Synchronization is th
 
 Two main types of synchronization exists: atomicity and condition synchronization. Atomicity ensures that, the execution of a set of instructions or statements, executed by some thread, is seen as single step, from the point of view of every other thread\cite[p. 1989]{scott2011sync}.
 
-Condition synchronization forces the executing thread to wait until some locally observable precondition is true\cite[p. 1989]{scott2011sync}. Conditional synchronization can, for example, be used for waiting on some parallel work to finish, before reading the result.
+Conditional synchronization forces the executing thread to wait until some locally observable precondition is true\cite[p. 1989]{scott2011sync}. Conditional synchronization can, for example, be used for waiting on some parallel work to finish, before reading the result.
 
-From the point of view of the programmer, providing synchronization differs greatly depending on the chosen concurrency model. For concurrency model based on message passing, synchronization is generally embedded in the message parsing constructs. On the other hand, concurrency model based on shared memory generally require the programmer to use additional construct for synchronization\cite[p. 1989]{scott2011sync}.
+From the point of view of the programmer, providing synchronization differs greatly depending on the chosen concurrency model. For concurrency models based on message passing, synchronization is generally embedded in the message parsing constructs. On the other hand, concurrency models based on shared memory generally require the programmer to use additional constructs for synchronization\cite[p. 1989]{scott2011sync}.
+
+\subsection{Shared Memory Synchronization}
+In the context of shared memory concurrency, two basic types of synchronization exists: busy-waiting and scheduler-based\cite[p. 1990]{scott2011sync}. Busy waiting synchronization uses \ac{CPU} time while scheduler-based does not. Blocking synchronization does however deschedule the thread on which synchronization is required, requiring two context switches. One for descheduling the thread in order to supply synchronization and one for rescheduling it when it becomes runnable again.
+
+Synchronization is supported by a number of hardware primitives, which referred to as read-modify-write instructions\cite[p. 1990]{scott2011sync}. Read-modify-write instructions execute atomically, that is, no other instructions can be executed between parts of the operation, as a result of interleaving. Test-and-set and compare-and-swap are example of read-modify-write instructions.  
 
 \kasper[inline]{Threads and concurrency discussion}
 \worksheetend
