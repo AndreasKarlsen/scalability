@@ -1,6 +1,7 @@
 \makeatletter \@ifundefined{rootpath}{\input{../../setup/preamble.tex}}\makeatother
 \worksheetstart{The Actor Model}{1}{April 24, 2013}{Tobias}{../../}
 This chapter presents the actor concurrency model by describing the key concepts in \bsref{sec:actor_concepts}. Afterwards in \bsref{sec:actor_con_issues} we present how the actor model relates to the concurrency issues presented in the \ac{TL} model. Hereafter a discussion about the actor model is presented in \bsref{sec:actor_discussion}. Finally in \bsref{sec:actor_charac} we evaluate the actor model using the characteristics previously defined in \bsref{chap:char}.
+\label{chap:actor}
 
 \section{Key Concepts}\label{sec:actor_concepts}
 The actor model is an inherently concurrent model where the main abstraction and building block is actors\cite[p. 2]{karmani2009actor}. An actor is an entity that has the following essential elements of computation\cite{actorLangNextVideo}: processing, storage, and communication. The actor is able to process instructions e.g. adding numbers together or concatenating strings. The actor is also able to store data on itself e.g. the result of some processing or some value communicated from another actor. We explain the storage and communication elements in more detail throughout the section.
