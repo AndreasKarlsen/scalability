@@ -60,12 +60,28 @@ Each actor must be isolated from one another, only communicating through asynchr
 Actors know each other only by unique address, often in the form of an actor name, disjointed from the physical location. Location transparency provides an abstraction where the programmer does not have to worry about or specify the actual physical location of the message recipient. An actor can communicate with another actor which exists on the same core, on the same machine or on an entirely different machine across the network\cite[p. 3]{karmani2009actor}. Location transparency gives the ability at runtime to distribute execution across a cluster of machines which eases scaling beyond a single machine.
 
 \section{Concurrency issues}\label{sec:actor_con_issues}
-%evt. flyt det nederst i afsnitet eller i starten af concurrency issues
-%husk også ascynchonuys natur sammen med no shared state!
-\toby[inline]{Dette kaptiel er ikke færdigt endnu og indeholder bare stuff}
-One of the main differences from other concurrency models, such as \ac{TL}, is that there is no notion of shared state. Instead each actor has isolated state where only the actor itself is responsible and allowed to modify state. The reason that isolated state is preferable over shared state is that some of the concurrency issues presented earlier in \bsref{sec:tl_ci} is mitigated and some even gone. 
+One of the main differences from other concurrency models, such as \ac{TL} and \ac{STM}, is that there is no notion of shared state in the actor model. Instead each actor has isolated state where only the actor itself is responsible and allowed to modify state. An actor can only affect the state of another actor indirectly by message passing and the receiving actor is then responsible to change the state. The reason that message passing as the only communication form and isolated state is preferable over shared state is that race conditions are avoided by design.\toby{Skal der være en reference tilbage hvor vi snakker om det før?} To exemplify this imagine two messages that wants to read and modify a state variable of an actor. The actor processes each message in one isolated atomic operation which means that the messages will not interfere with one another as the message will be processed one at a time.
+%subsec:race_coditions
 
-That an actor processes messages in one isolated atomic operation reduces concurrency issues and make programs easier to reason about as multiple messages will not conflict with one another e.g. if two messages wants to update the isolated state of an actor there will be no concurrency issue in terms of race condition as only a single message will be processed at a time.
+The issue of deadlocks\toby{Eller er det livelocks i forhold til vores tidligere definitioner? Skal nok lige have kasper på banen her} are however also present in the actor model. In the shared memory concurrency models a deadlock is often raised as a result of multiple threads trying to acquire resources 
+
+The actor model alleviates the race condition problem but deadlocks is still possible 
+
+%deadlock eller livelock
+
+%Starvation og priority inversion
+
+
+%actors in scala p. 15:
+%potential disadvantage of message passing is that the communication overhead may be high. To communicate, processes have to create and send messages, and these messages are often buffered in queues before they can be received to support asynchronous communication
+
+%race condition free
+% If processes communicate only by passing messages, and those messages are immutable, then data races are avoided by design.
+
+%Free of data races but still possible to have deadlocks and also problems only related to actors fx. Overflowing of an actors mailbox (seven models 152)
+
+%ingen race conditions by nature of model
+%still possible to have deadlocks (eller er det livelocks?)
 
 %Seven models p. 152 weaknesses
 %Although a program constructed with actors is easier to debug than one constructed with threads and locks, actors are still susceptible to problems like deadlock plus a few failure modes unique to actors (such as overflowing an actor’s mailbox).
@@ -154,9 +170,12 @@ There exists a number of other different programming abstractions for communicat
 
 %pga. message passing = dyrt at kopiere messages rundt and can only procees one message at a time
 
-\subsection{Title something - look in comments}
+\subsection{Not a silver bullet - look in comments}
 %Hard to model with threads but just because we use actors we do no remove this problem entirely - we still have to model it with actors
 %evt. kig på Bent's præsentation
+
+\subsection{Actor thread mapping}
+%Måske have et afsnit i discussion i actor om actor mapping til single thread vs lightweight actors der mapper mange actors på en tråd.
 
 \subsection{Adhering to Actor Properties}
 \toby[inline]{Måske hav den i implementations afsnittet og tag udgangspunkt i jvm comparsion of actors artiklen til at beskrive problematikken. Evt. prøv at finde ud af hvilke semantic properties akka understøtter}
@@ -186,6 +205,12 @@ There exists a number of other different programming abstractions for communicat
 \toby[inline]{Evt. også hav en subsektion hvor der fortælles om at actor modellen tit blandes med andre concurrency modeller (tag udgangspunkt i den artikel i droppen)}
 %Noget fra artiklen om at man tit anvender andre concurrency værktøjer, end kun actors artikeln (sammen med actors).
 	%bl.a. actor model og libray inadequecies og evt. også konklussionen
+
+
+\toby[inline]{Message passing overhead}
+%fra actors in scala:
+	%potential disadvantage of message passing is that the communication overhead may be high. To communicate, processes have to create and send messages, and these messages are often buffered in queues before they can be received to support asynchronous communication.
+	%By contrast, shared-state concurrency enables direct access to shared memory, as long as it is properly synchronized. To reduce the communication overhead of message passing, large messages should not be transferred by copying the message state; instead, only a reference to the message should be sent. However, this reintroduces the risk for data races when several processes have access to the same mutable (message) data. It is an ongoing research effort to provide static checkers; for instance, the Scala compiler plug-in for uniqueness types[10] that can verify that programs passing mutable messages by reference do not contain data races
 
 \section{Actor Characteristics}\label{sec:actor_charac}
 
