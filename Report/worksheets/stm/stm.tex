@@ -3,20 +3,51 @@
 This chapter investigates \ac{STM} as a concurrency model. In \bsref{sec:stm_keyconcepts}, the key concepts of \ac{STM} is described. \bsref{sec:stm_issues} documents the concurrency issues introduces by \ac{STM}. \bsref{sec:stm_discussion} discusses the properties of \ac{STM}. Finally, in \bsref{sec:stm_eval} an evaluation of \ac{STM} as a concurrency model is conducted.
 
 \section{Key Concepts}
-\kasper[inline]{Maybe stress the fact that the only different between \ac{TL} and \ac{STM} is in the way synchronization is done eg. locks vs transactions. Still shared memory leading to race conditions.}
 \label{sec:stm_keyconcepts}
-This section presents the key concepts of \ac{STM}. It sets the setting, and clarifies the concepts of \ac{STM}, so the following sections will be able to base a comparison and discussion upon these concepts, without having to explain details.
+This section presents the key concepts of \ac{STM}. It sets the setting, and clarifies the concepts of \ac{STM}, so the following sections will be able to base a comparison and discussion upon these concepts, with the details already being clarified.
 
 \subsection{Transactions}
-\ac{TM} is based on the concept of a transaction. A transaction is a finite sequence of machine instructions, executed by a single process, satisfying the properties: Atomicity, Consistency, and Isolation\cite[p. 2]{herlihy1993transactional}\cite[p. 14]{kalin2012clojure}\andreas{Should we explain the properties again, in more details? Its explained in the preliminary investigation}. \ac{TM} can perform a group of memory-operations atomically\cite[48]{harris2005composable}. By utilizing the transactional approach, \ac{TM} serves as a concurrency control mechanism. By adhering to the aforementioned properties, \ac{TM} enables concurrent execution, while being semantically equivalent to serial execution of the same program.
+\ac{TM} is based on the concept of a transaction. A transaction is a finite sequence of machine instructions, executed by a single process, satisfying the properties: Atomicity and Isolation\cite[p. 2]{herlihy2011tm}.
 
-Race conditions \bsnameref{subsec:race_coditions}
+\paragraph{Atomicity} By considering the instructions in a transaction as indivisible, atomicity ensures a shared effect of all the instructions in the transactions, either success or failure. That is, either all the instructions succeeds to change state of the system or none of them does. E.g. if a single instruction in a transaction fails, all will fail.
+\paragraph{Isolation} A transaction is only perceived before or after its execution, never in the middle. That is, for the rest of the system the work of a transaction can be perceived to occur instantaneously. 
+
+\ac{TM} can perform a group of memory-operations atomically\cite[48]{harris2005composable}. By utilizing the transactional approach, \ac{TM} serves as a concurrency control mechanism. By adhering to the aforementioned properties, \ac{TM} enables concurrent execution, while being semantically equivalent to serial execution of the same program.
 
 \subsection{Software or Hardware}
-In \cite{herlihy1993transactional} the Authors presents \ac{TM} as a straight forward extension to any multiprocessor cache-coherent protocol. Most \ac{HTM} proposals are based on straightforward modifications to standard multiprocessor cache-coherence protocols\cite{scott2011sync}. Due to the inflexible properties of existing hardware, i.e. fixed instruction set, \ac{TM} implemented on hardware is limited to existing instructions. This causes high implementation and verification costs\cite{cascaval2008software}. \ac{HTM} also exposes low level hardware details and limitations\cite{scott2011sync}, which preferably should be abstracted away from the programmer, to ensure semantic correctness of the transactions regardless of the hardware limitations. Due to this, a software based solution is presented by \cite{shavit1997software}. This solution, entirely implemented as software, is known as \acl{STM}. Being implemented as a software solution, \ac{STM} does not suffer the same issues as \ac{HTM}, but still provides the transactional semantics. Due to this, \ac{STM} is in interesting as a concurrency mechanism.
+In \cite{herlihy1993transactional} the authors presents \ac{TM} as a straight forward extension to any multiprocessor cache-coherent protocol. Most \ac{HTM} proposals are based on straightforward modifications to standard multiprocessor cache-coherence protocols\cite{scott2011sync}. Due to the inflexible properties of existing hardware, i.e. fixed instruction set, \ac{TM} implemented on hardware is limited to existing instructions. This causes high implementation and verification costs\cite{cascaval2008software}. \ac{HTM} also exposes low level hardware details and limitations\cite{scott2011sync}, which preferably should be abstracted away from the programmer, to ensure semantic correctness of the transactions regardless of the hardware limitations. Due to this, a software based solution is presented by \cite{shavit1997software}. This solution, entirely implemented as software, is known as \acl{STM}. Being implemented as a software solution, \ac{STM} does not suffer the same issues as \ac{HTM}, but still provides the transactional semantics. Due to this, \ac{STM} is in interesting as a concurrency mechanism.
 
-\subsection{\ac{STM}}
-STM is a software system that provides programmers with a transactional model through a library or compiler interface\cite{scott2011sync}.\kasper{Tror du referrer den forkerte del af bogen. herlihy2011tm er den del som handler om TM.}
+\subsection{\acl{STM}}
+\ac{STM} provides programmers with a transactional model, in software, through a library or compiler interface\cite{herlihy2011tm}. It seeks to solve the problems introduced by running multiple processes concurrently in a shared memory space, e.g. race conditions as discussed in \bsref{subsec:race_coditions}. 
+
+To handle these challenges, \ac{STM} offers the programmer ways to define transaction scopes in critical regions. By having the critical regions defined, the \ac{STM} takes care of ensuring the semantic properties previously defined, and leaving no work left for the programmer.
+
+The example in \bsref{lst:stmexample} demonstrates such definition on line 5, in Clojure. Two accounts, \bscode{account1} and \bscode{account2} respectively is defined as a reference to an amount. The function \bscode{transfer} takes an amount, and two accounts as parameters. In a transaction, it then transfers the amount given, from one account, to the other.
+
+\begin{lstlisting}[label=lst:stmexample,
+  caption={STM in Clojure},
+  language=Lisp,  
+  showspaces=false,
+  showtabs=false,
+  breaklines=true,
+  showstringspaces=false,
+  breakatwhitespace=true,
+  commentstyle=\color{greencomments},
+  keywordstyle=\color{bluekeywords},
+  stringstyle=\color{redstrings}]  % Start your code-block
+
+	(def account1 (ref 100))
+	(def account2 (ref 0))
+
+	(defn transfer [amount from to]
+    	(dosync
+    		(alter from - amount)
+    		(alter to + amount)))
+       
+\end{lstlisting}
+\andreas[inline]{Should I explain the clojure specific details? E.g. references is a special type made for transactions, and can only be modified in a transaction}
+
+
 
 To clarify the effect of using \ac{STM}, \bsref{fig:transaction} visualizes the flow of an example of two transactions running concurrently\andreas{Or in parallel?}. Both transactions \bscode{t1} and \bscode{t2} is in the same process, and therefore have access to a shared pool of memory. The variable \bscode{x} is stored in this memory. Both transactions have a reference to variable x. First off, the 
 
@@ -28,7 +59,7 @@ To clarify the effect of using \ac{STM}, \bsref{fig:transaction} visualizes the 
 
 % Design criteria for STM (Thomas Stig fremlæggelse)
 \subsection{Atomicity}
-
+% Atomicity is commonly enforced by mutual exclusion, whether at the hardware level building on a cache coherency protocol, or the software level using semaphores or locks.
 \subsection{Isolation level}
 Strong vs Weak\\
 
@@ -82,6 +113,9 @@ Structuring concurrent programs that seeks to provide better scalability and eas
 %% Easier to use (Troels' study)
 
 \section{Evaluation of Characteristics}
+% Is Transactional Programming Actually Easier
+% Why is STM only a research toy
+% Why STM can be more than a research toy
 \label{sec:stm_eval}
 % Optimistic (retry, not wait)
 
