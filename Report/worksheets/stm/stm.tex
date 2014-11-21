@@ -95,9 +95,19 @@ Eager updating updates the memory associated with a variable directly. Eager upd
 
 Lazy updating takes the opposite approach and writes updates to local versions of the effected data\cite[p. 2084]{herlihy2011tm}. If the transaction commits, the local changes are written to the actual memory locations, while a abort causes the local changes to be discarded.
 
-Eager updating allows efficient commit of transactions but makes it harder to ensure that so called zombie transactions, that is transaction witch will eventually abort but have not yet discovered so, sees consistent state\cite[p. 2084]{herlihy2011tm}\kasper{Mere om dette.}. A zombie transaction is a transaction which will eventually abort, but have not yet discovered so.
+Eager updating allows efficient commit of transactions but makes it harder to ensure that so called zombie transactions, that is transaction witch will eventually abort but have not yet discovered so, sees consistent state\cite[p. 2084]{herlihy2011tm}\kasper{Mere om dette.}.
 \subsubsection{Conflict Detection}
 \subsubsection{Visible vs Invisible Reads}
+When reading shared data a \ac{STM} implementations can either employed visible, invisible or semivisible reads.
+
+Using visible reads a \ac{STM} transaction communicate its operations to other transactions, by registering in shared memory whenever it reads a shared variable\cite[p. 2]{lev2009anatomy}\cite[p. 2085]{herlihy2011tm}. Other transaction, which are about to write to a shared variable, can then consult the written data to identify if they are about to produce a conflict. As transaction write exactly which transaction reads a variable, the writing transaction can chose to abort the reading transactions\cite[p. 2]{lev2009anatomy}.
+
+Using invisible reads a \ac{STM} transaction does not communicate its operations to other transactions\cite[p. 114]{imbs2012virtual}. Transactions instead maintain per read metadata which is used to validate the transaction whenever additional reads are performed\cite[p. 2085]{herlihy2011tm}.
+
+Visible reads have the problem of being expensive and not scaling, while invisible reads are expensive due to their need for repeated validation. As such, more recent \ac{STM} implementations instead employ the semivisible read scheme\cite[p. 2085]{herlihy2011tm}.
+
+Semivisible reads are similar to visible reads in that transaction communicate to other transactions. Instead of communicating exactly what transaction read a shared variable, a transaction simply indicates that a given variable has been read by some transaction. Allowing other transaction to see that a conflict exists. A counter is maintained for each transaction indicating if any conflicts occured during its execution. Expensive validation can be avoided in the vast majority  of cases by checking whether any conflicts occurred during the execution of a transaction\cite[p. 2]{lev2009anatomy}.
+
 \subsubsection{Contention Manager}
 \subsubsection{Implementation techniques}
 Multiversion concurrency control\\
