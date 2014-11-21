@@ -60,17 +60,78 @@ Each actor must be isolated from one another, only communicating through asynchr
 Actors know each other only by unique address, often in the form of an actor name, disjointed from the physical location. Location transparency provides an abstraction where the programmer does not have to worry about or specify the actual physical location of the message recipient. An actor can communicate with another actor which exists on the same core, on the same machine or on an entirely different machine across the network\cite[p. 3]{karmani2009actor}. Location transparency gives the ability at runtime to distribute execution across a cluster of machines which eases scaling beyond a single machine.
 
 \section{Concurrency issues}\label{sec:actor_con_issues}
-One of the main differences from other concurrency models, such as \ac{TL} and \ac{STM}, is that there is no notion of shared state in the actor model. Instead each actor has isolated state where only the actor itself is responsible and allowed to modify state. An actor can only affect the state of another actor indirectly by message passing and the receiving actor is then responsible to change the state. The reason that message passing as the only communication form and isolated state is preferable over shared state is that race conditions are avoided by design.\toby{Skal der være en reference tilbage hvor vi snakker om det før?} To exemplify this imagine two messages that wants to read and modify a state variable of an actor. The actor processes each message in one isolated atomic operation which means that the messages will not interfere with one another as the message will be processed one at a time.
+In this section we present how the actor model relates to the relevant concurrency issues presented in \bsref{sec:tl_ci}.\toby{Har vi også raceconditions med her hvor jeg referer til?}
+%priority inversion er ikke taget med fordi den ikke er gælende i actors
+%livelock er ikke med, fordi vi (mener) at den ikke er gældende
+
+\subsection{Race conditions}
+One of the main differences from other concurrency models, such as \ac{TL} and \ac{STM}, is that there is no notion of shared state in the actor model. Instead each actor has isolated state where only the actor itself is responsible and allowed to modify state. An actor can only affect the state of another actor indirectly by message passing and the receiving actor is then responsible to change the state. The reason that message passing as the only communication and isolated state is preferable over shared state is that race conditions are avoided by design. To exemplify this imagine two messages sent to an actor that wants to read and modify a state variable of the actor. The actor processes each message in one isolated atomic operation which means that the messages will not interfere with one another, as the message will be processed one at a time.
 %subsec:race_coditions
 
-The issue of deadlocks\toby{Eller er det livelocks i forhold til vores tidligere definitioner? Skal nok lige have kasper på banen her} are however also present in the actor model. In the shared memory concurrency models a deadlock is often raised as a result of multiple threads trying to acquire resources 
+\subsection{Deadlocks}
+The concurrency issue of deadlocks is still a problem in the actor model. The limitation of the actor model to asynchronous message passing helps to avoid blocking waits which thereby helps to keep the program free of deadlock issues\cite[p. 304]{tasharofi2013scala}. However, asynchronous message passing introduces non-determinism which in some cases are desired to be pruned away, which we will discuss further in \bsref{ssec:nondeter_msg_order}.\toby{Fungerer denne reference?} One way to prune this non-determinism is by implementing actors by busy-waiting for the response from another actor. An example of such a busy-waiting actor program is shown in \bsref{label=lst:actor_busywait}. On line 5 there is an isolated integer state variable for the \bscode{BusyActor} while the behaviour methods are defined on lines 7-20. There are three different behaviour methods for the Start, Wait and Value messages. The actor starts by sending a message to the \bscode{OtherActor} which it desires to busy-wait for which is done by sending the \bscode{Wait} message it itself. The behaviour method for \bscode{Wait} on line 11-17 shows that the actor will print the result if it has received the result from the \bscode{OtherActor}, otherwise it will again send itself a \bscode{Wait} message. This behaviour continues until the \bscode{BusyActor} receives the \bscode{Value} message from the \bscode{OtherActor}. 
 
-The actor model alleviates the race condition problem but deadlocks is still possible 
+\begin{lstlisting}[label=lst:actor_busywait,
+  caption={Busy-waiting actor program written in the Scala Akka actor framework.},
+  language=Java,  
+  showspaces=false,
+  showtabs=false,
+  breaklines=true,
+  showstringspaces=false,
+  breakatwhitespace=true,
+  commentstyle=\color{greencomments},
+  keywordstyle=\color{bluekeywords},
+  stringstyle=\color{redstrings}]  % Start your code-block
+	
+	import akka.actor._
+	
+	class BusyActor extends Actor {
+		//State
+		var result : int  = 0;
+		//Behaviour methods
+		def receive = {
+			case Start =>
+				OtherActor ! Calc
+				self ! Wait
+			case Wait =>
+				if(result > 0){
+					println(result)
+				}
+				else{
+					self ! Wait
+				}	
+			case Value(i: int) =>
+				result = i
+		}
+	}
+\end{lstlisting}\toby{Hvad siger i til der kommer et kodeeksempel? Det gør det lidt lettere at forklarer læseren synes jeg}
+It is possible to obtain a deadlock by two or more actors awaiting messages from one another. An illustration of a deadlock between two actors is shown \bsref{fig:actor_deadlock}.
 
-%deadlock eller livelock
+\begin{figure}[ht!]
+\centering
+\includegraphics[scale=0.5]{\rootpath/worksheets/actor/figures/actor_deadlock}
+\caption{Example of a deadlock between two Actors}\label{fig:actor_deadlock}
+\end{figure}
 
-%Starvation og priority inversion
+A deadlock with busy-waiting actors does however still enable other actors, unrelated to the deadlock, to send and receive messages from a deadlocked actor. This is illustrated on \bsref{fig:actor_deadlock_otheractor} where \bscode{Actor C} sends an \bscode{Other} message in-between \bscode{Actor A's} infinite busy-waiting messages. This means that even when a deadlock occurs the rest of the actor system, unrelated to the deadlock, will still be able to run.
 
+\begin{figure}[ht!]
+\centering
+\includegraphics[scale=0.5]{\rootpath/worksheets/actor/figures/actor_deadlock_otheractor}
+\caption{Example of an actor C, unrelated to the deadlock, that sends a message to a deadlocked actor A. The message will will be retrived and reacted on by Actor A.}\label{fig:actor_deadlock_otheractor}
+\end{figure}
+
+%not as fatal as a deadlock in TL?
+\subsection{Starvartion}
+The fairness semantic property of the actor model, presented in \bsref{sec:actor_concepts}, assumes that a message sent is eventually received by the target actor and that no actor is permanently starved. This means that in the actor model there are no starvation concurrency issues.
+
+\toby[inline]{Måske snak om det kan være et problem i nogle actor implementationer og refer evt. ned til adherering actor properties afsnitet i discussion (der ikke er skrevet endnu :P)}
+
+%måske snak om hvis de ikke overholder fariness.
+
+
+%%%EXTRA%%%
+%Evt. referer til busy-wait eksmeplet i forhold til starvation
 
 %actors in scala p. 15:
 %potential disadvantage of message passing is that the communication overhead may be high. To communicate, processes have to create and send messages, and these messages are often buffered in queues before they can be received to support asynchronous communication
@@ -80,28 +141,8 @@ The actor model alleviates the race condition problem but deadlocks is still pos
 
 %Free of data races but still possible to have deadlocks and also problems only related to actors fx. Overflowing of an actors mailbox (seven models 152)
 
-%ingen race conditions by nature of model
-%still possible to have deadlocks (eller er det livelocks?)
-
 %Seven models p. 152 weaknesses
 %Although a program constructed with actors is easier to debug than one constructed with threads and locks, actors are still susceptible to problems like deadlock plus a few failure modes unique to actors (such as overflowing an actor’s mailbox).
-
-
-%deadlocks are still at problem in actor model (two actors awaiting messages from one another)
-
-%raceconditions med messages processed in one atomic step
-%isolated state mean that we wont have deadlocks but can instead have livelocks
-
-%Se actors in scala chap. 1.2
-
-
-%Måske noget med nemsis of the von neumann arcitecruhe = shared store (fra gul agha original)
-
-%Hvordan forholder det sig til concurrency issues tidligere nævnt og skaber den evt. nye concurrency problemer
-
-%en actor processer messages i et atomic step, det afhælper concurrency issues men det kan også skade concurrency fordi hvis det kun er read operationer må de jo gerne udføres samtidigt (se JVM mastering bogen)
-
-%event-based computation model avoids blocking waits for specific messages, which helps to keep clear of deadlocks in the system. But still able to livelock as actors can await messages from one another
 
 \section{Discussion}\label{sec:actor_discussion}
 This section discusses a number of issues and weaknesses related to the actor model. Behaviour sharing in the actor model is discussed in \bsref{ssec:share_behaviour}, followed by a discussion of actor modelling in \bsref{ssec:actor_modelling} and lastly the non-deterministic nature of actor programs is discussed in \bsref{ssec:nondeter_msg_order}.\toby{Hvis der kommer flere sektioner, indsæt her.}
@@ -135,6 +176,8 @@ The asynchronous message passing is a key source to the non-determinism present 
 To implement the request-reply pattern the programmer has to explicitly program the following steps: an actor send request, wait for reply to arrive and for each incoming message check if it is a reply to the request or another message. If the request-reply pattern is used numerous times within one program it will quickly result in unnecessary much code duplication which is why the pattern is almost universally supported as a programming abstraction in actor implementations\cite[p. 5]{karmani2009actor}.
 
 There exists a number of other different programming abstractions for communication and synchronization in actor programs which differs depending on the choice of actor implementation\cite[p. 6]{karmani2009actor}. Another one than request-reply is local synchronization constraints which enables the programmer to postpone the processing of a message until it receives some sequence of messages or until a condition on the actors state is met.
+
+\toby[inline]{Ved at introducere dette kan man øge chance for deadlocks. Vær sikker på det er snakket om et sted (ved ikke lige hvor det skal være endnu - muligvis i concurrency issues)}
 
 %EKSTRA:
 
@@ -175,12 +218,27 @@ There exists a number of other different programming abstractions for communicat
 %evt. kig på Bent's præsentation
 
 \subsection{Actor thread mapping}
+%The actor model still builds upon threads but it is hidden by abstraction from the programmer
+
 %Måske have et afsnit i discussion i actor om actor mapping til single thread vs lightweight actors der mapper mange actors på en tråd.
 
 \subsection{Adhering to Actor Properties}
 \toby[inline]{Måske hav den i implementations afsnittet og tag udgangspunkt i jvm comparsion of actors artiklen til at beskrive problematikken. Evt. prøv at finde ud af hvilke semantic properties akka understøtter}
 
 %Kig i artiklen om jvm actor frameworks comparison og hvad de semantic properties har af implikationer på performacne og diskuter lidt overvejninger for og imod at adherede completly til actor modellen.
+
+%%%%%%
+%TRADE-OFF between adhering to actor properties and not
+%performance, but also in terms of easiyer modeling your program (read following, from Why do Scala Developers Mix Actor Model with Other Con Models):
+	%limitation to asynchronous message-passing helps maintain scalability and avoid data races and deadlocks, but it adds complexity to coordination.
+	%event-based computation model avoids blocking waits for specific messages, which helps to keep clear of deadlocks in the system.
+
+%breaking the actor abstraction re-introduces problems that actor semantics carefully avoid:
+	%shared state between actors allows fine-grained data races and breaks transparent distribution;
+	%blocking and synchronous operations can lead to deadlocks
+
+%using actors with communication mechanisms other than asynchronous messaging is a trade-off decision
+%%%%%%
 
 %Not all actor framworks enforce all the rules of the actor model but makes that the job of the developer in some cases to improve peformance. But as it is the job of the developer now to ensure the properties of the actor model it makes til harder to write (se blue handbook actors under Semantic Properties)
 
@@ -201,16 +259,17 @@ There exists a number of other different programming abstractions for communicat
 	%Kom med eksemplet om en counter. (fra comparative jvm artiklen)
 	%In languages that do not enfore call-by-value semantics in we must be sure not to break state encapsulation.
 
-
-\toby[inline]{Evt. også hav en subsektion hvor der fortælles om at actor modellen tit blandes med andre concurrency modeller (tag udgangspunkt i den artikel i droppen)}
-%Noget fra artiklen om at man tit anvender andre concurrency værktøjer, end kun actors artikeln (sammen med actors).
-	%bl.a. actor model og libray inadequecies og evt. også konklussionen
-
-
 \toby[inline]{Message passing overhead}
 %fra actors in scala:
 	%potential disadvantage of message passing is that the communication overhead may be high. To communicate, processes have to create and send messages, and these messages are often buffered in queues before they can be received to support asynchronous communication.
 	%By contrast, shared-state concurrency enables direct access to shared memory, as long as it is properly synchronized. To reduce the communication overhead of message passing, large messages should not be transferred by copying the message state; instead, only a reference to the message should be sent. However, this reintroduces the risk for data races when several processes have access to the same mutable (message) data. It is an ongoing research effort to provide static checkers; for instance, the Scala compiler plug-in for uniqueness types[10] that can verify that programs passing mutable messages by reference do not contain data races
+	
+\toby[inline]{Overflow of an actor's mailbox}
+%actors are still susceptible to problems like deadlock plus a few failure modes unique to actors (such as overflowing an actor’s mailbox).
+
+\toby[inline]{Evt. også hav en subsektion hvor der fortælles om at actor modellen tit blandes med andre concurrency modeller (tag udgangspunkt i den artikel i droppen)}
+%Noget fra artiklen om at man tit anvender andre concurrency værktøjer, end kun actors artikeln (sammen med actors).
+	%bl.a. actor model og libray inadequecies og evt. også konklussionen
 
 \section{Actor Characteristics}\label{sec:actor_charac}
 
