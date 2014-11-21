@@ -2,9 +2,10 @@
 \worksheetstart{Software Transactional Memory}{1}{November 7, 2013}{Andreas}{../../}
 This chapter investigates \ac{STM} as a concurrency model. Firstly, the evolution of \ac{TM} is outlined in \bsref{sec:tmevo}. In \bsref{sec:stm_keyconcepts}, the key concepts of \ac{STM} is described. \bsref{sec:stm_issues} documents the concurrency issues introduces by \ac{STM}. \bsref{sec:stm_discussion} discusses the properties of \ac{STM}. Finally, in \bsref{sec:stm_eval} an evaluation of \ac{STM} as a concurrency model is conducted.
 \label{chap:stm}
-
+\kasper[inline]{Think we need to define exactly what a conflict is and how a conflict arises in the key concepts section.}
+\kasper[inline]{Look in "kandidat opgave/literature/STM/State of the art" for a dissertation on STM talking about STM implementations. Eg time based STM}
 \section{The Evolution of \acl{TM}}
-\label{sec:tmevo}
+\label{sec:tmevo{}}
 In \cite{herlihy1993transactional} the authors presents \ac{TM} as a straight forward extension to any multiprocessor cache-coherent protocol. Most \ac{HTM} proposals are based on straightforward modifications to standard multiprocessor cache-coherence protocols\cite{herlihy2011tm}. Due to the inflexible properties of existing hardware, i.e. fixed instruction set and limited register size, \ac{TM} implemented on hardware is limited to existing instructions and can only handle transactions of limited size\cite{dragojevic2011stm}. This causes high implementation and verification costs\cite{cascaval2008software}. \ac{HTM} also exposes low level hardware details and limitations\cite{herlihy2011tm}, which preferably should be abstracted away from the programmer, to ensure semantic correctness of the transactions regardless of the hardware limitations. 
 
 Due to these caveats, a software based solution is presented by \cite{shavit1997software}. This solution, entirely implemented as software, is known as \acl{STM}. Being implemented as a software solution, \ac{STM} does not suffer the same issues as \ac{HTM}, but still provides the transactional semantics. However, providing these semantics in software only, comes with a performance penalty\cite{cascaval2008software}\cite{dragojevic2011stm}.
@@ -79,8 +80,13 @@ Livelock\\
 \subsection{\ac{STM} Variations in \ac{STM} Design}
 There is not a single way to design \ac{STM} in which the best of all worlds are combined. There is different approaches, which leaves a trade off between different goals. This section describes a number of design issues and the consequences of choosing the different approaches.
 
-\subsection{Level of Atomicity \& Isolation}
+\subsection{Level of Isolation}
 \label{subsec:isolation_level}
+Within the context of \ac{STM} different isolation levels exists. These are: weak isolation and strong isolation. Isolation describes how parts of a systems perceives transactions. Isolation is also referred to as atomicity.
+
+With the guarantee of isolation, a transaction is perceived as one atomic step. That is, the intermediate states present during the execution of the transaction are not perceived by other parts of the systems. This always holds in the case of transactions perceiving other transactions. However, if a thread executes transactional code over some data, and another thread executes non-transactional code over the same data, the concepts of weak and strong isolation handle this differently.
+\kasper[inline]{Har givet et bud på de to dele der er lige her under(mine oven over). Synes  de var gode, men der var et par stedet hvor det måske kunne formuleres anderledes. Indholdet skulle være det samme i begge versioner. Kig lige på dem så kan vi se hvad vi gør.}
+
 Their is different atomicity and isolation levels, weak and strong. Atomicity and isolation levels describe two sides of the same thing. It describes how parts of a system that is not in a transaction interacts with parts that is in a transaction. We will only use one term, isolation level, it could however be replaced with atomicity level.
 
 With the guarantee of isolation, a transaction is never perceived in the middle. This always holds true in the case of transactions perceiving other transactions. However, if a thread executes transactional code, and interacts with another thread that executes non-transactional code there are different approaches, strong and weak isolation.
@@ -112,11 +118,17 @@ Using invisible reads a \ac{STM} transaction does not communicate its operations
 
 Visible reads have the problem of being expensive and not scaling, while invisible reads are expensive due to their need for repeated validation. As such, more recent \ac{STM} implementations instead employ the semivisible read scheme\cite[p. 2085]{herlihy2011tm}.
 
-Semivisible reads are similar to visible reads in that transaction communicate to other transactions. Instead of communicating exactly what transaction read a shared variable, a transaction simply indicates that a given variable has been read by some transaction. Allowing other transaction to see that a conflict exists. A counter is maintained for each transaction indicating if any conflicts occured during its execution. Expensive validation can be avoided in the vast majority  of cases by checking whether any conflicts occurred during the execution of a transaction\cite[p. 2]{lev2009anatomy}.
+Semivisible reads are similar to visible reads in that transaction communicate their reads to other transactions. Instead of communicating exactly what transaction read a shared variable, a transaction simply indicates that a given variable has been read by some transaction. Allowing other transaction to see that a conflict exists. A counter is maintained for each transaction indicating if any conflicts occured during its execution. Expensive validation can be avoided in the vast majority of cases by checking whether any conflicts occurred during the execution of a transaction\cite[p. 2]{lev2009anatomy}.
 
-\subsubsection{Contention Manager}
+\subsubsection{Contention Managers}
+Some \ac{STM} implementations delegate conflict resolution to a component called a contention manager\cite[p. 2085]{herlihy2011tm}. The contention manager also ensures that the \ac{STM} systems as whole makes progress\cite[p. 1]{guerraoui2005toward}. Not all \ac{STM} implementations use a contention manager, but instead abort transactions immediately\cite[38]{riegel2013software}.
+
+When a transaction detects that it is about to create a conflict it can either pause, attempting to let the transaction its about to conflict with finish, or it can proceed forcing the other transaction to abort. The decision can be delegated to a contention manager. The contention manager encapsulates the \ac{STM} implementations conflict resolution policy\cite[p. 2085]{herlihy2011tm}.
+
+In \cite{scherer2004contention} the authors examine a number of contention manager implementation policies. Including policies based on time-stamps, alternating and karma. Benchmarking the policies reveals that all policies which performed well in atleast a single test performed abysmal in atleast one other test. Furthermore no single best contention management policy was identified.
 \subsubsection{Implementation techniques}
 Multiversion concurrency control\\
+Time based STM\\
 
 
 \subsection{Compared to TL}
@@ -134,6 +146,7 @@ Multiversion concurrency control\\
 % Is Transactional Programming Actually Easier, STM is easier to use: Pankratius, Rossbach\\
 % Why is STM only a research toy
 % Why STM can be more than a research toy
+Transaction synchronization is optimistic\cite[p. 1]{guerraoui2005toward}.
 
 \label{sec:stm_eval}
 % Optimistic (retry, not wait)
