@@ -1,24 +1,61 @@
 \makeatletter \@ifundefined{rootpath}{\input{../../setup/preamble.tex}}\makeatother
 \worksheetstart{Software Transactional Memory}{1}{November 7, 2013}{Andreas}{../../}
-This chapter investigates \ac{STM} as a concurrency model. In \bsref{sec:stm_keyconcepts}, the key concepts of \ac{STM} is described. \bsref{sec:stm_issues} documents the concurrency issues introduces by \ac{STM}. \bsref{sec:stm_discussion} discusses the properties of \ac{STM}. Finally, in \bsref{sec:stm_eval} an evaluation of \ac{STM} as a concurrency model is conducted.
+This chapter investigates \ac{STM} as a concurrency model. Firstly, the evolution of \ac{TM} is outlined in \bsref{sec:tmevo}. In \bsref{sec:stm_keyconcepts}, the key concepts of \ac{STM} is described. \bsref{sec:stm_issues} documents the concurrency issues introduces by \ac{STM}. \bsref{sec:stm_discussion} discusses the properties of \ac{STM}. Finally, in \bsref{sec:stm_eval} an evaluation of \ac{STM} as a concurrency model is conducted.
 \label{chap:stm}
+\kasper[inline]{Think we need to define exactly what a conflict is and how a conflict arises in the key concepts section.}
+\kasper[inline]{Look in "kandidat opgave/literature/STM/State of the art" for a dissertation on STM talking about STM implementations. Eg time based STM}
+\section{The Evolution of \acl{TM}}
+\label{sec:tmevo{}}
+In \cite{herlihy1993transactional} the authors presents \ac{TM} as a straight forward extension to any multiprocessor cache-coherent protocol. Most \ac{HTM} proposals are based on straightforward modifications to standard multiprocessor cache-coherence protocols\cite{herlihy2011tm}. Due to the inflexible properties of existing hardware, i.e. fixed instruction set and limited register size, \ac{TM} implemented on hardware is limited to existing instructions and can only handle transactions of limited size\cite{dragojevic2011stm}. This causes high implementation and verification costs\cite{cascaval2008software}. \ac{HTM} also exposes low level hardware details and limitations\cite{herlihy2011tm}, which preferably should be abstracted away from the programmer, to ensure semantic correctness of the transactions regardless of the hardware limitations. 
+
+Due to these caveats, a software based solution is presented by \cite{shavit1997software}. This solution, entirely implemented as software, is known as \acl{STM}. Being implemented as a software solution, \ac{STM} does not suffer the same issues as \ac{HTM}, but still provides the transactional semantics. However, providing these semantics in software only, comes with a performance penalty\cite{cascaval2008software}\cite{dragojevic2011stm}.
+
+Recently \ac{HTM} has been adopted by Intel and IBM and integrated into the Haswell and POWER8 processors respectively\cite{Anthes:2014:RSP:2684442.2667109}. Researchers hope to develop a hybrid model, which leverage the low level \ac{TM} instructions on the \ac{CPU} for good performance, while providing a transactional programming model to the developer at software level, so the high level programming will be simpler, efficient, and well structured\cite{Anthes:2014:RSP:2684442.2667109}.
+
+Despite this recent development in dissemination of \ac{HTM}, the availability of \ac{HTM} or hybrids in high level programming languages is to our best knowledge non-existent. One could speculate, that the programming model to the programmer will remain unchanged, but the underlying runtime will benefit from the new \ac{HTM} semantics available, and therefore the characteristics of the \ac{STM} programming model could be the same. Due to these reasons, \ac{STM} is the focal point of our investigation in \ac{TM} as a concurrency mechanism. 
+
 \section{Key Concepts}
-\kasper[inline]{Maybe stress the fact that the only different between \ac{TL} and \ac{STM} is in the way synchronization is done eg. locks vs transactions. Still shared memory leading to race conditions.}
 \label{sec:stm_keyconcepts}
-This section presents the key concepts of \ac{STM}. It sets the setting, and clarifies the concepts of \ac{STM}, so the following sections will be able to base a comparison and discussion upon these concepts, without having to explain details.
+This section presents the key concepts of \ac{STM}. It sets the setting, and clarifies the concepts of \ac{STM}, so the following sections will be able to base a comparison and discussion upon these concepts, with the details already being clarified.
 
-\subsection{Transactions}
-\ac{TM} is based on the concept of a transaction. A transaction is a finite sequence of machine instructions, executed by a single process, satisfying the properties: Atomicity, Consistency, and Isolation\cite[p. 2]{herlihy1993transactional}\cite[p. 14]{kalin2012clojure}\andreas{Should we explain the properties again, in more details? Its explained in the preliminary investigation}. \ac{TM} can perform a group of memory-operations atomically\cite[48]{harris2005composable}. By utilizing the transactional approach, \ac{TM} serves as a concurrency control mechanism. By adhering to the aforementioned properties, \ac{TM} enables concurrent execution, while being semantically equivalent to serial execution of the same program.
+\subsection{Transactional Properties}
+\ac{TM} is based on the concept of a transaction. A transaction is a finite sequence of machine instructions, executed by a single process, satisfying the properties: Atomicity and Isolation\cite[p. 2]{herlihy2011tm}.
 
-Race conditions \bsnameref{subsec:race_coditions}
+\paragraph{Atomicity} By considering the instructions in a transaction as indivisible, atomicity ensures a shared effect of all the instructions in the transactions, either success or failure. That is, either all the instructions succeeds to change state of the system or none of them does. E.g. if a single instruction in a transaction fails, all will fail.
+\paragraph{Isolation} A transaction is only perceived before or after its execution, never in the middle. That is, the work of a transaction can be perceived to occur instantaneously. This can be either from the view of the entire system, or other transactions. We will elaborate on this in \bsref{subsec:isolation_level}.
 
-\subsection{Software or Hardware}
-In \cite{herlihy1993transactional} the Authors presents \ac{TM} as a straight forward extension to any multiprocessor cache-coherent protocol. Most \ac{HTM} proposals are based on straightforward modifications to standard multiprocessor cache-coherence protocols\cite{scott2011sync}. Due to the inflexible properties of existing hardware, i.e. fixed instruction set, \ac{TM} implemented on hardware is limited to existing instructions. This causes high implementation and verification costs\cite{cascaval2008software}. \ac{HTM} also exposes low level hardware details and limitations\cite{scott2011sync}, which preferably should be abstracted away from the programmer, to ensure semantic correctness of the transactions regardless of the hardware limitations. Due to this, a software based solution is presented by \cite{shavit1997software}. This solution, entirely implemented as software, is known as \acl{STM}. Being implemented as a software solution, \ac{STM} does not suffer the same issues as \ac{HTM}, but still provides the transactional semantics. Due to this, \ac{STM} is in interesting as a concurrency mechanism.
+\ac{TM} can perform a group of memory-operations atomically\cite[48]{harris2005composable}. By utilizing the transactional approach, \ac{TM} serves as a concurrency control mechanism. By adhering to the aforementioned properties, \ac{TM} enables concurrent execution, while being semantically equivalent to serial execution of the same program.
 
-\subsection{\ac{STM}}
-STM is a software system that provides programmers with a transactional model through a library or compiler interface\cite{scott2011sync}.\kasper{Tror du referrer den forkerte del af bogen. herlihy2011tm er den del som handler om TM.}
+\subsection{\acl{STM}}
+\ac{STM} provides programmers with a transactional model, in software, through a library or compiler interface\cite{herlihy2011tm}. It seeks to solve the problems introduced by running multiple processes concurrently in a shared memory space, e.g. race conditions as discussed in \bsref{subsec:race_coditions}. 
 
-To clarify the effect of using \ac{STM}, \bsref{fig:transaction} visualizes the flow of an example of two transactions running concurrently\andreas{Or in parallel?}. Both transactions \bscode{t1} and \bscode{t2} is in the same process, and therefore have access to a shared pool of memory. The variable \bscode{x} is stored in this memory. Both transactions have a reference to variable x. First off, the 
+To handle these challenges, \ac{STM} offers the programmer ways to define transaction scopes in critical regions. By having the critical regions defined, the \ac{STM} takes care of ensuring the semantic properties previously defined, and leaving no work left for the programmer.
+
+A number of programming languages and libraries have emerged to support TM. These include Clojure, .Net , Haskell. Java, C++. We have chosen Clojure, since \ac{STM} is natively implemented in the language, and since it runs on the \ac{JVM} which will enable better comparability to other \ac{JVM} based languages due the a common runtime. The example in \bsref{lst:stmexample} demonstrates such definition on line 5, in Clojure. Two accounts, \bscode{account1} and \bscode{account2} respectively, is defined as a reference to an amount. The function \bscode{transfer} takes an amount, and two accounts as parameters. In a transaction, it then transfers the amount given, from one account, to the other.
+
+\begin{lstlisting}[label=lst:stmexample,
+  caption={STM in Clojure},
+  language=Lisp,  
+  showspaces=false,
+  showtabs=false,
+  breaklines=true,
+  showstringspaces=false,
+  breakatwhitespace=true,
+  commentstyle=\color{greencomments},
+  keywordstyle=\color{bluekeywords},
+  stringstyle=\color{redstrings}]  % Start your code-block
+
+	(def account1 (ref 100))
+	(def account2 (ref 0))
+
+	(defn transfer [amount from to]
+    	(dosync
+    		(alter from - amount)
+    		(alter to + amount)))
+       
+\end{lstlisting}
+
+To clarify the effect of using \ac{STM}, \bsref{fig:transaction} visualizes the flow of an example of two transactions running concurrently\andreas{Or in parallel?}. Both transactions \bscode{t1} and \bscode{t2} is in the same process, and therefore share the same memory. The variable \bscode{x} is stored in this memory. Both transactions have a reference to variable x. First off, the both \bscode{t1} and \bscode{t2} is reading the initial value of x. They want to perform a statement to update the value of x, leading to a race condition. \bscode{t1} finishes its statement first, and wants to commit its transaction. This is allowed, since the revision of x is unchanges since the read. Afterwards, \bscode{t2} wants to commit its transaction. This is disallowed, since the revision of x now has increased. \bscode{t2} then retries its transaction, by re-reading the value of x, performing its statement, and commits its transaction. This is now allowed, since x is the same revision as when it was read by \bscode{t2}. It is clear from the example given, that \ac{STM} remedied the risk of race conditions.
 
 \begin{figure}[h!]
 \centering
@@ -26,62 +63,91 @@ To clarify the effect of using \ac{STM}, \bsref{fig:transaction} visualizes the 
 \caption{Two transactions share memory and both have a reference to variable x. They have a racecondition, both doing calculations based on x, and writing back to x. \ac{STM} ensures that there is no lost update when t2 attempts to write, and enforces a recalculation with the new x value.}\label{fig:transaction}
 \end{figure}
 
-% Design criteria for STM (Thomas Stig fremlæggelse)
-\subsection{Atomicity}
-
-\subsection{Isolation level}
-Strong vs Weak\\
-
-
-%Transactions (Concept known from databases. HTM, STM)
-%%ACI(D) properties
-
-% STM
-%%
-%% Shared memory
-%%% How to access shared data?
-
-% Composition is possible
-
-A number of programming languages and libraries have emerged to support TM. These include Clojure, .Net , Haskell. Java, C++\\
-STM is easier to use: Pankratius, Rossbach\\
-Speculative transactions\\
-
-Exceptions\\
-Interaction with code that cannot be transactionalized\\
-Livelock\\
-
-\subsection{\ac{STM} Design Issues}
-This section describes a number of design issues related to \ac{STM}.
-\subsubsection{Isolation}
-\subsubsection{Eager vs Lazy Updating}
-Updating memory in a \ac{STM} implementation can be done using one of two different approaches. These approaches are: eager and lazy updating.
-
-Eager updating updates the memory associated with a variable directly. Eager updating is also referred to as in-place-updating, as updates are written into the existing memory location\cite[p. 35]{afek2011lowering}. \ac{STM} implementations using eager updating, must maintain a undo log, which stores information about any writes made within transactions. The undo log is used to undo the effects of a transaction when a transaction conflicts\cite[p. 2084]{herlihy2011tm}.
-
-Lazy updating takes the opposite perspective and writes updates to local versions of the effected data\cite[p. 2084]{herlihy2011tm}. If the transaction commits, the local changes are written to the actual memory locations, while a abort causes the local changes to be discarded.
-
-Eager updating allows efficient commit of transactions but makes it harder to ensure that so called zombie transactions, that is transaction witch will eventually abort but have not yet discovered so, sees consistent state\cite[p. 2084]{herlihy2011tm}\kasper{Mere om dette.}. A zombie transaction is a transaction which will eventually abort, but have not yet discovered so.
-\subsubsection{Conflict Detection}
-\subsubsection{Visible vs Invisible Reads}
-\subsubsection{Contention Manager}
-
+\subsection{Zombie Transactions}
+A zombie transaction is a transaction which will eventually abort, but have not yet discovered so. This happens, when a transaction have observed an inconsistent read-set\cite[p. 196]{dice2006transactional}. E.g. if a transaction reads the value of a variable, which is then updated by another transaction afterwards. This is exactly the case of \bscode{t2} in the example in \bsref{fig:transaction}.
 
 \section{Concurrency Issues}
 \label{sec:stm_issues}
 Structuring concurrent programs that seeks to provide better scalability and ease-of-use than conventional approaches based on locks and conditions.
 
 \kasper[inline]{STM og eksterne side effects. Så som skrive til fil i transaktion.}
+Speculative transactions\\
+Exceptions\\
+Interaction with code that cannot be transactionalized\\
+Livelock\\
 \section{Discussion}
 \label{sec:stm_discussion}
+\subsection{\ac{STM} Variations in \ac{STM} Design}
+There is not a single way to design \ac{STM} in which the best of all worlds are combined. There is different approaches, which leaves a trade off between different goals. This section describes a number of design issues and the consequences of choosing the different approaches.
+
+\subsection{Level of Isolation}
+\label{subsec:isolation_level}
+Within the context of \ac{STM} different isolation levels exists. These are: weak isolation and strong isolation. Isolation describes how parts of a systems perceives transactions. Isolation is also referred to as atomicity.
+
+With the guarantee of isolation, a transaction is perceived as one atomic step. That is, the intermediate states present during the execution of the transaction are not perceived by other parts of the systems. This always holds in the case of transactions perceiving other transactions. However, if a thread executes transactional code over some data, and another thread executes non-transactional code over the same data, the concepts of weak and strong isolation handle this differently.
+\kasper[inline]{Har givet et bud på de to dele der er lige her under(mine oven over). Synes  de var gode, men der var et par stedet hvor det måske kunne formuleres anderledes. Indholdet skulle være det samme i begge versioner. Kig lige på dem så kan vi se hvad vi gør.}
+
+Their is different atomicity and isolation levels, weak and strong. Atomicity and isolation levels describe two sides of the same thing. It describes how parts of a system that is not in a transaction interacts with parts that is in a transaction. We will only use one term, isolation level, it could however be replaced with atomicity level.
+
+With the guarantee of isolation, a transaction is never perceived in the middle. This always holds true in the case of transactions perceiving other transactions. However, if a thread executes transactional code, and interacts with another thread that executes non-transactional code there are different approaches, strong and weak isolation.
+
+In the case of strong isolation it is guaranteed that transactions are atomic with respect to non-transactional access\cite[p. 2083]{herlihy2011tm}. This means, that if the same variable is used in a transaction, and outside of a transaction, the \ac{STM} implementation will ensure that the variable is also atomic outside of the transaction scope. Since the \ac{STM} must guarantee isolation outside of the transaction scope, this comes with a cost in performance\cite{herlihy2011tm}. 
+
+In the case of weak isolation, it is only guaranteed that transactions are atomic with respect to other transactions. That is, it is up to the programmer to ensure that the transactions does not affect the rest of the system, and vice versa. 
+
+
+It is problematic to handle side-effects happening inside a transactions. E.g. exceptions thrown inside a transaction, or \ac{IO} performed on a disk. These are irreversible actions, and even by not committing the result of a transaction, the transaction have still affected the system. Combined with the retries of transaction, and the result could be a brutal performance hit, or miscalculations.
+
+An approach to solve this
+
+\subsubsection{Eager vs Lazy Updating}
+Updating memory in a \ac{STM} implementation can be done using one of two different approaches, eager or lazy updating.
+
+Eager updating updates the memory associated with a variable directly. Eager updating is also referred to as in-place-updating, as updates are written into the existing memory location\cite[p. 35]{afek2011lowering}. \ac{STM} implementations using eager updating, must maintain a undo log, which stores information about any writes made within transactions. The undo log is used to undo the effects of a transaction when a transaction conflicts\cite[p. 2084]{herlihy2011tm}.
+
+Lazy updating takes the opposite approach and writes updates to local versions of the effected data\cite[p. 2084]{herlihy2011tm}. If the transaction commits, the local changes are written to the actual memory locations, while a abort causes the local changes to be discarded.
+
+Eager updating allows efficient commit of transactions but makes it harder to ensure that so called zombie transactions, that is transaction witch will eventually abort but have not yet discovered so, sees consistent state\cite[p. 2084]{herlihy2011tm}\kasper{Mere om dette.}.
+\subsubsection{Conflict Detection}
+\subsubsection{Visible vs Invisible Reads}
+When reading shared data a \ac{STM} implementations can either employed visible, invisible or semivisible reads.
+
+Using visible reads a \ac{STM} transaction communicate its operations to other transactions, by registering in shared memory whenever it reads a shared variable\cite[p. 2]{lev2009anatomy}\cite[p. 2085]{herlihy2011tm}. Other transaction, which are about to write to a shared variable, can then consult the written data to identify if they are about to produce a conflict. As transaction write exactly which transaction reads a variable, the writing transaction can chose to abort the reading transactions\cite[p. 2]{lev2009anatomy}.
+
+Using invisible reads a \ac{STM} transaction does not communicate its operations to other transactions\cite[p. 114]{imbs2012virtual}. Transactions instead maintain per read metadata which is used to validate the transaction whenever additional reads are performed\cite[p. 2085]{herlihy2011tm}.
+
+Visible reads have the problem of being expensive and not scaling, while invisible reads are expensive due to their need for repeated validation. As such, more recent \ac{STM} implementations instead employ the semivisible read scheme\cite[p. 2085]{herlihy2011tm}.
+
+Semivisible reads are similar to visible reads in that transaction communicate their reads to other transactions. Instead of communicating exactly what transaction read a shared variable, a transaction simply indicates that a given variable has been read by some transaction. Allowing other transaction to see that a conflict exists. A counter is maintained for each transaction indicating if any conflicts occured during its execution. Expensive validation can be avoided in the vast majority of cases by checking whether any conflicts occurred during the execution of a transaction\cite[p. 2]{lev2009anatomy}.
+
+\subsubsection{Contention Managers}
+Some \ac{STM} implementations delegate conflict resolution to a component called a contention manager\cite[p. 2085]{herlihy2011tm}. The contention manager also ensures that the \ac{STM} systems as whole makes progress\cite[p. 1]{guerraoui2005toward}. Not all \ac{STM} implementations use a contention manager, but instead abort transactions immediately\cite[38]{riegel2013software}.
+
+When a transaction detects that it is about to create a conflict it can either pause, attempting to let the transaction its about to conflict with finish, or it can proceed forcing the other transaction to abort. The decision can be delegated to a contention manager. The contention manager encapsulates the \ac{STM} implementations conflict resolution policy\cite[p. 2085]{herlihy2011tm}.
+
+In \cite{scherer2004contention} the authors examine a number of contention manager implementation policies. Including policies based on time-stamps, alternating and karma. Benchmarking the policies reveals that all policies which performed well in atleast a single test performed abysmal in atleast one other test. Furthermore no single best contention management policy was identified.
+\subsubsection{Implementation techniques}
+Multiversion concurrency control\\
+Time based STM\\
+
+
+\subsection{Compared to TL}
+\andreas[inline]{The titles should be refined}
 % Raceconditions. Transaction ensures atomicity (clojure got strong atomicity), and isolation. Due to this, the result of concurrent calculations will be the same, as if it was executed sequencially. 
 % Deadlocks...
 
 % Composition is possible in STM. Reference to Kaspers example about composition.
 % STM compared to locks
 %% Easier to use (Troels' study)
+\subsection{Composability}
+\subsection{Ease of Use}
 
 \section{Evaluation of Characteristics}
+% Is Transactional Programming Actually Easier, STM is easier to use: Pankratius, Rossbach\\
+% Why is STM only a research toy
+% Why STM can be more than a research toy
+Transaction synchronization is optimistic\cite[p. 1]{guerraoui2005toward}.
+
 \label{sec:stm_eval}
 % Optimistic (retry, not wait)
 
