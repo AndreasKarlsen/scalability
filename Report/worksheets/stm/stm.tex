@@ -2,8 +2,7 @@
 \worksheetstart{Software Transactional Memory}{1}{November 7, 2013}{Andreas}{../../}
 This chapter investigates \ac{STM} as a concurrency model. Firstly, the evolution of \ac{TM} is outlined in \bsref{sec:tmevo}. In \bsref{sec:stm_keyconcepts}, the key concepts of \ac{STM} is described. \bsref{sec:stm_issues} documents the concurrency issues introduces by \ac{STM}. \bsref{sec:stm_discussion} discusses the properties of \ac{STM}. Finally, in \bsref{sec:stm_eval} an evaluation of \ac{STM} as a concurrency model is conducted.
 \label{chap:stm}
-\kasper[inline]{Think we need to define exactly what a conflict is and how a conflict arises in the key concepts section.}
-\kasper[inline]{Look in "kandidat opgave/literature/STM/State of the art" for a dissertation on STM talking about STM implementations. Eg time based STM}
+\kasper[inline]{Look in "kandidat opgave/literature/STM/State of the art" and TM book for talking about STM implementations. Eg time based STM}
 \section{The Evolution of \acl{TM}}
 \label{sec:tmevo{}}
 In \cite{herlihy1993transactional} the authors presents \ac{TM} as a straight forward extension to any multiprocessor cache-coherent protocol. Most \ac{HTM} proposals are based on straightforward modifications to standard multiprocessor cache-coherence protocols\cite{herlihy2011tm}. Due to the inflexible properties of existing hardware, i.e. fixed instruction set and limited register size, \ac{TM} implemented on hardware is limited to existing instructions and can only handle transactions of limited size\cite{dragojevic2011stm}. This causes high implementation and verification costs\cite{cascaval2008software}. \ac{HTM} also exposes low level hardware details and limitations\cite{herlihy2011tm}, which preferably should be abstracted away from the programmer, to ensure semantic correctness of the transactions regardless of the hardware limitations. 
@@ -77,14 +76,14 @@ Interaction with code that cannot be transactionalized\\
 Livelock\\
 \section{Discussion}
 \label{sec:stm_discussion}
-\subsection{\ac{STM} Variations in \ac{STM} Design}
+\subsection{Variations in \ac{STM} Design}
 There is not a single way to design \ac{STM} in which the best of all worlds are combined. There is different approaches, which leaves a trade off between different goals. This section describes a number of design issues and the consequences of choosing the different approaches.
 
 \subsection{Level of Isolation}
 \label{subsec:isolation_level}
 Within the context of \ac{STM} different isolation levels exists. These are: weak isolation and strong isolation. Isolation describes how parts of a systems perceives transactions. Isolation is also referred to as atomicity.
 
-With the guarantee of isolation, a transaction is perceived as one atomic step. That is, the intermediate states present during the execution of the transaction are not perceived by other parts of the systems. This always holds in the case of transactions perceiving other transactions. However, if a thread executes transactional code over some data, and another thread executes non-transactional code over the same data, the concepts of weak and strong isolation handle this differently.
+With the guarantee of isolation, a transaction is perceived as one atomic step. That is, the intermediate states present during the execution of the transaction are not perceived by other parts of the systems, only the committed values become visible to other parts of the system. This always holds in the case of transactions perceiving other transactions. However, if a thread executes transactional code over some data, and another thread executes non-transactional code over the same data, the concepts of weak and strong isolation handle this differently.
 \kasper[inline]{Har givet et bud på de to dele der er lige her under(mine oven over). Synes  de var gode, men der var et par stedet hvor det måske kunne formuleres anderledes. Indholdet skulle være det samme i begge versioner. Kig lige på dem så kan vi se hvad vi gør.}
 
 Their is different atomicity and isolation levels, weak and strong. Atomicity and isolation levels describe two sides of the same thing. It describes how parts of a system that is not in a transaction interacts with parts that is in a transaction. We will only use one term, isolation level, it could however be replaced with atomicity level.
@@ -96,7 +95,7 @@ In the case of strong isolation it is guaranteed that transactions are atomic wi
 In the case of weak isolation, it is only guaranteed that transactions are atomic with respect to other transactions. That is, it is up to the programmer to ensure that the transactions does not affect the rest of the system, and vice versa. 
 
 
-It is problematic to handle side-effects happening inside a transactions. E.g. exceptions thrown inside a transaction, or \ac{IO} performed on a disk. These are irreversible actions, and even by not committing the result of a transaction, the transaction have still affected the system. Combined with the retries of transaction, and the result could be a brutal performance hit, or miscalculations.
+It is problematic to handle side-effects happening inside a transactions. E.g. exceptions thrown inside a transaction, or \ac{IO} performed on a disk. These are irreversible actions, and even by not committing the result of a transaction, the transaction have still affected the system. Combined with the retries of transaction, and the result could be a brutal performance hit, or miscalculations.\kasper{Feels like this should have its own sub section, maybe even concurrency issues}
 
 An approach to solve this
 
@@ -109,6 +108,12 @@ Lazy updating takes the opposite approach and writes updates to local versions o
 
 Eager updating allows efficient commit of transactions but makes it harder to ensure that so called zombie transactions, that is transaction witch will eventually abort but have not yet discovered so, sees consistent state\cite[p. 2084]{herlihy2011tm}\kasper{Mere om dette.}.
 \subsubsection{Conflict Detection}
+In the context of \ac{STM} a conflict is two transactions performing conflicting operations on the same data, resulting in only one of them being able to continue\cite[p. 20]{harris2010transactional}. A conflict arises if either two transactions write attempt to write to the same data or one transaction reads the data while another writes to it. The act of determining whether a conflict has occurred is called conflict detection\cite[p. 20]{harris2010transactional}. Different ways of handling conflict detection exists. Eager conflict detection detects conflicts whenever a transaction attempts to access shared data, while lazy conflict detection detects conflicts just before a transaction is about to commit by validating the transactions data access\cite[p. 21]{harris2010transactional}. 
+
+Another distinction lies between what transactions are included when performing conflict detection. A \ac{STM} system employing tentative conflict detecting will include currently active transactions when detecting conflicts while a system using committed conflict detection only detects conflicts with committed transactions. Eager conflict detection is often coupled with tentative conflict detection while lazy conflict detection is often coupled with committed conflict detection\cite[p. 22]{harris2010transactional}.  
+
+Conflict detection is highly related to the concepts of pessimistic or optimistic concurrency control. In pessimistic concurrency control conflicts are detected and resolved when they happen\cite[p. 20]{harris2010transactional} while optimistic concurrency control detects and resolves conflicts some time after they occur\cite[p. 20]{harris2010transactional}.
+
 \subsubsection{Visible vs Invisible Reads}
 When reading shared data a \ac{STM} implementations can either employed visible, invisible or semivisible reads.
 
