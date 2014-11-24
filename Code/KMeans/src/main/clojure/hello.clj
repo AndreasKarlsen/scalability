@@ -5,7 +5,8 @@
            [kmeans Point]
            [kmeans.partitioning Partitioner]
            [kmeans.clustering ClusteringService]
-           [kmeans.clustering Clustering])
+           [kmeans.clustering Clustering]
+           [kmeans.parsing DataParser])
   (:gen-class))
 
 
@@ -90,10 +91,10 @@
           (recur (+ current 1))))))
   (println ""))
 
-(defn run-clustering [vectors nrClusters nrWorkers maxIterations]
+(defn run-clustering [vectors means nrWorkers maxIterations]
   (let
     [partitioning (partition-workers vectors nrWorkers)
-     means (generate-means nrClusters)
+     nrClusters (. means (size))
      partitions (. partitioning (getPartitions))
      stopwatch (. Stopwatch (createStarted))]
     (loop [current 0]
@@ -112,9 +113,21 @@
              (elapsed (. TimeUnit MILLISECONDS))))
     (print-result stopwatch maxIterations nrClusters nrWorkers "")))
 
-
-(defn -main [& args]
+(defn run-static-test []
   (let
-    [vectors (generate-data)]
-    (run-clustering vectors 5, 4, 1))
+    [static-vectors (. DataParser (parseStaticData))
+     static-means (. DataParser (parseStaticDataMeans))]
+    (run-clustering static-vectors static-means 5 1)
+    (. ResultWriter (printVectors static-means))
+    (. ResultWriter (writeVectorsToDisk static-means, "Clojure"))))
+
+(defn run-clustering-standard []
+  (let
+    [vectors (generate-data)
+     means (generate-means 5)]
+    (run-clustering vectors means, 4, 1))
+  )
+(defn -main [& args]
+  ;(run-clustering-standard)
+  (run-static-test)
   (shutdown-agents))

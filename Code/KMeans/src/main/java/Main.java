@@ -8,7 +8,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import kmeans.Mapper;
 import kmeans.MapperNaive;
@@ -102,7 +101,7 @@ public class Main {
 
         List<Vector> staticVectors = DataParser.parseStaticData();
         List<Vector> staticMeans = DataParser.parseStaticDataMeans();
-        RunClustering(staticVectors,staticMeans,5,2,"");
+        RunClustering(staticVectors,staticMeans,5,1,"");
         ResultWriter.printVectors(staticMeans);
         ResultWriter.writeVectorsToDisk(staticMeans, "Java");
     }
