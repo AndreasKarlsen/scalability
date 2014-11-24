@@ -140,6 +140,11 @@ In \cite{scherer2004contention} the authors examine a number of contention manag
 Multiversion concurrency control\\
 Time based STM\\
 
+\subsection{Common Constructs}
+\label{sec:stm_common_constructs}
+\kasper[inline]{Section on atomic block, retry and orElse constructs}
+\section{Concurrency Issues}
+\label{sec:stm_issues}
 
 \subsection{Side Effects and Transactions}
 It is problematic to handle side-effects happening inside a transactions. E.g. exceptions thrown inside a transaction, or \ac{IO} performed on a disk. These are irreversible actions, and even by not committing the result of a transaction, the transaction have still affected the system. 
@@ -151,14 +156,43 @@ Interaction with code that cannot be transactionalized\\
 
 Structuring concurrent programs that seeks to provide better scalability and ease-of-use than conventional approaches based on locks and conditions.
 
+\kasper[inline]{STM og eksterne side effects. Så som skrive til fil i transaktion.}
 
 Speculative transactions\\
+Exceptions\\
+Interaction with code that cannot be transactionalized\\
 Livelock\\
+\section{Discussion}
+\label{sec:stm_discussion}
+
+\subsection{Compared to TL}
+\andreas[inline]{The titles should be refined}
+% Raceconditions. Transaction ensures atomicity (clojure got strong atomicity), and isolation. Due to this, the result of concurrent calculations will be the same, as if it was executed sequencially. 
+% Deadlocks...
 
 \subsection{Composability}
 \subsection{Ease of Use}
+Through out the literature, one of the main reasons for investigating \ac{STM} as a synchronization mechanism is the claim of \ac{STM} being easier to use than locking and in particular fine grained locking. This section examines two studies into this claim. \bsref{sec:stm_ease_rossbach} examines a study conducted by Rossbach et al while \bsref{sec:stm_ease_pankratius} presents a similar study conducted by Pankratius et al.
+\subsubsection{Rossbach et al.}
+\label{sec:stm_ease_rossbach}
+In \cite{rossbach2010transactional} Rossbach et al. presents a study into the ease of \ac{TM}. The study is conducted over a period of three years tasking students in a \ac{OS} class at the Texas University at Austin with producing a number of concurrent implementations using coarse grained locking, fine grained locking, monitors, and \ac{STM}. Over the course of these three years a total of 237 students produced 1323 concurrent implementations. 
+
+After finishing the implementations, students where given a questionnaire asking them to supplied their time spent on designing, coding and debugging the different implementation tasks, as well as ranking the used concurrency models according to syntax and the ease with which the student could reason about the model. The survey showed that students spend more time coding implementations based on fine grained locking and monitors than implementations based on \ac{STM} and coarse grained locking\cite[p. 51]{rossbach2010transactional}. Furthermore students spent more time debugging implementations based on fine grained locking and monitors than implementations based on coarse grained locking and \ac{STM}\cite[p. 51]{rossbach2010transactional}. Furthermore the students ranked coarse grained locking as both having the best syntax and easiest to think about followed by \ac{STM}, fine grained locking and monitors in the mentioned order.
+
+In addition to surveying students the authors examine the implementations for errors, producing a taxonomy of the errors made, as well as a presenting their frequency. The examination shows that atleast 50\% of students made atleast one error in the fine grained locking implementations, while less that 20\% of students made and error in the \ac{STM} based implementations. 
+
+To sum up, \cite{rossbach2010transactional} shows how students find coarse grained locking easier than \ac{STM}, fine grained locking, and monitors in the mentioned order\cite[p. 54]{rossbach2010transactional}. A examination of the errors rates show that students where much more likely to make mistakes in the implementations based on fine grained locking and monitors than the implementations based on \ac{STM}\cite[p. 54]{rossbach2010transactional}. It is worth noting that the study employed two different \ac{STM} implementations during the course of the study and that both of these implementations have a more baroque syntax that the atomic block discussed in \bsref{sec:stm_common_constructs}\cite[p. 49]{rossbach2010transactional}. Both factors that can have impacted the results of the study.
+
+\subsubsection{Pankratius et al}
+\label{sec:stm_ease_pankratius}
+In \cite{pankratius2009does} Pankratius et al presents a study comparing \ac{TM} to locking as a synchronization mechanism. The study was conducted using 12 students, divided into teams of two, and tasking them with developing a parallel desktop search engine over the course of 15 weeks. Half the teams where restricted to using locks while the other half had to employ \ac{TM}. Both implementations where restricted to using C++. The locking teams employed Pthreads\cite[p. 2]{pankratius2009does} while the \ac{TM} employed Intel’s STM compiler\cite[p. 3]{pankratius2009does}.
+
+The study shows that the first team to produce a working search engine was the winning \ac{TM}\cite[p. 6]{pankratius2009does}. The team had a working prototype after 5 weeks.   The locking teams spend more time debugging due to segmentation faults\cite[p. 6]{pankratius2009does}. As with the study examined in \bsref{sec:stm_ease_rossbach} the students where presented with a survey. The survey shows that the  winning \ac{TM} based team thought they where not progressing fast enough due to having to use transactions even though they had the first prototype and the least effort of all teams while lock based teams though they where progressing fast even though requiring more effort\cite[p. 6]{pankratius2009does}. Expert reviews revealed that the \ac{TM} based implementations where easier to understand and required fewer parallel consructs\cite[p. 6]{pankratius2009does}. All teams, including the winning \ac{TM} team, had data races which where detected after hand in by code inspection\cite[p. 6]{pankratius2009does}. The winning \ac{TM} team spent less time than the winning lock team and had better performance\cite[p. 23]{pankratius2009does}. All locks based teams attempted to scale by employing many locks (up to 1600),  this proved difficult\cite[p. 23]{pankratius2009does}.
+
+Two of the \ac{TM} teams used locks for parts of their implementations, one team had a producer consumer setup which was controlled by a semaphore, while another teams used lock to synchronize a section with intensive\cite[p. 5]{pankratius2009does}. The Pankratius et al make the case for locking and \ac{TM} coexisting rather than excluding one another.
 
 \section{Evaluation of Characteristics}
+
 % Is Transactional Programming Actually Easier, STM is easier to use: Pankratius, Rossbach\\
 % Why is STM only a research toy
 % Why STM can be more than a research toy
