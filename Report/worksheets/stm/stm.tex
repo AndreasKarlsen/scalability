@@ -67,33 +67,10 @@ To clarify the effect of using \ac{STM}, \bsref{fig:transaction} visualizes the 
 \label{subsec:zombie}
 A zombie transaction is a transaction which will eventually abort, but have not yet discovered so. This happens, when a transaction have observed an inconsistent read-set\cite[p. 196]{dice2006transactional}. E.g. if a transaction reads the value of a variable, which is then updated by another transaction afterwards. This is exactly the case of \bscode{t2} in the example in \bsref{fig:transaction}.
 
-\section{Concurrency Issues}
-In this section we present the concurrency issues related to the use of \ac{STM}. We will also relate to the concurrency issues discussed in \bsref{subsec:race_coditions} and \bsref{sec:tl_ci}.
-\label{sec:stm_issues}
-
-% Composition is possible in STM. Reference to Kaspers example about composition.
-% STM compared to locks
-\subsection{Race Conditions}
-In a setting with shared memory and multiple threads, the risk of race conditions are present. In order to negate this risk, \ac{STM} enables the programmer to define blocks of code, that must be executed with atomic semantics. The atomicity of \ac{STM} ensures that the execution appears as instantaneous, hence no race conditions can occur between transactions. This holds for both \ac{STM} with weak and strong isolation level.
-
-As the programmer explicitly has to mark code in atomic blocks to ensure safety, the risk of the programmer not marking the code, will make the code unsafe to race conditions. This holds true for weak isolation level.
-
-
-% Raceconditions. Transaction ensures atomicity (clojure got strong atomicity), and isolation. Due to this, the result of concurrent calculations will be the same, as if it was executed sequencially. 
-
-% Markering af transactioner er eksplicit, så hvis man glemmer det, kan der stadigvæk opstå raceconditions. Hvis det er weak atomicity kan der også opstå raceconditions imod data reads der ikke bliver udført i en transaction.
-
-\subsection{Deadlocks}
-
-\subsection{Starvation}
-
-
-\section{Discussion}
-\label{sec:stm_discussion}
 \subsection{Variations in \ac{STM} Design}
 There is not a single way to design \ac{STM} in which the best of all worlds are combined. There is different approaches, which leaves a trade off between different goals. This section describes a number of design issues and the consequences of choosing the different approaches.
 
-\subsection{Level of Isolation}
+\subsubsection{Level of Isolation}
 \label{subsec:isolation_level}
 Within the context of \ac{STM} different isolation levels exists. These are: weak isolation and strong isolation. Isolation describes how parts of a systems perceives transactions. Isolation level is in some literature also referred to as atomicity level\cite[p. 30]{harris2010transactional}.
 
@@ -143,8 +120,22 @@ Time based STM\\
 \subsection{Common Constructs}
 \label{sec:stm_common_constructs}
 \kasper[inline]{Section on atomic block, retry and orElse constructs}
+
 \section{Concurrency Issues}
+In this section we present the concurrency issues related to the use of \ac{STM}. We will also relate to the concurrency issues discussed in \bsref{subsec:race_coditions} and \bsref{sec:tl_ci}.
 \label{sec:stm_issues}
+
+% Composition is possible in STM. Reference to Kaspers example about composition.
+% STM compared to locks
+\subsection{Race Conditions}
+In a setting with shared memory and multiple threads, the risk of race conditions are present. In order to negate this risk, \ac{STM} enables the programmer to define blocks of code, that must be executed with atomic semantics. The atomicity of \ac{STM} ensures that the execution appears as instantaneous, hence no race conditions can occur between transactions. This holds for both \ac{STM} with weak and strong isolation level.
+
+As the programmer explicitly has to mark code in atomic blocks to ensure safety, the risk of the programmer not marking the code, will make the code unsafe to race conditions. This holds true for weak isolation level.
+
+
+% Raceconditions. Transaction ensures atomicity (clojure got strong atomicity), and isolation. Due to this, the result of concurrent calculations will be the same, as if it was executed sequencially. 
+
+% Markering af transactioner er eksplicit, så hvis man glemmer det, kan der stadigvæk opstå raceconditions. Hvis det er weak atomicity kan der også opstå raceconditions imod data reads der ikke bliver udført i en transaction.
 
 \subsection{Side Effects and Transactions}
 It is problematic to handle side-effects happening inside a transactions. E.g. exceptions thrown inside a transaction, or \ac{IO} performed on a disk. These are irreversible actions, and even by not committing the result of a transaction, the transaction have still affected the system. 
@@ -162,6 +153,11 @@ Speculative transactions\\
 Exceptions\\
 Interaction with code that cannot be transactionalized\\
 Livelock\\
+
+
+
+
+
 \section{Discussion}
 \label{sec:stm_discussion}
 
