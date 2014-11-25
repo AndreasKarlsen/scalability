@@ -68,8 +68,8 @@ In this section we present how the actor model relates to the relevant concurren
 One of the main differences from other concurrency models, such as \ac{TL} and \ac{STM}, is that there is no notion of shared state in the actor model. Instead each actor has isolated state where only the actor itself is responsible and allowed to modify state. An actor can only affect the state of another actor indirectly by message passing and the receiving actor is then responsible to change the state. The reason that message passing as the only communication and isolated state is preferable over shared state is that race conditions are avoided by design. To exemplify this imagine two messages sent to an actor that wants to read and modify a state variable of the actor. The actor processes each message in one isolated atomic operation which means that the messages will not interfere with one another, as the message will be processed one at a time.
 %subsec:race_coditions
 
-\subsection{Deadlocks}
-The concurrency issue of deadlocks is still a problem in the actor model. The limitation of the actor model to asynchronous message passing helps to avoid blocking waits which thereby helps to keep the program free of deadlock issues\cite[p. 304]{tasharofi2013scala}. However, asynchronous message passing introduces non-determinism which in some cases are desired to be pruned away, which we will discuss further in \bsref{ssec:nondeter_msg_order}.\toby{Fungerer denne reference?} One way to prune this non-determinism is by implementing actors by busy-waiting for the response from another actor. An example of such a busy-waiting actor program is shown in \bsref{label=lst:actor_busywait}. On line 5 there is an isolated integer state variable for the \bscode{BusyActor} while the behaviour methods are defined on lines 7-20. There are three different behaviour methods for the Start, Wait and Value messages. The actor starts by sending a message to the \bscode{OtherActor} which it desires to busy-wait for which is done by sending the \bscode{Wait} message it itself. The behaviour method for \bscode{Wait} on line 11-17 shows that the actor will print the result if it has received the result from the \bscode{OtherActor}, otherwise it will again send itself a \bscode{Wait} message. This behaviour continues until the \bscode{BusyActor} receives the \bscode{Value} message from the \bscode{OtherActor}. 
+\subsection{Deadlocks}\label{ssec:actor_deadlock}
+The concurrency issue of deadlocks is still a problem in the actor model. The limitation of the actor model to asynchronous message passing helps to avoid blocking waits which thereby helps to keep the program free of deadlock issues\cite[p. 304]{tasharofi2013scala}. However, asynchronous message passing introduces non-determinism which in some cases are desired to be pruned away, which we will discuss further in \bsref{ssec:nondeter_msg_order}.\toby{Fungerer denne reference?} One way to prune this non-determinism is by implementing actors by busy-waiting for the response from another actor. An example of such a busy-waiting actor program is shown in \bsref{lst:actor_busywait}. On line 5 there is an isolated integer state variable for the \bscode{BusyActor} while the behaviour methods are defined on lines 7-20. There are three different behaviour methods for the Start, Wait and Value messages. The actor starts by sending a message to the \bscode{OtherActor} which it desires to busy-wait for which is done by sending the \bscode{Wait} message it itself. The behaviour method for \bscode{Wait} on line 11-17 shows that the actor will print the result if it has received the result from the \bscode{OtherActor}, otherwise it will again send itself a \bscode{Wait} message. This behaviour continues until the \bscode{BusyActor} receives the \bscode{Value} message from the \bscode{OtherActor}. 
 
 \begin{lstlisting}[label=lst:actor_busywait,
   caption={Busy-waiting actor program written in the Scala Akka actor framework.},
@@ -104,7 +104,7 @@ The concurrency issue of deadlocks is still a problem in the actor model. The li
 				result = i
 		}
 	}
-\end{lstlisting}\toby{Hvad siger i til der kommer et kodeeksempel? Det gør det lidt lettere at forklarer læseren synes jeg}
+\end{lstlisting}
 It is possible to obtain a deadlock by two or more actors awaiting messages from one another. An illustration of a deadlock between two actors is shown \bsref{fig:actor_deadlock}.
 
 \begin{figure}[ht!]
@@ -123,10 +123,10 @@ A deadlock with busy-waiting actors does however still enable other actors, unre
 
 %not as fatal as a deadlock in TL?
 \subsection{Starvartion}
-The fairness semantic property of the actor model, presented in \bsref{sec:actor_concepts}, assumes that a message sent is eventually received by the target actor and that no actor is permanently starved. This means that in the actor model there is no starvation concurrency issues.\toby{Maybe refer to adhering to actor properties subsection in discussion section, because starvation can be present in some actor implementations}
-%Evt. referer til busy-wait eksmeplet i forhold til starvation
+The fairness semantic property of the actor model, presented in \bsref{sec:actor_concepts}, assumes that a message sent is eventually received by the target actor and that no actor is permanently starved. This means that in the actor model there is no starvation concurrency issues. However in some actor implementations starvation is present, one reason is that it may not be possible to adhere to the property in an actor framework for an existing language. We will discuss more about adhering to actor properties in \bsref{ssec:adhere_actor_prop}.
+%Evt. referer til busy-wait eksmeplet og forklar hvordan det er muligt at have starvation deri
 \section{Discussion}\label{sec:actor_discussion}
-This section discusses a number of issues and weaknesses related to the actor model. Behaviour sharing in the actor model is discussed in \bsref{ssec:share_behaviour}, followed by a discussion of actor modelling in \bsref{ssec:actor_modelling} and lastly the non-deterministic nature of actor programs is discussed in \bsref{ssec:nondeter_msg_order}.\toby{Hvis der kommer flere sektioner, indsæt her.}
+This section discusses a number of issues and weaknesses related to the actor model. Behaviour sharing in the actor model is discussed in \bsref{ssec:share_behaviour}, followed by a discussion of actor modelling in \bsref{ssec:actor_modelling}. Hereafter we look at the non-deterministic message order present in actor model in \bsref{ssec:nondeter_msg_order}. The last two sections are more actor implementation oriented where we first in \bsref{ssec:abstraction_over_threads} describe the relation between actors and threads and lastly in \bsref{ssec:adhere_actor_prop} discuss adherence to actor properties in actor implementations.\toby{Hvis der kommer flere sektioner, indsæt her.}
 
 \subsection{Sharing Behaviour Among Actors}\label{ssec:share_behaviour}
 Inheritance is a popular and valuable mechanism often used in object-oriented programming which allows sharing of the same behaviour inside one class across multiple classes\cite{kafura1989inheritance}. So if two classes have some common functionality, it can be written only once in a super class that they both inherit from. Sharing of behaviour avoids code duplication and code reuse which also improves maintainability as the functionality should only be maintained in a single place.
@@ -158,145 +158,71 @@ To implement the request-reply pattern the programmer has to explicitly program 
 
 There exists a number of other different programming abstractions for communication and synchronization in actor programs which differs depending on the choice of actor implementation\cite[p. 6]{karmani2009actor}. Another one than request-reply is local synchronization constraints which enables the programmer to postpone the processing of a message until it receives some sequence of messages or until a condition on the actors state is met.
 
-\toby[inline]{Ved at introducere dette kan man øge chance for deadlocks. Vær sikker på det er snakket om et sted (ved ikke lige hvor det skal være endnu - muligvis i concurrency issues). Det er et tradeoff chance for deadlock og en mere let måde at udtrykke nogle bergeniner på.}
+However pruning the non-deterministic nature of asynchronous message passing in the actor model is not without implications. If the communication is restricted to blocking and synchronous operations it can lead to deadlocks, as we saw an example of with two busy-waiting actors in \bsref{ssec:actor_deadlock}. The limitation to asynchronous message passing helps avoid deadlocks but it adds to the complexity of coordination\cite[p. 311]{tasharofi2013scala}.
 
-\toby[inline]{Måske put det nedenstående subsection i en subsection der hedder noget med Actor implementation discussion. Måske Implementation Specific Discussion}
-
-\subsection{Abstraction Over Threads}\toby{Maybe also something about at some level lock acquire/release is required and it is not free - Bent's slides (coordinating message queues, locking is still required)}
+\subsection{Abstraction Over Threads}\label{ssec:abstraction_over_threads}\toby{Maybe also something about at some level lock acquire/release is required and it is not free - Bent's slides (coordinating message queues, locking is still required)}
 The actor model provides simple constructs such as actors, mailboxes and messages to construct concurrent programs. However, these constructs is used as an abstraction that builds on top of the conventional threads and it is the responsibility of the individual actor implementation to map actors to threads. A naive solution is to map each actor onto a single thread but an actor system may consist of a large number of actors, resulting in a large overheard for thread creation and context switching\cite[p. 7]{karmani2009actor}. A more efficient solution is to have a light-weight actor to thread mapping where each actor is not directly mapped to a thread. This can be accomplished by having a fixed thread pool and using continuation based actors where the actor and its state is encapsulated in a continuation. The threads in the thread pool all share a common scheduler queue of actors. Each thread dequeues an actor from the queue and call its continuation. The thread will continue to run the actor until some condition is met e.g. there are no more messages in the actors mailbox. Light-weight actors reduces the numbers of threads which thereby reduces the overhead of thread creation, also context switches overhead is reduced by using continuations. However if the scheduling of actors is not fair it can cause starvation in the system, which is up to the individual actor implementation to ensure\cite[p. 7]{karmani2009actor}. This leads us to the next section about adherence to actor properties in actor implementations.
 %light-weight actor implemetation examples: Erlang, Akka
 
-\subsection{Adhering to Actor Properties}
-As mentioned in \bsnameref{sec:prelim} there exists several actor implementations both directly as actor languages and indirectly through actor frameworks for existing languages. As the actor model is a conceptual model, it is up to the individual actor implementation to adhere to the semantic properties of the actor model, mentioned in \bsref{ssec:actor_s_properties}. Some actor implementations choose not to adhere to one or more of the actor properties as they introduce a performance overhead. In \bsref{karmani2009actor} they present a comparison of actor frameworks on the JVM platform where only half of the compared frameworks support all of the semantic properties of the actor model. 
+\subsection{Adhering to Actor Properties}\label{ssec:adhere_actor_prop}
+As mentioned in \bsnameref{sec:prelim} there exists several actor implementations both directly as actor languages and indirectly through actor frameworks for existing languages. As the actor model is a conceptual model, it is up to the individual actor implementation to adhere to the semantic properties of the actor model, mentioned in \bsref{ssec:actor_s_properties}. Some actor implementations choose not to adhere to one or more of the actor properties as they introduce a performance overhead. In \cite{karmani2009actor} they present a comparison of actor frameworks on the JVM platform where only half of the compared frameworks support all of the semantic properties of the actor model. 
 
-The only form of communication in the actor model is message passing. A disadvantage of message passing is that it may produce a high communication overhead, as processes need to create and send messages, and these messages must be buffered in the mailbox before they can be received to support asynchronous message passing. Furthermore safe messaging requires call by value semantics which is often done by deep copying message contents.
-%contrast shared-memory (instead reference then)
-%therefore some actor implementations does not adhere to this (may mention the performance gain for actor foundry)
+\subsubsection{Safe Message Passing}
+The only form of communication in the actor model is message passing. A disadvantage of message passing is that it may produce a high communication overhead, because processes need to create and send messages, and these messages must be buffered in the mailbox before they can be received to support asynchronous message passing\cite[p. 17]{haller2012actors}. Furthermore, safe messaging requires call by value semantics which often involves deep copying message contents, which is an expensive operation for large messages. To reduce the overhead of message passing, some actor implementations chooses to implement message passing by sending message contents by reference opposed to deep copying message contents.\toby{Skal vi have eksempler på nogle der gør det? Akka og Kilim gør det f.eks.} However, this reintroduces the concurrency issue of race conditions, as multiple actors can have access to the same shared memory directly through the reference. For example one actor may use the reference inside a message to change the state of another actor directly, opposed to only being able to do it indirectly through a message as the conceptual actor model states. The actor implementations that send message contents by reference lays the responsibility of ensuring safe messaging on the programmers, which can be done e.g. by using immutable messages or less strictly, simply not change any message contents. It is often a trade-off between performance and adhering to all the semantic properties of the actor model, in that you loose some of the advantages of using the actor model by getting a performance gain.\toby{Måske også snak om det i forhold til et distriburet mlijø (der har vi ikke dele state, så her er det ikke så gældende - medmindre man forsøger at sætte actor der snakker meget sammen, på samme node)}
+%another way for developers to manually handle it is to deep copy message contents which may be modified and refernece others (for example large messages)
+%Akka can’t enforce message immutability (yet) so this has to be by convention. (http://doc.akka.io/docs/akka/snapshot/java/untyped-actors.html)
 
+\subsubsection{Unbounded Mailbox}
+In the conceptual actor model the mailbox is unbounded, meaning that it is possible to store infinitely many messages in an actors mailbox. However, in an actual actor implementation there exists an upper limit on how many messages that can be stored based on how much physical storage is available. The consequence of an upper limit of messages in a mailbox is that it makes it possible to overflow the mailbox which can cause the system to crash\cite[p. 152]{sevenModels}.
 
+\subsubsection{Actor Framework Limitations}
+An actor framework for an existing language is more limited than an actor based language, as doing program transformations, compilation and runtime optimizations to gain better performance is less challenging\cite[p. 5]{karmani2011actors}. Another disadvantage of an actor framework in an existing language is that you are writing normal code from the existing language within you actors, which may not constrain the programming environment sufficiently to support the actor model. An example of this can be seen in \bsref{lst:actor_state_encapsulation_violation} which shows how it is possible in the Scala Actors framework to break the encapsulation property of the actor model. On line 3-12 the \bscode{CountActor} actor is defined which has a behaviour method for when it receives an \bscode{enter} message which will increment the state variable \bscode{num} if \bscode{MAX} has not been reached. On line 14-19 a main function is defined which creates \bscode{myCount} and starts it. On line 17 an \bscode{enter} message is sent to \bscode{myCount} but on line 18 behaviour method for \bscode{enter} is called directly because the \bscode{Actor} is simply a class, so it is possible to call the methods within a class in Scala. The encapsulation property of the actor model is broken because an actor must only be able to execute the behaviour method of another actor indirectly through a message and not directly. In this case it may cause two actors to simultaneously execute the \bscode{enter} method which can lead to race conditions. 
 
-A potential disadvantage of message passing i
+\begin{lstlisting}[label=lst:actor_state_encapsulation_violation,
+  caption={Scala Actors violating state encapsulation},
+  language=Java,  
+  showspaces=false,
+  showtabs=false,
+  breaklines=true,
+  showstringspaces=false,
+  breakatwhitespace=true,
+  commentstyle=\color{greencomments},
+  keywordstyle=\color{bluekeywords},
+  stringstyle=\color{redstrings}]  % Start your code-block
+	
+	import scala.Actors.Actor
+	
+	class CountActor() extends Actor {
+				
+		...
+		
+		def enter(){
+			if(num < MAX){
+				num = num + 1;
+			}
+		}
+	}
+	
+	def main(args : Array[String]) : Unit = {
+		var myCount = new CountActor();
+		myCount.start
+		myCount ! "enter"
+		myCount.enter
+	}
+\end{lstlisting}
 
-An implication of message passing  
-
-The communication overhead 
-
-The property of encapsulation is often broken to gain performance, specifically safe messaging is not adhered to, as it requires call by value semantics which is often done by deep copying message contents. 
-
-
-
-%fra actors in scala:
-	%potential disadvantage of message passing is that the communication overhead may be high. To communicate, processes have to create and send messages, and these messages are often buffered in queues before they can be received to support asynchronous communication.
-	%By contrast, shared-state concurrency enables direct access to shared memory, as long as it is properly synchronized. To reduce the communication overhead of message passing, large messages should not be transferred by copying the message state; instead, only a reference to the message should be sent. However, this reintroduces the risk for data races when several processes have access to the same mutable (message) data. It is an ongoing research effort to provide static checkers; for instance, the Scala compiler plug-in for uniqueness types[10] that can verify that programs passing mutable messages by reference do not contain data races
-
-
-
-
- performance regards
-
-Adhering to all of the properties can be 
-%actors in scala
-
-%break encapsulation by not ensuring safe messaging
-
-%encapsulation example in relation to performance
-	% faster performance
-	%developers job to make sure instead
-	%frameworks can have a problem with this as you are not prohibited to call other code from withitn an actor that can block your actor
-
-%messages is processed in a single atomic step and , fairness, encapsulation and location transparency.
+The programmer may therefore have to be more observant not to violate the semantic properties of the actor model by mistake, when using an actor framework for an existing language.
 
 %evt. til slut i sektionen referer til jvm comparision og de kommer frem til at man godt kan have et jvm framework der understøtter alle actor properties og samitdig har "comparable" performance med andre actor frameworks der ikke gør det.
 
-%messages can be expensive
-
-%Kig i artiklen om jvm actor frameworks comparison og hvad de semantic properties har af implikationer på performacne og diskuter lidt overvejninger for og imod at adherede completly til actor modellen.
-
-%%%%%%
-%TRADE-OFF between adhering to actor properties and not
-%performance, but also in terms of easiyer modeling your program (read following, from Why do Scala Developers Mix Actor Model with Other Con Models):
-	%limitation to asynchronous message-passing helps maintain scalability and avoid data races and deadlocks, but it adds complexity to coordination.
-	%event-based computation model avoids blocking waits for specific messages, which helps to keep clear of deadlocks in the system.
-
-%breaking the actor abstraction re-introduces problems that actor semantics carefully avoid:
-	%shared state between actors allows fine-grained data races and breaks transparent distribution;
-	%blocking and synchronous operations can lead to deadlocks
-
-%using actors with communication mechanisms other than asynchronous messaging is a trade-off decision
-%%%%%%
-
-%Not all actor framworks enforce all the rules of the actor model but makes that the job of the developer in some cases to improve peformance. But as it is the job of the developer now to ensure the properties of the actor model it makes til harder to write (se blue handbook actors under Semantic Properties)
-
 %Unfortunately, actor frameworks on the JVM cannot sufficiently constrain the programming environment to avoid the concurrency pitfalls that the actor model should help you avoid. After all, within the thread you are simply writing plain old java (or scala or clojure). There’s no real way to limit what that code can do, unless it is explicitly disallowed from calling into other code or looping. Therefore, even the actor frameworks which use bytecode weaving to implement cooperative multi-tasking amongst actors cannot fully guarantee non-blocking behavior. This point bears repetition: without fundamental changes in how the JVM works, one cannot guarantee that an arbitrary piece of code will not block. fra: http://boundary.com/blog/2014/09/03/no-you-cant-have-a-pony/
-%you need green threads to do this Acotrs fanciness because the native threads have too much overhead (in memory cost, creation time, etc. etc.) to be created that much
-	%Istedet foreksempel erlang eller elxlir kan overholde disse kriterier.
 
-%Some frameworks does not fulfill all the properties of the actor model to have better performance
-
-%forskellige framworks skider på actor principperne for at forbedre performance (evt. kom ind på comaprison artiklen også.
-
-%En disadvantage ved Actor kan være at communication overhead for høj? "Actors in scala" anden paragraf før 1.3
-	%Nogle actor frameworks implementerer message passing med reference istedet for kopier, hvilket kan intoducere race conditions (fx. Scala Actors - ved ikke med Akka - undersøg det)
-	
-%i frameworks der ikke enforcer immutability skal udvikleren passe på ikke at komme til at kalde behaviour metoder der er isoleret inde i actors og sikre messages er immutable, så man ikke sharer state.
-	%Kom med eksemplet om en counter. (fra comparative jvm artiklen)
-	%In languages that do not enfore call-by-value semantics in we must be sure not to break state encapsulation.
-
-\toby[inline]{Message passing overhead}
-
-	
-%EKSTRA:
-
-%ekstra kilde(http://www.erlang-factory.com/upload/presentations/756/taking-back-embedded-factory_sf_2013.pdf):
-%No notion of inheritance or general hierarchy
-	%Specific to language and library implementation
-%Asynchronous message passing can be  problematic for certain applications
-	%Ordering of messages received from multiple processes
-	%Abstract definition may lead to inconsistency in larger systems
-		%Fine/Coarse Grain argument 
-
-%Why has the actor model not succeeded yet:
-%One of the key features of actors, their ability to create other actors as part of their behaviour, has the potential to dramatically change the state of the system at any particular time. The decisions of where to store and execute newly created actors is important to overall performance, and will require records to be kept of what is executing and where.
-	%In at distributed setting involing different locations can affect performance if communication is acorss the remote locations many times if they could be optimized and be local
-	%The behaviour methods of an actor is dynamic and can be changed at runtime - which makes optimisation f.x. compiler optimisations hard. However in some implementations you must write the different behvaiour methods beforehand
-	%Asynchronous message passing can cause problems for certain problems
-		%For example, manipulation of a stack-like structure using asynchronous message passing could be problematic if the messages do not arrive in the correct order
-		%Men som anden kilde siger så kan man tit komme udenom dette problem ved at remodellere sine actors
-	
-%unbounded mailboxes 
-	%implies some form of infinite stack or pointer structure, but it cannot be assumed that this is available in all architectures
-%node failue in the system can lead to problems starvation
-
-%8.13 s. 269 Limitations of the Actor-Based Model i JVM Mastering syncrhonization
-
-%actors provide no direct support for parallelism. Parallel solutions need to be built from concurrent building blocks, raising the specter of nondeterminism. And because actors do not share state and can only communicate through message passing, they are not a suitable choice if you need fine-grained parallelism.
-
-%Cannot determine in adavance in which order messages are processed. non-deterministic - can be hard to grasp at first
-
-%the argument for using actor-based programming languages is not simply that they are a good match for distributed computing platforms; it is that Actors is a goodmodel in which to think about concurrency. Actors simplify the task of programming by extending object-based design to concurrent (parallel, distributed, mobile) systems (nye blue hand book lige før biblografi)
-
-%Actors simplify the task of programming by extending object-based design to concurrent (parallel, distributed, mobile) systems.
-
-%pga. message passing = dyrt at kopiere messages rundt and can only procees one message at a time
-
-	
-\toby[inline]{Overflow of an actor's mailbox}
-%actors are still susceptible to problems like deadlock plus a few failure modes unique to actors (such as overflowing an actor’s mailbox).
-
-\toby[inline]{Evt. også hav en subsektion hvor der fortælles om at actor modellen tit blandes med andre concurrency modeller (tag udgangspunkt i den artikel i droppen)}
+\toby[inline]{Evt. også afsnit om at actor modellen blandes med andre concurrency modeller (tag udgangspunkt i den artikel i dropperen)}
 %Noget fra artiklen om at man tit anvender andre concurrency værktøjer, end kun actors artikeln (sammen med actors).
 	%bl.a. actor model og libray inadequecies og evt. også konklussionen
-	
-%%%EXTRA%%%
 
-%actors in scala p. 15:
-%potential disadvantage of message passing is that the communication overhead may be high. To communicate, processes have to create and send messages, and these messages are often buffered in queues before they can be received to support asynchronous communication
-
-%Free of data races but still possible to have deadlocks and also problems only related to actors fx. Overflowing of an actors mailbox (seven models 152)
-
-%Seven models p. 152 weaknesses
-%Although a program constructed with actors is easier to debug than one constructed with threads and locks, actors are still susceptible to problems like deadlock plus a few failure modes unique to actors (such as overflowing an actor’s mailbox).
-
+%EKSTRA:
+	%the argument for using actor-based programming languages is not simply that they are a good match for distributed computing platforms; it is that Actors is a goodmodel in which to think about concurrency. Actors simplify the task of programming by extending object-based design to concurrent (parallel, distributed, mobile) systems (nye blue hand book lige før biblografi)
 \section{Actor Characteristics}\label{sec:actor_charac}
 
 % since an actor can only respond to a single message at a time you get implicit locking around all of the local state for that actor.
