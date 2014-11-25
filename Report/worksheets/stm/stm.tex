@@ -66,7 +66,7 @@ To clarify the effect of using \ac{STM}, \bsref{fig:transaction} visualizes the 
 
 \subsection{Common Language Constructs}
 \label{sec:stm_common_constructs}
-Languages supporting \ac{STM} must encompass some language construct for specifying that a section of code should be executed as a transaction and managed by the \ac{STM} system. This basic language construct is often referred to as the \bscode{atomic} block\cite[p. 49]{harris2005composable}\cite[p. 3]{harris2003language}. The purpose of the atomic block is to allow programms to specify that a section of code should be executed atomically and isolated as described in \bsref{sec:stm_tm_properties}. The basic concepts of the atomic block is exemplified in \bsref{lst:stm_atomic_block}. How a transaction scope is defined, varies between \ac{STM} implementations. As an example Clojure employs the \bscode{dosync} function as shown in \bsref{lst:stmexample} on line 5 while a library based systems such as JDASTM\cite{ramadan2009committing} uses calls to \bscode{startTransaction} and \bscode{CommitTransaction} methods.
+Languages supporting \ac{STM} must encompass some language construct for specifying that a section of code should be executed as a transaction and managed by the \ac{STM} system. This basic language construct is often referred to as the \bscode{atomic} block\cite[p. 49]{harris2005composable}\cite[p. 3]{harris2003language}. The purpose of the \bscode{atomic} block is to allow programmers to specify that a section of code should be executed atomically and isolated as described in \bsref{sec:stm_tm_properties}. The basic concepts of the atomic block is exemplified in \bsref{lst:stm_atomic_block}. Exactly how a transaction scope is defined, varies between \ac{STM} implementations. As an example, Clojure employs the \bscode{dosync} function as shown on line 5 in \bsref{lst:stmexample} while a library based systems such as JDASTM\cite{ramadan2009committing} uses calls to \bscode{startTransaction} and \bscode{commitTransaction} methods.
 
 \begin{lstlisting}[label=lst:stm_atomic_block,
   caption={The atomic block},
@@ -92,13 +92,12 @@ Languages supporting \ac{STM} must encompass some language construct for specify
 \subsubsection{Conditional Synchronization}
 A common tasks in concurrent programming is waiting on some event to occur before executing some code. As an example consider a concurrent queue shared between multiple threads in a producer consumer setup. It will be useful to only have a consumer dequeue a item whenever one is available. Accomplishing this without the need for busy waiting would also be preferable.
 
-In \cite{harris2005composable} Harris et al. introduces the \bscode{retry} statement for assisting in conditional synchronization within the context of \ac{STM}. The \bscode{retry} statement is explicitly placed by programmers within a \bscode{atomic} block. If a transaction encounters a retry statement during its execution it indicates that the transaction is not yet ready to run and the transaction should be aborted and retried at some point later in time, when the condition that lead to the retry has changed\cite[p. 73]{harris2010transactional}. A key point here is that the transaction is not retried immediately. The thread executing the transaction instead blocks, waiting to be awoken when the transaction is to be retried. The transaction is typically retired when one of the variables involved in the transaction is updated by another transaction\cite[p. 51]{harris2005composable}. By blocking the thread instead of repeatedly checking the condition, busy waiting is avoided.
+In \cite{harris2005composable} Harris et al. introduces the \bscode{retry} statement for assisting in conditional synchronization within the context of \ac{STM}. The \bscode{retry} statement is explicitly placed by programmers within a \bscode{atomic} block. If a transaction encounters a retry statement during its execution it indicates that the transaction is not yet ready to run and the transaction should be aborted and retried at some point later in time\cite[p. 73]{harris2010transactional}. A key point here is that the transaction is not retried immediately. The thread executing the transaction instead blocks, waiting to be awoken when the transaction is to be retried. The transaction is typically retired when one of the variables involved in the transaction is updated by another transaction\cite[p. 51]{harris2005composable}. By blocking the thread instead of repeatedly checking the condition, busy waiting is avoided. Furthermore the retry statement is not subject to the lost wake up problem present which exists when doing conditional synchronization using monitors\cite[p. 2081]{herlihy2011tm}.
 
-A transaction using the \bscode{retry}
-
+A transaction using the \bscode{retry} statement is shown in \bsref{lst:stm_retry}. If the queue is empty the transaction executes the retry statement of line 3, blocking the transaction until it is retired at a later time.
 \begin{lstlisting}[label=lst:stm_retry,
   caption={The retry statement},
-  language=Lisp,  
+  language=Java,  
   showspaces=false,
   showtabs=false,
   breaklines=true,
@@ -110,15 +109,46 @@ A transaction using the \bscode{retry}
   morekeywords={atomic, retry}]  % Start your code-block
 
 	atomic{
-		if(x == 0)
+		if(queue.isEmpty())
 			retry;
-		v1 = x;
-		v2 = y;
-		z  = v1 / v2;	
+		item = queue.dequeue;
+		//process item
 	}
        
 \end{lstlisting}
 
+In addition to the \bscode{retry} statement Harris et al. proposes the \bscode{orElse} block. The \bscode{orElse} block handles the case of waiting on one of many conditions to be true by combining a number of transaction alternatives. The alternatives are evaluated in left-to-right order and only one of the alternatives is committed\cite[p. 52]{harris2005composable}. The \bscode{orElse} block works in conjunction with the \bscode{retry} statement to determine which alternative to execute. A example of a transaction employing the \bscode{orElse} block is shown in \bsref{lst:stm_orelse}. If a alternative executes without encountering a retry statement it gets to commit and the other alternatives are never executed\cite[p. 74]{harris2010transactional}. If a alternative however encounters a \bscode{retry} statement its work is undone and the next alternative in the chain is executed\cite[p. 74]{harris2010transactional}. If the last alternative encounters a \bscode{retry} statement the transaction as a whole is blocked awaiting a retry at a later time\cite[p. 74]{harris2010transactional}.
+
+\begin{lstlisting}[label=lst:stm_orelse,
+  caption={The orElse block},
+  language=Java,  
+  showspaces=false,
+  showtabs=false,
+  breaklines=true,
+  showstringspaces=false,
+  breakatwhitespace=true,
+  commentstyle=\color{greencomments},
+  keywordstyle=\color{bluekeywords},
+  stringstyle=\color{redstrings},
+  morekeywords={atomic, retry, orElse}]  % Start your code-block
+
+	atomic{
+		{
+			if(queue.isEmpty())
+				retry;
+			item = queue.dequeue;
+		}orElse{
+			if(queue2.isEmpty())
+				retry;
+			item = queue2.dequeue;
+		}orElse{
+			if(queue3.isEmpty())
+				retry;
+			item = queue3.dequeue;
+		}
+	}
+       
+\end{lstlisting}
 
 \subsection{Zombie Transactions}
 \label{subsec:zombie}
