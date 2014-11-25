@@ -19,6 +19,7 @@ Recently \ac{HTM} has been adopted by Intel and IBM and integrated into the Hasw
 Despite this recent development in dissemination of \ac{HTM}, the availability of \ac{HTM} or hybrids in high level programming languages is to our best knowledge non-existent. One could speculate, that the programming model to the programmer will remain unchanged, but the underlying runtime will benefit from the new \ac{HTM} semantics available, and therefore the characteristics of the \ac{STM} programming model could be the same. Due to these reasons, \ac{STM} is the focal point of our investigation in \ac{TM} as a concurrency mechanism. 
 
 \subsection{Transactional Properties}
+\label{sec:stm_tm_properties}
 \ac{TM} is based on the concept of a transaction. A transaction is a finite sequence of machine instructions, executed by a single process, satisfying the properties: Atomicity and Isolation\cite[p. 2]{herlihy2011tm}.
 
 \paragraph{Atomicity} By considering the instructions in a transaction as indivisible, atomicity ensures a shared effect of all the instructions in the transactions, either success or failure. That is, either all the instructions succeeds to change state of the system or none of them does. E.g. if a single instruction in a transaction fails, all will fail.
@@ -63,12 +64,68 @@ To clarify the effect of using \ac{STM}, \bsref{fig:transaction} visualizes the 
 \caption{Two transactions share memory and both have a reference to variable x. They have a racecondition, both doing calculations based on x, and writing back to x. \ac{STM} ensures that there is no lost update when t2 attempts to write, and enforces a recalculation with the new x value.}\label{fig:transaction}
 \end{figure}
 
+\subsection{Common Language Constructs}
+\label{sec:stm_common_constructs}
+Languages supporting \ac{STM} must encompass some language construct for specifying that a section of code should be executed as a transaction and managed by the \ac{STM} system. This basic language construct is often referred to as the \bscode{atomic} block\cite[p. 49]{harris2005composable}\cite[p. 3]{harris2003language}. The purpose of the atomic block is to allow programms to specify that a section of code should be executed atomically and isolated as described in \bsref{sec:stm_tm_properties}. The basic concepts of the atomic block is exemplified in \bsref{lst:stm_atomic_block}. How a transaction scope is defined, varies between \ac{STM} implementations. As an example Clojure employs the \bscode{dosync} function as shown in \bsref{lst:stmexample} on line 5 while a library based systems such as JDASTM\cite{ramadan2009committing} uses calls to \bscode{startTransaction} and \bscode{CommitTransaction} methods.
+
+\begin{lstlisting}[label=lst:stm_atomic_block,
+  caption={The atomic block},
+  language=Lisp,  
+  showspaces=false,
+  showtabs=false,
+  breaklines=true,
+  showstringspaces=false,
+  breakatwhitespace=true,
+  commentstyle=\color{greencomments},
+  keywordstyle=\color{bluekeywords},
+  stringstyle=\color{redstrings},
+  morekeywords={atomic}]  % Start your code-block
+
+	atomic{
+		v1 = x;
+		v2 = y;
+		z  = v1 / v2;	
+	}
+       
+\end{lstlisting}
+
+\subsubsection{Conditional Synchronization}
+A common tasks in concurrent programming is waiting on some event to occur before executing some code. As an example consider a concurrent queue shared between multiple threads in a producer consumer setup. It will be useful to only have a consumer dequeue a item whenever one is available. Accomplishing this without the need for busy waiting would also be preferable.
+
+In \cite{harris2005composable} Harris et al. introduces the \bscode{retry} statement for assisting in conditional synchronization within the context of \ac{STM}. The \bscode{retry} statement is explicitly placed by programmers within a \bscode{atomic} block. If a transaction encounters a retry statement during its execution it indicates that the transaction is not yet ready to run and the transaction should be aborted and retried at some point later in time, when the condition that lead to the retry has changed\cite[p. 73]{harris2010transactional}. A key point here is that the transaction is not retried immediately. The thread executing the transaction instead blocks, waiting to be awoken when the transaction is to be retried. The transaction is typically retired when one of the variables involved in the transaction is updated by another transaction\cite[p. 51]{harris2005composable}. By blocking the thread instead of repeatedly checking the condition, busy waiting is avoided.
+
+A transaction using the \bscode{retry}
+
+\begin{lstlisting}[label=lst:stm_retry,
+  caption={The retry statement},
+  language=Lisp,  
+  showspaces=false,
+  showtabs=false,
+  breaklines=true,
+  showstringspaces=false,
+  breakatwhitespace=true,
+  commentstyle=\color{greencomments},
+  keywordstyle=\color{bluekeywords},
+  stringstyle=\color{redstrings},
+  morekeywords={atomic, retry}]  % Start your code-block
+
+	atomic{
+		if(x == 0)
+			retry;
+		v1 = x;
+		v2 = y;
+		z  = v1 / v2;	
+	}
+       
+\end{lstlisting}
+
+
 \subsection{Zombie Transactions}
 \label{subsec:zombie}
-A zombie transaction is a transaction which will eventually abort, but have not yet discovered so. This happens, when a transaction have observed an inconsistent read-set\cite[p. 196]{dice2006transactional}. E.g. if a transaction reads the value of a variable, which is then updated by another transaction afterwards. This is exactly the case of \bscode{t2} in the example in \bsref{fig:transaction}.
+A zombie transaction is a transaction which will eventually abort, but have not yet discovered so. This happens, when a transaction have observed an inconsistent read-set\cite[p. 196]{dice2006transactional}. E.g. if a transaction reads the value of a variable, which is then updated by another transaction afterwards. This is exactly the case of \bscode{t2} in the example in \bsref{fig:transaction}. 
 
 \subsection{Variations in \ac{STM} Design}
-There is not a single way to design \ac{STM} in which the best of all worlds are combined. There is different approaches, which leaves a trade off between different goals. This section describes a number of design issues and the consequences of choosing the different approaches.
+Different approaches for designing a \ac{STM} systems exists. Many of the approaches represent a trade off between different aspects of the system.  This section describes a number of design issues as well as the trade off their represent.
 
 \subsubsection{Level of Isolation}
 \label{subsec:isolation_level}
@@ -117,9 +174,6 @@ In \cite{scherer2004contention} the authors examine a number of contention manag
 Multiversion concurrency control\\
 Time based STM\\
 
-\subsection{Common Constructs}
-\label{sec:stm_common_constructs}
-\kasper[inline]{Section on atomic block, retry and orElse constructs}
 
 \section{Concurrency Issues}
 In this section we present the concurrency issues related to the use of \ac{STM}. We will also relate to the concurrency issues discussed in \bsref{subsec:race_coditions} and \bsref{sec:tl_ci}.
