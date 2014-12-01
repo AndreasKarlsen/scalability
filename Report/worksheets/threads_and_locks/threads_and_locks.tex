@@ -373,7 +373,7 @@ This section presents how the \ac{TL} concurrency model relates to the selected 
 \kasper[inline]{Go trough all characteristic. Point out exactly why the placement is as it is. Eg. reasoning about local code segments push it abit towards high readability.}
 
 \subsection{Implicit or Explicit Concurrency}
-As described in \bsref{subsec:threads} and \bsref{sub:sec:shared_memory}, the \ac{TL} concurrency model specifies concurrency and synchronization by starting threads and accessing shared memory. Correctness is assured by locking access to critical regions. All of these operations are explicitly stated by the programmer. As such we say that the \ac{TL} concurrency model explicitly states concurrency. The placement is visualized in \bsref{fig:char_implicit_explicit}.
+As described in \bsref{subsec:threads_shared_memory}, the \ac{TL} concurrency model specifies concurrency and synchronization by starting threads and accessing shared memory. Correctness is assured by locking access to critical regions. All of these operations are explicitly stated by the programmer. As such we say that the \ac{TL} concurrency model explicitly states concurrency. The placement is visualized in \bsref{fig:char_implicit_explicit}.
 
 \begin{figure}[htbp]
 \centering
@@ -402,8 +402,8 @@ As described in \bsref{sec:locks_me}, the \ac{TL} concurrency model uses locks t
 \label{fig:char_pes_opti}
 \end{figure}
 
-\subsection{Readability \& Writability}
-As mentioned in \bsref{sec:readability} and \bsref{sec:writablity}, the evaluation of readability and writablity will be based upon the evaluation of the sub characteristics, on which they are based. As two of these, simplicity and orthogonality, are common for both readability and writability, an evaluation of these is presented first. After this, an evaluation of the readability properties of the \ac{TL} concurrency model is presented, followed by the evaluation of \ac{TL} concurrency models level of abstraction and expressivity. Finally an evaluation of the \ac{TL} concurrency models writability is presented.
+\subsection{Readability \& Writability}\label{subsec:tl_charac_read_and_write}
+As mentioned in \bsref{sec:readability} and \bsref{sec:writablity}, the evaluation of readability and writablity will be based upon the evaluation of the sub characteristics, on which they are based. As two of these, simplicity and orthogonality, are common for both readability and writability, an evaluation of these is presented first. After this, an evaluation of the readability properties of the \ac{TL} concurrency model is presented, followed by the evaluation of \ac{TL} concurrency models level of abstraction and expressivity. Finally an evaluation of the writability of the \ac{TL} concurrency model is presented.
 
 %that of simplicity and orthogonality as well as a number of other considerations. Simplicity and orthogonality is described in the following sections followed by a final evaluation of readability.
 \subsubsection{Simplicity}\label{subsec:tl_simplicity_read}
