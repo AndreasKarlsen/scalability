@@ -218,18 +218,50 @@ In a setting with shared memory and multiple threads, the risk of race condition
 
 As the programmer explicitly has to mark code in atomic blocks to ensure safety, the risk of the programmer not marking the code, will make the code unsafe to race conditions. This holds true only for weak isolation level.
 
-\subsection{Side Effects and Transactions}
-It is problematic to handle side-effects happening inside a transactions. Exceptions thrown inside a transaction should only be propagated when a transaction is successful, since this is the only case a transaction causes changes impacting the rest of the system. By using this approach, the option to roll back any updates made in an transaction until the point where the exception is thrown\cite[p. 2]{harris2005exceptions}.
+\subsection{Side-effects and Transactions}
+There is no clear approach to handle side-effects inside transactions. For example, how should an exception thrown inside a transaction be handled? A viable approach proposed by Tim Harris\cite{harris2005exceptions} is to only propagate the exception when the transaction is successful, since this is the only case a transaction causes changes impacting the rest of the system. However, even though a transaction is successful, if an exception happens all of the content of the transaction might not be executed, and can leave the program in an intermediate state. To exemplify, \bsref{lst:stm_exception} illustrates this issue. The method \bscode{move} moves an object from one collection to another. This happens in an atomic block, to ensure thread safety. However, if an exception happens while trying to add the object to the destination at line 7, the programmer must manually secure that it is re-added to the source. If not, the object will be in neither collection if the transaction commits. 
 
-\andreas[inline]{GOOD MONDAY MORNING :) WORK HERE!}
+\begin{lstlisting}[label=lst:stm_exception,
+  caption={Exceptions in Transactions},
+  language=Java,  
+  showspaces=false,
+  showtabs=false,
+  breaklines=true,
+  showstringspaces=false,
+  breakatwhitespace=true,
+  commentstyle=\color{greencomments},
+  keywordstyle=\color{bluekeywords},
+  stringstyle=\color{redstrings},
+  morekeywords={atomic, retry, orElse}]  % Start your code-block
+
+	boolean move(Collection source, Collection destination, Object object){
+		atomic{
+			if(!source.remove(object)){
+				return false;
+			} else {
+				try { 
+					destination.add(object);
+				} catch(RuntimeException e) {
+					source.add(object);
+					throw e;
+				}
+				return true;
+			}
+		}
+	}
+       
+\end{lstlisting}
+
+A way to negate this issue, is to retain all changes made in the transaction up until the point of the exception. By letting the \ac{STM} system discarding the side-effects happening before the exception, the programmer does not have to undo the actions before the exception. 
+
 modifications to objects that have multiple references. 
 How to handle this, varies in the different implementations. One option is, to only allow a specific reference type to be used inside a transaction. Another option is, 
 
-\subsection{Native methods}
+\subsection{Native Methods}
 \ac{IO} performed on a disk. These are irreversible actions, and even by not committing the result of a transaction, the transaction have still affected the system. 
 
 
-\subsection{Performance}
+\subsection{Conflict Management}
 Combined with the retries of transaction, and the result could be a brutal performance hit, or miscalculations.
 
 Interaction with code that cannot be transactionalized\\
