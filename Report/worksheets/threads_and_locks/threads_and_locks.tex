@@ -264,6 +264,7 @@ In \cite{lee2006problem} the author argues that introducing threads into a progr
 %\subsection{\ac{TL} and OOP}
 
 \subsection{Composability}\label{subsec:tl_composability}
+
 As mentioned in \bsref{sec:locks_me}, lock based concurrent implementations are not composable. Creating new software by composing existing implementations, in the form of libraries, is a common practice in software development. As software libraries does not perish on use, it is natural to reuse existing libraries. If such libraries use locks to correctly ensure mutual exclusion, it is not guaranteed that combining these libraries, results in an application free of concurrency related errors.
 
 Deadlocks are the primary reason for locks not composing\cite[p. 58]{sutter2005software}. Event based frameworks call code, that has been defined by programmers using the framework, to signal that some event occurred. If such frameworks use locks to ensure correct synchronization, calling code which the framework itself knows nothing about, while holding locks, can lead to deadlocks.

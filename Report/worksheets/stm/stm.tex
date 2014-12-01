@@ -27,7 +27,7 @@ Despite the recent development in the area of \ac{HTM}, the availability of \ac{
 
 \ac{TM} can perform a group of memory-operations atomically\cite[48]{harris2005composable}\toby{Den står lidt som et fact der ikke bliver bygget mere på, måske byg denne sætning sammen med næste eller uddyb}. By utilizing the transactional approach, \ac{TM} serves as a concurrency control mechanism. By adhering to the aforementioned properties, \ac{TM} enables concurrent execution, while being semantically equivalent to serial execution of the same program.
 
-\subsection{\acl{STM}}
+\subsection{\acl{STM}}\label{sec:stm_stm}
 \ac{STM} provides programmers with a transactional model, in software, through a library or compiler interface\cite{herlihy2011tm}. It seeks to solve the issues introduced by running multiple processes concurrently in a shared memory space, e.g. race conditions as discussed in \bsref{subsec:race_coditions}. To handle these challenges, \ac{STM} offers the programmer ways to define transaction scopes in critical regions. The transactions are executed concurrently, and if successful, changes are committed. If the transactions are not successful, it will be retried. Just by defining the critical regions, the \ac{STM} takes care of ensuring the atomicity and isolation leaving no work left for the programmer. 
 
 As our preliminary investigation showed in \bsref{sec:prelim_stm}, a number of programming languages and libraries have emerged to support TM. We have chosen Clojure, since \ac{STM} is natively implemented in the language, and it runs on the \ac{JVM}. The example in \bsref{lst:stmexample} demonstrates a transaction in Clojure on line 5, specified with the \bscode{dosync} function. Two accounts, \bscode{account1} and \bscode{account2} respectively, are defined as a reference to an amount. The function \bscode{transfer} takes an amount, and two accounts as parameters. In a transaction, it then transfers the amount given, from one account, to the other.
@@ -183,6 +183,7 @@ Lazy updating takes the opposite approach and writes updates to local versions o
 Eager updating allows efficient commit of transactions but makes it harder to ensure that zombie transactions see consistent state\cite[p. 2084]{herlihy2011tm}.
 
 \subsubsection{Conflict Detection}
+\label{sec:stm_conflict_detection}
 The act of determining whether a conflict has occurred is called conflict detection\cite[p. 20]{harris2010transactional}. Different ways of handling conflict detection exist. Eager conflict detection detects conflicts whenever a transaction attempts to access shared data, while lazy conflict detection detects conflicts just before a transaction is about to commit by validating the transactions data access\cite[p. 21]{harris2010transactional}. A lazy conflict detection scheme discards more computations that a eager scheme while a eager conflict detection scheme may cause transaction that could have committed lazily to abort\cite[p. 21]{harris2010transactional}.
 
 Besides lazy and eager conflict detection another distinction lies in what transactions are included when performing conflict detection. A \ac{STM} system employing tentative conflict detecting will include currently active transactions when detecting conflicts, while a system using committed conflict detection only detects conflicts with already committed transactions. Eager conflict detection is often coupled with tentative conflict detection while lazy conflict detection is often coupled with committed conflict detection\cite[p. 22]{harris2010transactional}.
@@ -284,10 +285,60 @@ Livelock\\
 
 \subsection{Compared to TL}
 \andreas[inline]{The titles should be refined}
+% shared memory -> raceconditions
+% no deadlocks
+% no priority inversion
 % Raceconditions. Transaction ensures atomicity (clojure got strong atomicity), and isolation. Due to this, the result of concurrent calculations will be the same, as if it was executed sequencially. 
 % Deadlocks...
 
 \subsection{Composability}
+As discussed in \bsref{subsec:tl_composability} concurrent implementations based on the \ac{TL} concurrency model do not compose, mainly due to the threat of deadlocks. \ac{STM} avoid the issue of deadlocks and addresses composition by allowing transactions to be nested within other transactions. The basic concept is exemplified in \bsref{lst:stm_nested_transactions}. The outer transaction defined on line 1 encloses another transaction defined on line 3.
+
+\begin{lstlisting}[label=lst:stm_nested_transactions,
+  caption={Nested transactions},
+  language=Java,  
+  showspaces=false,
+  showtabs=false,
+  breaklines=true,
+  showstringspaces=false,
+  breakatwhitespace=true,
+  commentstyle=\color{greencomments},
+  keywordstyle=\color{bluekeywords},
+  stringstyle=\color{redstrings},
+  morekeywords={atomic, retry, orElse, var}]  % Start your code-block
+
+	atomic{
+		x = 5;
+		atomic{
+		x = 10;		
+		}
+	}
+       
+\end{lstlisting}
+
+\bsref{lst:stm_nested_transactions_real} presents a more real world example based on transferring funds from one account to another. Here a outer transaction, defined on line 1, encloses two method calls to \bscode{withdraw} and \bscode{deposit} which are defined using transaction. Their transaction are effectively nested within the outer transaction.
+\begin{lstlisting}[label=lst:stm_nested_transactions_real,
+  caption={Real world nested transactions},
+  language=Java,  
+  showspaces=false,
+  showtabs=false,
+  breaklines=true,
+  showstringspaces=false,
+  breakatwhitespace=true,
+  commentstyle=\color{greencomments},
+  keywordstyle=\color{bluekeywords},
+  stringstyle=\color{redstrings},
+  morekeywords={atomic, retry, orElse, var}]  % Start your code-block
+
+	atomic{
+		var amount = 500;
+		account.withdraw(amount);
+		account.deposit(amount)
+	}
+       
+\end{lstlisting}
+
+Three main forms of transaction nesting exist: flat nesting, closed nesting and open nesting\cite[p. 1]{kumar2011hparstm}\cite[p. 42]{harris2010transactional}. Flat nesting aborts the outer transaction if a inner transaction aborts and commits from enclosed transactions only take effect when the outer transaction commits. Under closed nesting, aborting a enclosed transaction does not terminate the outer transaction and commits made by enclosed transaction become visible to the outer transaction but not transaction executed by other threads. Under open nesting commits from enclosed transactions become visible to every other transaction and if the outer transaction aborts results of committed enclosed transactions are not rolled back. Flat nesting is simpler than closed and open nesting while open and closed nesting allows for a greater degree of concurrency, especially in cases where aborts are common\cite[p. 43]{harris2010transactional}.
 \subsection{Ease of Use}
 Through out the literature, one of the main reasons for investigating \ac{STM} as a synchronization mechanism is the claim of \ac{STM} being easier to use than locking and in particular fine grained locking. This section examines two studies into this claim. \bsref{sec:stm_ease_rossbach} examines a study conducted by Rossbach et al while \bsref{sec:stm_ease_pankratius} presents a similar study conducted by Pankratius et al.
 \subsubsection{Rossbach et al.}
@@ -306,19 +357,26 @@ In \cite{pankratius2009does} Pankratius et al presents a study comparing \ac{TM}
 
 The study shows that the first team to produce a working search engine was the winning \ac{TM}\cite[p. 6]{pankratius2009does}. The team had a working prototype after 5 weeks.   The locking teams spend more time debugging due to segmentation faults\cite[p. 6]{pankratius2009does}. As with the study examined in \bsref{sec:stm_ease_rossbach} the students where presented with a survey. The survey shows that the  winning \ac{TM} based team thought they where not progressing fast enough due to having to use transactions even though they had the first prototype and the least effort of all teams while lock based teams though they where progressing fast even though requiring more effort\cite[p. 6]{pankratius2009does}. Expert reviews revealed that the \ac{TM} based implementations where easier to understand and required fewer parallel consructs\cite[p. 6]{pankratius2009does}. All teams, including the winning \ac{TM} team, had data races which where detected after hand in by code inspection\cite[p. 6]{pankratius2009does}. The winning \ac{TM} team spent less time than the winning lock team and had better performance\cite[p. 23]{pankratius2009does}. All locks based teams attempted to scale by employing many locks (up to 1600),  this proved difficult\cite[p. 23]{pankratius2009does}.
 
-Two of the \ac{TM} teams used locks for parts of their implementations, one team had a producer consumer setup which was controlled by a semaphore, while another teams used lock to synchronize a section with intensive\cite[p. 5]{pankratius2009does}. The Pankratius et al make the case for locking and \ac{TM} coexisting rather than excluding one another.
+Two of the \ac{TM} teams used locks for parts of their implementations, one team had a producer consumer setup which was controlled by a semaphore, while another teams used lock to synchronize a section with intensive\cite[p. 5]{pankratius2009does}. Pankratius et al make the case for locking and \ac{TM} coexisting rather than excluding one another.
 
 \section{Evaluation of Characteristics}
 
 % Is Transactional Programming Actually Easier, STM is easier to use: Pankratius, Rossbach\\
 % Why is STM only a research toy
 % Why STM can be more than a research toy
-Transaction synchronization is optimistic\cite[p. 1]{guerraoui2005toward}.
 
 \label{sec:stm_eval}
 % Optimistic (retry, not wait)
 \subsection{Implicit or Explicit Concurrency}
 \subsection{Fault Restrictive or Expressive Model}
 \subsection{Pessimistic or Optimistic Model}
+As describe in \bsref{sec:stm_stm} \ac{STM} transaction are executed concurrently. If the execution is successful, the transaction commits. Such an approach corresponds well with a optimistic approach to concurrency and this is also the consensus in relevant literature. Guerraoui et al, among others, explicitly state that \ac{STM} is a optimistic model\cite[p. 1]{guerraoui2005toward}. While some \ac{STM} implementations employ eager conflict detection, as described in \bsref{sec:stm_conflict_detection}, aimed at aborting conflicted transactions as soon as possible the overall strategy of the model remains optimistic. As such we say that \ac{STM} is a optimistic concurrency model the exact placement is depicted in \bsref{fig:stm_char_pes_opti}.
+
+\begin{figure}[htbp]
+\centering
+ \includegraphics[width=0.9\textwidth]{\rootpath/worksheets/stm/figures/stm_char_pessimistic_optemistic} 
+ \caption{\ac{STM} on the Pessimistic - Optimistic spectrum}
+\label{fig:stm_char_pes_opti}
+\end{figure}
 \subsection{Readability and Writability}
 \worksheetend
