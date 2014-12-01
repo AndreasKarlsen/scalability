@@ -62,9 +62,17 @@ To clarify the effect of using \ac{STM}, \bsref{fig:transaction} visualizes the 
 \caption{Two transactions share memory and both have a reference to variable x. They have a racecondition, both doing calculations based on x, and writing back to x. \ac{STM} ensures that there is no lost update when t2 attempts to write, and enforces a recalculation with the new x value.}\label{fig:transaction}
 \end{figure}
 
+\subsection{Conflicts}
+\label{sec:stm_conflicts}
+In the context of \ac{STM} a conflict is two transactions performing conflicting operations on the same data, resulting in only one of them being able to continue\cite[p. 20]{harris2010transactional}. A conflict arises if two transactions attempt to write to the same data, or if one transaction reads the data while the other writes to it.
+
+A \ac{STM} system taking some action to avoid a conflict is called conflict resolution\cite[p. 20]{harris2010transactional}. When two transactions conflict two options exist for resolving the conflict:\begin{inparaenum}[(1)]
+\item pausing a transaction, attempting to let the other transaction finish
+\item letting a transaction proceed, forcing the other transaction to abort.
+\end{inparaenum} 
 \subsection{Common Language Constructs}
 \label{sec:stm_common_constructs}
-Languages supporting \ac{STM} must encompass some language construct for specifying that a section of code should be executed as a transaction and managed by the \ac{STM} system. This basic language construct is often referred to as the \bscode{atomic} block\cite[p. 49]{harris2005composable}\cite[p. 3]{harris2003language}. The purpose of the \bscode{atomic} block is to allow programmers to specify that a section of code should be executed atomically and isolated as described in \bsref{sec:stm_tm_properties}. The basic concepts of the atomic block is exemplified in \bsref{lst:stm_atomic_block}. Exactly how a transaction scope is defined, varies between \ac{STM} implementations. As an example, Clojure employs the \bscode{dosync} function as shown on line 5 in \bsref{lst:stmexample} while a library based systems such as JDASTM\cite{ramadan2009committing} uses calls to \bscode{startTransaction} and \bscode{commitTransaction} methods.
+Languages supporting \ac{STM} must encompass some language construct for specifying that a section of code should be executed as a transaction and managed by the \ac{STM} system. This basic language construct is often referred to as the \bscode{atomic} block\cite[p. 49]{harris2005composable}\cite[p. 3]{harris2003language}. The \bscode{atomic} block allows programmers to specify a transaction scope wherein code should be executed atomically and isolated as described in \bsref{sec:stm_tm_properties}. The atomic block is exemplified in \bsref{lst:stm_atomic_block}. Exactly how a transaction scope is defined, varies between \ac{STM} implementations. As an example, Clojure employs the \bscode{dosync} function as shown on line 5 in \bsref{lst:stmexample} while a library based system such as JDASTM\cite{ramadan2009committing} uses calls to \bscode{startTransaction} and \bscode{commitTransaction} methods.
 
 \begin{lstlisting}[label=lst:stm_atomic_block,
   caption={The atomic block},
@@ -88,9 +96,9 @@ Languages supporting \ac{STM} must encompass some language construct for specify
 \end{lstlisting}
 
 \subsubsection{Conditional Synchronization}
-A common tasks in concurrent programming is waiting on some event to occur before executing some code. As an example consider a concurrent queue shared between multiple threads in a producer consumer setup. It will be useful to only have a consumer dequeue an item whenever one is available. Accomplishing this without the need for busy waiting would also be preferable.
+A common task in concurrent programming is executing code whenever some event occurs. As an example consider a concurrent queue shared between multiple threads in a producer consumer setup. It will be useful to only have a consumer dequeue an item whenever one is available. Accomplishing this without the need for busy waiting would also be preferable.
 
-In \cite{harris2005composable} Harris et al. introduces the \bscode{retry} statement for assisting in conditional synchronization within the context of \ac{STM}. The \bscode{retry} statement is explicitly placed by programmers within a \bscode{atomic} block. If a transaction encounters a retry statement during its execution it indicates that the transaction is not yet ready to run and the transaction should be aborted and retried at some point later in time\cite[p. 73]{harris2010transactional}. A key point here is that the transaction is not retried immediately. The thread executing the transaction instead blocks, waiting to be awoken when the transaction is to be retried. The transaction is typically retired when one of the variables involved in the transaction is updated by another transaction\cite[p. 51]{harris2005composable}. By blocking the thread instead of repeatedly checking the condition, busy waiting is avoided. Furthermore the retry statement is not subject to the lost wake up problem which exists when doing conditional synchronization using monitors\cite[p. 2081]{herlihy2011tm}.
+In \cite{harris2005composable} Harris et al. introduce the \bscode{retry} statement for assisting in conditional synchronization within the context of \ac{STM}. The \bscode{retry} statement is explicitly placed by programmers within an \bscode{atomic} block. If a transaction encounters a retry statement during its execution it indicates that the transaction is not yet ready to run and the transaction should be aborted and retried at some later point\cite[p. 73]{harris2010transactional}. The transaction is not is not retried immediately but instead blocks, waiting to be awoken when the transaction is to be retried. The transaction is typically retired when one of the variables involved in the transaction is updated by another transaction\cite[p. 51]{harris2005composable}. By blocking the thread instead of repeatedly checking the condition, busy waiting is avoided.
 
 A transaction using the \bscode{retry} statement is shown in \bsref{lst:stm_retry}. If the queue is empty the transaction executes the retry statement of line 3, blocking the transaction until it is retired at a later time.
 \begin{lstlisting}[label=lst:stm_retry,
@@ -109,13 +117,13 @@ A transaction using the \bscode{retry} statement is shown in \bsref{lst:stm_retr
 	atomic{
 		if(queue.isEmpty())
 			retry;
-		item = queue.dequeue;
+		item = queue.dequeue();
 		//process item
 	}
        
 \end{lstlisting}
 
-In addition to the \bscode{retry} statement Harris et al. proposes the \bscode{orElse} block. The \bscode{orElse} block handles the case of waiting on one of many conditions to be true by combining a number of transaction alternatives. The alternatives are evaluated in left-to-right order and only one of the alternatives is committed\cite[p. 52]{harris2005composable}. The \bscode{orElse} block works in conjunction with the \bscode{retry} statement to determine which alternative to execute. An example of a transaction employing the \bscode{orElse} block is shown in \bsref{lst:stm_orelse}. If an alternative executes without encountering a retry statement it gets to commit and the other alternatives are never executed\cite[p. 74]{harris2010transactional}. If an alternative however encounters a \bscode{retry} statement its work is undone and the next alternative in the chain is executed\cite[p. 74]{harris2010transactional}. If the last alternative encounters a \bscode{retry} statement the transaction as a whole is blocked awaiting a retry at a later time\cite[p. 74]{harris2010transactional}.
+In addition to the \bscode{retry} statement Harris et al. propose the \bscode{orElse} block. The \bscode{orElse} block handles the case of waiting on one of many conditions to be true by combining a number of transaction alternatives. The alternatives are evaluated in left-to-right order and only one of the alternatives is committed\cite[p. 52]{harris2005composable}. The \bscode{orElse} block works in conjunction with the \bscode{retry} statement to determine which alternative to execute. An example of a transaction employing the \bscode{orElse} block is shown in \bsref{lst:stm_orelse}. If an alternative executes without encountering a retry statement it gets to commit and the other alternatives are never executed\cite[p. 74]{harris2010transactional}. If an alternative however encounters a \bscode{retry} statement its memory operations are undone and the next alternative in the chain is executed\cite[p. 74]{harris2010transactional}. If the last alternative encounters a \bscode{retry} statement the transaction as a whole is blocked awaiting a retry at a later time\cite[p. 74]{harris2010transactional}.
 
 \begin{lstlisting}[label=lst:stm_orelse,
   caption={The orElse block},
@@ -134,15 +142,15 @@ In addition to the \bscode{retry} statement Harris et al. proposes the \bscode{o
 		{
 			if(queue.isEmpty())
 				retry;
-			item = queue.dequeue;
+			item = queue.dequeue();
 		}orElse{
 			if(queue2.isEmpty())
 				retry;
-			item = queue2.dequeue;
+			item = queue2.dequeue();
 		}orElse{
 			if(queue3.isEmpty())
 				retry;
-			item = queue3.dequeue;
+			item = queue3.dequeue();
 		}
 	}
        
@@ -150,58 +158,54 @@ In addition to the \bscode{retry} statement Harris et al. proposes the \bscode{o
 
 \subsection{Zombie Transactions}
 \label{subsec:zombie}
-A zombie transaction is a transaction which will eventually abort, but have not yet discovered so. This happens, when a transaction have observed an inconsistent read-set\cite[p. 196]{dice2006transactional}. E.g. if a transaction reads the value of a variable, which is then updated by another transaction afterwards. This is exactly the case of \bscode{t2} in the example in \bsref{fig:transaction}. 
+A zombie transaction is a transaction which will eventually abort, but have not yet discovered so. This happens, when a transaction has observed an inconsistent read-set\cite[p. 196]{dice2006transactional}. E.g. if a transaction reads the value of a variable, which is then updated by another transaction afterwards. This is exactly the case of \bscode{t2} in the example in \bsref{fig:transaction}. 
 
 \subsection{Variations in \ac{STM} Design}
-Different approaches for designing \ac{STM} systems exists. Many of the approaches represent a trade off between different aspects of the system. This section describes a number of design issues as well as the trade off's they represent.
+Different approaches for designing \ac{STM} systems exist. Many of the approaches represent a trade off between different aspects of the system. This section describes a number of design issues as well as the trade off's they represent.
 
 \subsubsection{Level of Isolation}
 \label{subsec:isolation_level}
-Within the context of \ac{STM} there exists two different isolation levels: weak isolation and strong isolation. Isolation describes how parts of a system perceives transactions. Isolation level is in some literature also referred to as atomicity level\cite[p. 30]{harris2010transactional}.
+Within the context of \ac{STM} there exist two different isolation levels: weak isolation and strong isolation. Isolation describes how parts of a system perceive transactions. The terms isolation and atomicity are used interchangeably throughout the literature\cite[p. 30]{harris2010transactional}.
 
 With the guarantee of isolation, a transaction is perceived as one atomic step. That is, the intermediate states present during the execution of the transaction are not perceived by other parts of the systems, only the committed values become visible to other parts of the system. This always holds in the case of transactions perceiving other transactions. However, if a thread executes transactional code over some data, and another thread executes non-transactional code over the same data, the concepts of weak and strong isolation handle this differently.
 
-In the case of strong isolation it is guaranteed that transactions are atomic with respect to non-transactional access\cite[p. 2083]{herlihy2011tm}. This means, that if the same variable is used in a transaction, and outside of a transaction, the \ac{STM} implementation will ensure that the variable is also atomic outside of the transaction scope. Since the \ac{STM} must guarantee isolation outside of the transaction scope, this comes with a cost in performance\cite{herlihy2011tm}. 
+In the case of strong isolation it is guaranteed that transactions are atomic with respect to non-transactional access\cite[p. 2083]{herlihy2011tm}. If any data is access both within a transaction as well as out side of a transaction the \ac{STM} implementation will ensure that the variable is accessed atomically in both cases. Guaranteeing isolation atomicity between transactional and non-transactional access comes with a  performance cost\cite{herlihy2011tm}. 
 
-In the case of weak isolation, it is only guaranteed that transactions are atomic with respect to other transactions. That is, it is up to the programmer to ensure that the transactions does not affect the rest of the system, and vice versa. 
+Weak isolation only guarantees that transactions are atomic with respect to other transactions. That is, it is up to the programmer to ensure that non-transactional access does not interfere with transactional access.
 
 \subsubsection{Eager vs Lazy Updating}
-Updating memory in a \ac{STM} implementation can be done using one of two different approaches: eager or lazy updating.
+Updating memory in a \ac{STM} implementation can be done either using: eager or lazy updating.
 
-Eager updating updates the memory associated with a variable directly. Eager updating is also referred to as in-place-updating, as updates are written into the existing memory location\cite[p. 35]{afek2011lowering}. \ac{STM} implementations using eager updating, must maintain an undo log, which stores information about any writes made within transactions. The undo log is used to undo the effects of a transaction when a transaction conflicts\cite[p. 2084]{herlihy2011tm}.
+Eager updating updates the memory associated with a variable directly and is also referred to as in-place-updating, as updates are written into the existing memory location\cite[p. 35]{afek2011lowering}. \ac{STM} implementations using eager updating, must maintain an undo log, which stores information about any writes made within transactions. The undo log is used to undo the effects of a transaction when a transaction conflicts\cite[p. 2084]{herlihy2011tm}.
 
-Lazy updating takes the opposite approach and writes updates to local versions of the effected data\cite[p. 2084]{herlihy2011tm}. If the transaction commits, the local changes are written to the actual memory locations, while an abort causes the local changes to be discarded.\toby{Evt. noget om at lazy updating bruger mere plads fordi vi har kopier fremfor en changelog, men at hvis der så er conflicter er det nemmere at discare kopier fremfor at skulle til at udføre en changelog.}
+Lazy updating takes the opposite approach and writes updates to local versions of the effected data\cite[p. 2084]{herlihy2011tm}. If the transaction commits, the local changes are written to the actual memory locations, while an abort causes the local changes to be discarded.\toby[inline]{Evt. noget om at lazy updating bruger mere plads fordi vi har kopier fremfor en changelog, men at hvis der så er conflicter er det nemmere at discare kopier fremfor at skulle til at udføre en changelog.}
 
-Eager updating allows efficient commit of transactions but makes it harder to ensure that zombie transactions sees consistent state\cite[p. 2084]{herlihy2011tm}\kasper{Mere om dette.}.
+Eager updating allows efficient commit of transactions but makes it harder to ensure that zombie transactions see consistent state\cite[p. 2084]{herlihy2011tm}.
 
 \subsubsection{Conflict Detection}
-In the context of \ac{STM} a conflict is two transactions performing conflicting operations on the same data, resulting in only one of them being able to continue\cite[p. 20]{harris2010transactional}. A conflict arises if both transactions attempts to write to the same data, or if one transaction reads the data while the other writes to it. The act of determining whether a conflict has occurred is called conflict detection\cite[p. 20]{harris2010transactional}. Different ways of handling conflict detection exists. Eager conflict detection detects conflicts whenever a transaction attempts to access shared data, while lazy conflict detection detects conflicts just before a transaction is about to commit by validating the transactions data access\cite[p. 21]{harris2010transactional}. \toby{Evt. lidt uddybnede om hvad det betyder. Det er vel at noget med at med eager finder vi hurtigt ud af at der er lavet changes og kan hurtigt begynde forfra, men det er dyrt at tjekke hele tiden hvis der alligevel ikke var lavet changes hvorimod med lazy, der kunne der ske en ændring helt i starten af en anden transaktion, hvor man unøvendigt prøver at udføre en lang transaktion der kunne have været genstartet med eager}
+The act of determining whether a conflict has occurred is called conflict detection\cite[p. 20]{harris2010transactional}. Different ways of handling conflict detection exist. Eager conflict detection detects conflicts whenever a transaction attempts to access shared data, while lazy conflict detection detects conflicts just before a transaction is about to commit by validating the transactions data access\cite[p. 21]{harris2010transactional}. A lazy conflict detection scheme discards more computations that a eager scheme while a eager conflict detection scheme may cause transaction that could have committed lazily to abort\cite[p. 21]{harris2010transactional}.
 
-Another distinction lies between what transactions are included when performing conflict detection. A \ac{STM} system employing tentative conflict detecting will include currently active transactions when detecting conflicts while a system using committed conflict detection only detects conflicts with committed transactions. Eager conflict detection is often coupled with tentative conflict detection while lazy conflict detection is often coupled with committed conflict detection\cite[p. 22]{harris2010transactional}. \toby{Hvad har de af virkninger? Altså pros og cons for begge ligesom ovenfor}
+Besides lazy and eager conflict detection another distinction lies in what transactions are included when performing conflict detection. A \ac{STM} system employing tentative conflict detecting will include currently active transactions when detecting conflicts, while a system using committed conflict detection only detects conflicts with already committed transactions. Eager conflict detection is often coupled with tentative conflict detection while lazy conflict detection is often coupled with committed conflict detection\cite[p. 22]{harris2010transactional}.
 
 Conflict detection is highly related to the concepts of pessimistic or optimistic concurrency control. In pessimistic concurrency control conflicts are detected and resolved when they happen\cite[p. 20]{harris2010transactional} while optimistic concurrency control detects and resolves conflicts some time after they occur\cite[p. 20]{harris2010transactional}.
 
 \subsubsection{Visible vs Invisible Reads}
 When reading shared data \ac{STM} implementations can either employ visible, invisible or semivisible reads.
 
-Using visible reads a \ac{STM} transaction communicate its operations to other transactions, by registering in shared memory whenever it reads a shared variable\cite[p. 2]{lev2009anatomy}\cite[p. 2085]{herlihy2011tm}. Other transactions, which are about to write to a shared variable, can then consult the written data to identify if they are about to produce a conflict. As transactions write exactly which transaction reads a variable, the writing transaction can choose to abort the reading transactions\cite[p. 2]{lev2009anatomy}.
+Using visible reads a \ac{STM} transaction communicates its operations to other transactions, by registering in shared memory whenever it reads a shared variable\cite[p. 2]{lev2009anatomy}\cite[p. 2085]{herlihy2011tm}. Other transactions, which are about to write to a shared variable, can then consult the written data to identify if they are about to produce a conflict. As transactions write exactly which transaction reads a variable, the writing transaction can choose to abort the reading transactions\cite[p. 2]{lev2009anatomy}.
 
-Using invisible reads a \ac{STM} transaction does not communicate its operations to other transactions\cite[p. 114]{imbs2012virtual}. Each transaction instead maintain per read metadata which is used to validate the transaction whenever additional reads are performed\cite[p. 2085]{herlihy2011tm}.
+Using invisible reads a \ac{STM} transaction does not communicate its operations to other transactions\cite[p. 114]{imbs2012virtual}. Each transaction instead maintains per read metadata which is used to validate the transaction whenever additional reads are performed\cite[p. 2085]{herlihy2011tm}.
 
 Visible reads have the problem of being expensive and not scaling, while invisible reads are expensive due to their need for repeated validation. As such, more recent \ac{STM} implementations instead employ the semivisible read scheme\cite[p. 2085]{herlihy2011tm}.
 
-Semivisible reads are similar to visible reads in that transaction communicate their reads to other transactions. Instead of communicating exactly what transaction read a shared variable, a transaction simply indicates that a given variable has been read by some transaction. Allowing other transaction to see that a conflict exists. A counter is maintained for each transaction indicating if any conflicts occured during its execution. Expensive validation can be avoided in the vast majority of cases by checking whether any conflicts occurred during the execution of a transaction\cite[p. 2]{lev2009anatomy}.
+Semivisible reads are similar to visible reads in that transaction communicate their reads to other transactions. Instead of communicating exactly what transaction read a shared variable, a transaction simply indicates that a given variable has been read by some transaction, allowing other transaction to see that a conflict exists. A counter is maintained for each transaction indicating if any conflicts occured during its execution. Expensive validation can be avoided in the vast majority of cases by checking whether any conflicts occurred during the execution of a transaction\cite[p. 2]{lev2009anatomy}.
 
 \subsubsection{Contention Managers}
-Some \ac{STM} implementations delegate conflict resolution to a component called a contention manager\cite[p. 2085]{herlihy2011tm}. The contention manager also ensures that the \ac{STM} systems as a whole makes progress\cite[p. 1]{guerraoui2005toward}. Not all \ac{STM} implementations use a contention manager, but instead abort transactions immediately\cite[38]{riegel2013software}.
+Some \ac{STM} implementations delegate conflict resolution to a component called a contention manager\cite[p. 2085]{herlihy2011tm}. The contention manager encapsulates the \ac{STM} implementations conflict resolution policy\cite[p. 2085]{herlihy2011tm} and ensures that the \ac{STM} systems as a whole makes progress\cite[p. 1]{guerraoui2005toward}. The decision of how a to resolve a conflict can be delegated to the contention manager. Not all \ac{STM} implementations use a contention manager, but instead abort transactions immediately\cite[38]{riegel2013software}.
 
-When a transaction detects that it is about to create a conflict it can either pause, attempting to let the transaction its about to conflict with finish, or it can proceed forcing the other transaction to abort. The decision can be delegated to a contention manager. The contention manager encapsulates the \ac{STM} implementations conflict resolution policy\cite[p. 2085]{herlihy2011tm}.
+The decision can be delegated to a contention manager. The contention manager encapsulates the \ac{STM} implementations conflict resolution policy\cite[p. 2085]{herlihy2011tm}.
 
-In \cite{scherer2004contention} the authors examine a number of contention manager implementation policies. Including policies based on time-stamps, alternating and karma. Benchmarking the policies reveals that all policies which performed well in atleast a single test performed abysmal in atleast one other test. So no single best contention management policy was identified.
-\subsubsection{Implementation techniques}
-Multiversion concurrency control\\
-Time based STM\\
-
+In \cite{scherer2004contention} the authors examine a number of contention manager implementation policies. By benchmarking the a implementation of the policies the authors reveal that all policies which performed well in atleast a single test, performed abysmal in atleast one other test. So no single best contention management policy was identified.
 
 \section{Concurrency Issues}
 In this section we present the concurrency issues related to the use of \ac{STM}. We will also relate to the concurrency issues discussed in \bsref{subsec:race_coditions} and \bsref{sec:tl_ci}.
