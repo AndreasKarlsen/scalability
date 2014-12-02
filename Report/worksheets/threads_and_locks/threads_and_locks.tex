@@ -370,8 +370,7 @@ In order to remove the deadlock one could move the notification of observers in 
 %As an example imagine if that the programmer defined code takes the attempts to acquire the same lock that the framework currently holds.  Because the framework holds the locks 
 
 \section{\acl{TL} Characteristics}
-This section presents how the \ac{TL} concurrency model relates to the selected characteristics presented in \bsref{chap:char}. \andreas{Overskrift kunne være: TL char evaluation?}
-\kasper[inline]{Go trough all characteristic. Point out exactly why the placement is as it is. Eg. reasoning about local code segments push it abit towards high readability.}
+This section presents how the \ac{TL} concurrency model relates to the selected characteristics presented in \bsref{chap:char}.
 
 \subsection{Implicit or Explicit Concurrency}
 As described in \bsref{subsec:threads_shared_memory}, the \ac{TL} concurrency model specifies concurrency and synchronization by starting threads and accessing shared memory. Correctness is assured by locking access to critical regions. All of these operations are explicitly stated by the programmer. As such we say that the \ac{TL} concurrency model explicitly states concurrency. The placement is visualized in \bsref{fig:char_implicit_explicit}.
