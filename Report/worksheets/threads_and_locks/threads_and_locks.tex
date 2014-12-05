@@ -362,7 +362,7 @@ In order to remove the deadlock one could move the notification of observers in 
         sem.release();
 
         for (Observer o : shallowCopy) {
-            o.notify(this,value);
+            o.notify(this,newValue);
         }
     }
 \end{lstlisting}
@@ -447,7 +447,7 @@ Considering this as well as the evaluation of simplicity and orthogonality we sa
 \end{figure}
 
 \subsubsection{Level of abstraction}\label{sec:tl_level_of_abstraction}
-The \ac{TL} concurrency model is tightly coupled with the underlying hardware architecture. Threads are part of the process model used in hardware and the \ac{TL} concurrency model directly uses threads in order to introduce concurrency. Synchronization happens via shared memory which is also part of the process model. The locking is done via supporting hardware instructions such as Test-and-set or Compare-and-swap\cite[p. 1990]{scott2011sync}. Many languages now include more high level abstractions, such as Java's ExecutorService\footnote{\url{http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/ExecutorService.html}}, which hide the underlying threads from the programmer. However, generally such abstractions still use threads underneath. Because the abstractions which the \ac{TL} concurrency model offers is so tightly coupled with the hardware and \ac{OS}, we say that the \ac{TL} concurrency model has a low level of abstraction. The placement of the \ac{TL} concurrency model on the low - high level of abstraction spectrum is depicted in \bsref{fig:char_tl_readability}.
+The \ac{TL} concurrency model is tightly coupled with the underlying hardware architecture. Threads are part of the process model used in the \ac{OS} and the \ac{TL} concurrency model directly uses threads in order to introduce concurrency. Synchronization happens via shared memory which is also part of the process model. The locking is done via supporting hardware instructions such as Test-and-set or Compare-and-swap\cite[p. 1990]{scott2011sync}. Many languages now include more high level abstractions, such as Java's ExecutorService\footnote{\url{http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/ExecutorService.html}}, which hide the underlying threads from the programmer. However, generally such abstractions still use threads underneath. Because the abstractions which the \ac{TL} concurrency model offers is so tightly coupled with the hardware and \ac{OS}, we say that the \ac{TL} concurrency model has a low level of abstraction. The placement of the \ac{TL} concurrency model on the low - high level of abstraction spectrum is depicted in \bsref{fig:char_tl_readability}.
 
 \begin{figure}[htbp]
 \centering
