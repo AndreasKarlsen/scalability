@@ -295,6 +295,7 @@ Livelock\\
 % Deadlocks...
 
 \subsection{Composability}
+\label{sec:stm_composability}
 As discussed in \bsref{subsec:tl_composability} concurrent implementations based on the \ac{TL} concurrency model do not compose, mainly due to the threat of deadlocks. \ac{STM} avoid the issue of deadlocks and addresses composition by allowing transactions to be nested within other transactions. The basic concept is exemplified in \bsref{lst:stm_nested_transactions}. The outer transaction defined on line 1 encloses another transaction defined on line 3.
 
 \begin{lstlisting}[label=lst:stm_nested_transactions,
@@ -343,6 +344,7 @@ As discussed in \bsref{subsec:tl_composability} concurrent implementations based
 
 Three main forms of transaction nesting exist: flat nesting, closed nesting and open nesting\cite[p. 1]{kumar2011hparstm}\cite[p. 42]{harris2010transactional}. Flat nesting aborts the outer transaction if a inner transaction aborts and commits from enclosed transactions only take effect when the outer transaction commits. Under closed nesting, aborting a enclosed transaction does not terminate the outer transaction and commits made by enclosed transaction become visible to the outer transaction but not transaction executed by other threads. Under open nesting commits from enclosed transactions become visible to every other transaction and if the outer transaction aborts results of committed enclosed transactions are not rolled back. Flat nesting is simpler than closed and open nesting while open and closed nesting allows for a greater degree of concurrency, especially in cases where aborts are common\cite[p. 43]{harris2010transactional}.
 \subsection{Ease of Use}
+\label{sec:stm_ease_of_use}
 Through out the literature, one of the main reasons for investigating \ac{STM} as a synchronization mechanism is the claim of \ac{STM} being easier to use than locking and in particular fine grained locking. This section examines two studies into this claim. \bsref{sec:stm_ease_rossbach} examines a study conducted by Rossbach et al while \bsref{sec:stm_ease_pankratius} presents a similar study conducted by Pankratius et al.
 \subsubsection{Rossbach et al.}
 \label{sec:stm_ease_rossbach}
@@ -362,18 +364,33 @@ The study shows that the first team to produce a working search engine was the w
 
 Two of the \ac{TM} teams used locks for parts of their implementations, one team had a producer consumer setup which was controlled by a semaphore, while another teams used lock to synchronize a section with intensive\cite[p. 5]{pankratius2009does}. Pankratius et al make the case for locking and \ac{TM} coexisting rather than excluding one another.
 
-\section{Evaluation of Characteristics}
-
-% Is Transactional Programming Actually Easier, STM is easier to use: Pankratius, Rossbach\\
-% Why is STM only a research toy
-% Why STM can be more than a research toy
-
+\section{\ac{STM} Characteristics}
 \label{sec:stm_eval}
-% Optimistic (retry, not wait)
+This section presents how the \ac{STM} concurrency model relates to the selected characteristics presented in \bsref{chap:char}.
+
 \subsection{Implicit or Explicit Concurrency}
+\ac{STM} as a concurrency model build upon many of the same constructs as the \ac{TL} concurrency model. Threads are started in order to introduce concurrency and race conditions are avoided by specifying critical regions in which code should be executed as a transaction and managed by the \ac{STM} system. It is the task of the programmer to explicitly employ these constructs and as such we say that \ac{STM} employs explicit concurrency. The exact placement is shown in \bsref{fig:stm_char_impli_expli}.
+
+\begin{figure}[htbp]
+\centering
+ \includegraphics[width=0.9\textwidth]{\rootpath/worksheets/stm/figures/stm_char_implicit_explicit} 
+ \caption{\ac{STM} on the Implicit - Explicit concurrency spectrum}
+\label{fig:stm_char_impli_expli}
+\end{figure}
+
 \subsection{Fault Restrictive or Expressive Model}
+\ac{STM} employs many of the principles also found in the traditional \ac{TL} approach to concurrency. Both express concurrency by starting threads and synchronising access to shared memory. While the \ac{TL} gives programmers control over the low level details of synchronization, \ac{STM} delegates such work to the \ac{STM} system. Furthermore \ac{STM} limits the number of concurrency related errors which the programmer has to reason about. As such we say that \ac{STM} is a expressive concurrency model with fault restrictive elements keeping it for being considered truly expressive. The exact placement of \ac{STM} on the fault restrictive - expressive spectrum is depicted in \bsref{fig:stm_char_fault_expressive}.
+
+\begin{figure}[htbp]
+\centering
+ \includegraphics[width=0.9\textwidth]{\rootpath/worksheets/stm/figures/stm_char_fault_expressive} 
+ \caption{\ac{STM} on the Fault Restrictive - Expressive spectrum}
+\label{fig:stm_char_fault_expressive}
+\end{figure}
+
+
 \subsection{Pessimistic or Optimistic Model}
-As describe in \bsref{sec:stm_stm} \ac{STM} transaction are executed concurrently. If the execution is successful, the transaction commits. Such an approach corresponds well with a optimistic approach to concurrency and this is also the consensus in relevant literature. Guerraoui et al, among others, explicitly state that \ac{STM} is a optimistic model\cite[p. 1]{guerraoui2005toward}. While some \ac{STM} implementations employ eager conflict detection, as described in \bsref{sec:stm_conflict_detection}, aimed at aborting conflicted transactions as soon as possible the overall strategy of the model remains optimistic. As such we say that \ac{STM} is a optimistic concurrency model the exact placement is depicted in \bsref{fig:stm_char_pes_opti}.
+As describe in \bsref{sec:stm_stm} \ac{STM} transactions are executed concurrently. If the execution is successful, the transaction commits. Such an approach corresponds well with an optimistic approach to concurrency and this is also the consensus in the relevant literature. Guerraoui et al, among others, explicitly state that \ac{STM} is a optimistic model\cite[p. 1]{guerraoui2005toward}. As described in \bsref{sec:stm_conflict_detection}, some \ac{STM} implementations employ eager conflict detection aimed at aborting conflicted transactions as soon as possible. The overall strategy of the model however remains optimistic. As such we say that \ac{STM} is a optimistic concurrency model the exact placement is depicted in \bsref{fig:stm_char_pes_opti}.
 
 \begin{figure}[htbp]
 \centering
@@ -381,5 +398,46 @@ As describe in \bsref{sec:stm_stm} \ac{STM} transaction are executed concurrentl
  \caption{\ac{STM} on the Pessimistic - Optimistic spectrum}
 \label{fig:stm_char_pes_opti}
 \end{figure}
+
 \subsection{Readability and Writability}
+For the reasons described in \bsref{subsec:tl_charac_read_and_write} the evaluation of the elements common to readability and writability will be presented first, followed by a presentation of the readability evaluation and the writability specific evaluations.
+
+\subsubsection{Simplicity}
+While \ac{STM} builds upon the shared memory also present in the \ac{TL} concurrency model it substitutes locking with memory transactions. As discussed in \bsref{}\kasper{Reference when done} \ac{STM} avoid many of the concurrency related issues discussed that plague the  \ac{TL} concurrency model, contributing positively to its simplicity. The programmer does however still have to explicitly state when transaction are to be applied.
+
+In \bsref{sec:stm_ease_of_use} we discuss two studies into the ease of use of \ac{STM}. The first study reveals that students make fewer errors using \ac{STM} memory than with fine grained locking. Students do however not find \ac{STM} strictly easier than fine grained locking. Rossbach et al. note that students found the concept of transactions difficult to understand at first. The second study revealed that students had a hard time predicting the performance of transaction and as a result had a hard time tuning performance.
+
+\kasper[inline]{Talk about issues with IO and transactions}
+
+Based on the observations we say that \ac{STM} resides towards the high simplicity end of the low - high simplicity spectrum. While \ac{STM} addresses many of the issues that plague the \ac{TL} concurrency model it introduces a number of new issues. These issues along with the findings in the studies discussed in \bsref{sec:stm_ease_of_use} keep \ac{STM} from having high simplicity. The exact position on low - high simplicity spectrum is depicted in \bsref{fig:stm_char_simplicity}.
+
+\begin{figure}[htbp]
+\centering
+ \includegraphics[width=0.9\textwidth]{\rootpath/worksheets/stm/figures/stm_char_simplicity} 
+ \caption{\ac{STM} on the Low - High simplicity spectrum}
+\label{fig:stm_char_simplicity}
+\end{figure}
+
+\subsubsection{Orthogonality}\label{sec:stm_orthogonality}
+The \ac{STM} concurrency model consists of a few well defined constructs: threads, communication through shared memory and synchronization using transactions. These constructs can be combined to produce concurrent implementations. As discussed in \bsref{sec:stm_composability} \ac{STM} transactions can be nested, allowing the composition of code segments employing transactions. Nested transactions allow programmers to compose large transactions from smaller transactions, much as a function can be composed from other functions.
+
+As discussed in \bsref{},\kasper{insert reference when sections are done} transactions have problems composing with existing programming concepts such as \ac{IO}, exceptions and native method calls. This of cause reduces its orthogonality.
+
+Based on these observations we say that \ac{STM} has high orthogonality limited by poor composition with some existing constructs. The position of \ac{STM} on the low - high orthogonality spectrum is shown in \bsref{fig:char_stm_orthogonality}.
+
+\begin{figure}[htbp]
+\centering
+ \includegraphics[width=0.9\textwidth]{\rootpath/worksheets/stm/figures/stm_char_orthogonality} 
+ \caption{\ac{STM} on the low - high orthogonality spectrum}
+\label{fig:char_stm_orthogonality}
+\end{figure}
+
+\subsubsection{Readability evaluation}
+
+\subsubsection{Level of abstraction}\label{sec:stm_level_of_abstraction}
+
+\subsubsection{Expressivity}\label{sec:stm_expressivity}
+
+\subsubsection{Writability evaluation}
+
 \worksheetend
