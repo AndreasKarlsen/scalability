@@ -433,6 +433,7 @@ The \ac{TL} concurrency model consists of only a few constructs. Threads are sta
 \end{figure}
 
 \subsubsection{Readability evaluation}
+\label{subsec:tl_char_readability}
 As described in \bsref{subsec:tl_simplicity_read} the simplicity of the \ac{TL} model as residing in the low end of the low - high simplicity spectrum. In \bsref{sec:tl_orthogonality} say that the orthogonality resides slightly towards the high end of the low - high orthogonality spectrum. These results directly influence the readability of the \ac{TL} concurrency model.
 
 \ac{TL} based concurrency implementations can be very fragmented. Shared memory can be accessed from different parts of the program and requires locking in each of these places. When a programmer reads the code present at one of these places, she can choose to focus only on understanding this part of the code, reducing the scope of what she has to reason about. Doing so will however only allow the programmer to understand this segment of the code, but not reason about its correctness as this depends on the code present at every place where the shared memory is accessed. Reasoning about the correctness of a \ac{TL} based implementation, requires knowledge of all these places and is generally considered to be a non trivial task.
