@@ -272,7 +272,10 @@ To handle this, special precautions must be taken. There is different approaches
 Another approach is, to enable the developer to mark a function, so the \ac{STM} is aware of its side effect. In Clojure it is possible to do this with the \bscode{#IO} macro. If a function is marked, and used in a transaction, a compiletime exception will be raised. In Haskell the \bscode{IO} monad is used to encapsulate the effect, and can be evaluated later, once the transaction is successful.
 
 \subsection{Contention}
+%What is contention
+The amount of read and writes in a memory area can be described as a contention level\cite[p. 2084]{herlihy2011tm}. A high level of contention will cause poor performance in concurrent programs. Especially in \ac{STM}, since multiple transactions trying to manipulate the same memory, a cause a conflict. When the contention level is high, the amount of conflicts will raise, and the work made by transaction being aborted is going to waste. In \ac{TL} a high contention level will cause the threads to wait, at worst being limited to linear execution, but no work will go to waste. 
 
+Due to the performance impact of contention level, it is a significant factor in the design of \ac{STM} implementations. It is an important factor in \cite{harris2003language} and in \cite{herlihy2008transactional} specific research have been done to resolve this issue.
 
 \section{Discussion}
 \label{sec:stm_discussion}
@@ -297,7 +300,7 @@ As discussed in \bsref{subsec:tl_composability} concurrent implementations based
 	atomic{
 		x = 5;
 		atomic{
-		x = 10;		
+			x = 10;		
 		}
 	}
        
@@ -414,7 +417,7 @@ Two of the \ac{TM} teams used locks for parts of their implementations, one team
 
 \section{\acs{STM} Characteristics}
 \label{sec:stm_eval}
-This section presents how the \ac{STM} concurrency model relates to the selected characteristics presented in \bsref{chap:char}.
+This section presents how the \ac{STM} concurrency model relates to the selected characteristics presented in \bsref{chap:char}. 
 
 \subsection{Implicit or Explicit Concurrency}
 \ac{STM} as a concurrency model build upon many of the same constructs as the \ac{TL} concurrency model. Threads are started in order to introduce concurrency and race conditions are avoided by specifying critical regions in which code should be executed as a transaction and managed by the \ac{STM} system. It is the task of the programmer to explicitly employ these constructs and as such we say that \ac{STM} employs explicit concurrency. The exact placement is shown in \bsref{fig:stm_char_impli_expli}.
@@ -427,7 +430,7 @@ This section presents how the \ac{STM} concurrency model relates to the selected
 \end{figure}
 
 \subsection{Fault Restrictive or Expressive Model}
-\ac{STM} employs many of the principles also found in the traditional \ac{TL} approach to concurrency. Both express concurrency by starting threads and synchronising access to shared memory. While the \ac{TL} gives programmers control over the low level details of synchronization, \ac{STM} delegates such work to the \ac{STM} system. Furthermore \ac{STM} limits the number of concurrency related errors which the programmer has to reason about. As such we say that \ac{STM} is a expressive concurrency model with fault restrictive elements keeping it for being considered truly expressive. The exact placement of \ac{STM} on the fault restrictive - expressive spectrum is depicted in \bsref{fig:stm_char_fault_expressive}.
+\ac{STM} employs many of the principles also found in the traditional \ac{TL} approach to concurrency. Both express concurrency by starting threads and synchronising access to shared memory. While the \ac{TL} gives programmers control over the low level details of synchronization, \ac{STM} delegates such work to the \ac{STM} system. Furthermore \ac{STM} limits the number of concurrency related errors which the programmer has to reason about. As such we say that \ac{STM} is an expressive concurrency model with fault restrictive elements keeping it for being considered truly expressive\andreas{Maybe we should mention that it depends on the implementation? Some got orElse and retry, others nothing}. The exact placement of \ac{STM} on the fault restrictive - expressive spectrum is depicted in \bsref{fig:stm_char_fault_expressive}.
 
 \begin{figure}[htbp]
 \centering
@@ -438,7 +441,7 @@ This section presents how the \ac{STM} concurrency model relates to the selected
 
 
 \subsection{Pessimistic or Optimistic Model}
-As describe in \bsref{sec:stm_stm} \ac{STM} transactions are executed concurrently. If the execution is successful, the transaction commits. Such an approach corresponds well with an optimistic approach to concurrency and this is also the consensus in the relevant literature. Guerraoui et al, among others, explicitly state that \ac{STM} is a optimistic model\cite[p. 1]{guerraoui2005toward}. As described in \bsref{sec:stm_conflict_detection}, some \ac{STM} implementations employ eager conflict detection aimed at aborting conflicted transactions as soon as possible. The overall strategy of the model however remains optimistic. As such we say that \ac{STM} is a optimistic concurrency model the exact placement is depicted in \bsref{fig:stm_char_pes_opti}.
+As describe in \bsref{sec:stm_stm} \ac{STM} transactions are executed concurrently. If the execution is successful, the transaction commits. Such an approach corresponds well with an optimistic approach to concurrency and this is also the consensus in the relevant literature. Guerraoui et al, among others, explicitly state that \ac{STM} is an optimistic model\cite[p. 1]{guerraoui2005toward}. As described in \bsref{sec:stm_conflict_detection}, some \ac{STM} implementations employ eager conflict detection aimed at aborting conflicted transactions as soon as possible. The overall strategy of the model however remains optimistic. As such we say that \ac{STM} is a optimistic concurrency model the exact placement is depicted in \bsref{fig:stm_char_pes_opti}.
 
 \begin{figure}[htbp]
 \centering
