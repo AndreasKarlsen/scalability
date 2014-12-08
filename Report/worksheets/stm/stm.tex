@@ -96,6 +96,7 @@ Languages supporting \ac{STM} must encompass some language construct for specify
 \end{lstlisting}
 
 \subsubsection{Conditional Synchronization}
+\label{subsec:stm_conditional_synchronization}
 A common task in concurrent programming is executing code whenever some event occurs. As an example consider a concurrent queue shared between multiple threads in a producer consumer setup. It will be useful to only have a consumer dequeue an item whenever one is available. Accomplishing this without the need for busy waiting would also be preferable.
 
 In \cite{harris2005composable} Harris et al. introduce the \bscode{retry} statement for assisting in conditional synchronization within the context of \ac{STM}. The \bscode{retry} statement is explicitly placed by programmers within an \bscode{atomic} block. If a transaction encounters a retry statement during its execution it indicates that the transaction is not yet ready to run and the transaction should be aborted and retried at some later point\cite[p. 73]{harris2010transactional}. The transaction is not retried immediately but instead blocks, waiting to be awoken when the transaction is to be retried. The transaction is typically retired when one of the variables involved in the transaction is updated by another transaction\cite[p. 51]{harris2005composable}. By blocking the thread instead of repeatedly checking the condition, busy waiting is avoided.
@@ -393,7 +394,7 @@ Three main forms of transaction nesting exist: flat nesting, closed nesting and 
 \subsection{Ease of Use}
 \label{sec:stm_ease_of_use}
 Through out the literature, one of the main reasons for investigating \ac{STM} as a synchronization mechanism is the claim of \ac{STM} being easier to use than locking and in particular fine grained locking. This section examines two studies into this claim. \bsref{sec:stm_ease_rossbach} examines a study conducted by Rossbach et al while \bsref{sec:stm_ease_pankratius} presents a similar study conducted by Pankratius et al.
-\subsubsection{Rossbach et al.}
+\subsubsection{Rossbach et al}
 \label{sec:stm_ease_rossbach}
 In \cite{rossbach2010transactional} Rossbach et al. presents a study into the ease of \ac{TM}. The study is conducted over a period of three years tasking students in a \ac{OS} class at the Texas University at Austin with producing a number of concurrent implementations using coarse grained locking, fine grained locking, monitors, and \ac{STM}. Over the course of these three years a total of 237 students produced 1323 concurrent implementations. 
 
@@ -450,6 +451,7 @@ As describe in \bsref{sec:stm_stm} \ac{STM} transactions are executed concurrent
 For the reasons described in \bsref{subsec:tl_charac_read_and_write} the evaluation of the elements common to readability and writability will be presented first, followed by a presentation of the readability evaluation and the writability specific evaluations.
 
 \subsubsection{Simplicity}
+\label{subsec:stm_char_simplicity}
 While \ac{STM} builds upon the shared memory also present in the \ac{TL} concurrency model it substitutes locking with memory transactions. As discussed in \bsref{}\kasper{Reference when done} \ac{STM} avoid many of the concurrency related issues discussed that plague the  \ac{TL} concurrency model, contributing positively to its simplicity. The programmer does however still have to explicitly state when transaction are to be applied.
 
 In \bsref{sec:stm_ease_of_use} we discuss two studies into the ease of use of \ac{STM}. The first study reveals that students make fewer errors using \ac{STM} memory than with fine grained locking. Students do however not find \ac{STM} strictly easier than fine grained locking. Rossbach et al. note that students found the concept of transactions difficult to understand at first. The second study revealed that students had a hard time predicting the performance of transaction and as a result had a hard time tuning performance.
@@ -467,6 +469,7 @@ Based on the observations we say that \ac{STM} resides towards the high simplici
 \end{figure}
 
 \subsubsection{Orthogonality}\label{sec:stm_orthogonality}
+\label{subsec:stm_orthogonality}
 The \ac{STM} concurrency model consists of a few well defined constructs: threads, communication through shared memory and synchronization using transactions. These constructs can be combined to produce concurrent implementations. As discussed in \bsref{sec:stm_composability} \ac{STM} transactions can be nested, allowing the composition of code segments employing transactions. Nested transactions allow programmers to compose large transactions from smaller transactions, much as a function can be composed from other functions.
 
 As discussed in \bsref{},\kasper{insert reference when sections are done} transactions have problems composing with existing programming concepts such as \ac{IO}, exceptions and native method calls. This of cause reduces its orthogonality.
@@ -484,6 +487,23 @@ Based on these observations we say that \ac{STM} has high orthogonality limited 
 \end{figure}
 
 \subsubsection{Readability evaluation}
+\kasper[inline]{Issue med numerering af referenced sektioner}
+As described in \bsref{subsec:stm_char_simplicity} the simplicity of the \ac{STM} concurrency model as residing resides towards the high simplicity end of the low - high simplicity spectrum. In \bsref{subsec:stm_orthogonality} say that the orthogonality resides towards the high end of the low - high orthogonality spectrum limited by poor composition with existing language constructs. These results directly influence the readability of the \ac{STM} concurrency model.
+
+The \ac{STM} concurrency model concurrency model often separates the introduction of concurrency from the application of synchronization in the form of transactions. Such separation makes it harder for the reader to reason about the implementations. By employing transactions the reader does however not have to reason about lock ordering, which as discussed in \bsref{subsec:tl_char_readability} requires the programmer to reason about every code segment in which locks are employed.
+
+The studies by Rossbach et al and Pankratius et al, discussed in \bsref{sec:stm_ease_of_use}, shown that the concept of transactions can be hard to understand at first, especially when estimating and predicting performance. Understanding the concepts of transactions is key to reasoning about synchronization using \ac{STM} especially when also considering the \bscode{retry} and \bscode{orElse} constructs discussed in \bsref{subsec:stm_conditional_synchronization}.
+
+Considering these observations as well as the evaluation of simplicity and orthogonality we say that the \ac{STM} concurrency model is slightly towards the high end of the low - high readability spectrum. While \ac{STM} addresses many of the more pressing issues found in the \ac{TL} concurrency model, it still relies on shared memory concurrency and applying synchronization to critical regions. This approach has issue with code fragmentation as well as identifying critical regions. Ultimately this, along with the other observations, keeps \ac{STM} from obtaining a high readability score. The exact placement \ac{STM} on the w - high readability spectrum is depicted in \bsref{fig:char_stm_readability}.
+
+
+\begin{figure}[htbp]
+\centering
+ \includegraphics[width=0.9\textwidth]{\rootpath/worksheets/stm/figures/stm_char_readability} 
+ \caption{\ac{STM} on the low - high readability spectrum}
+\label{fig:char_stm_readability}
+\end{figure}
+
 
 \subsubsection{Level of abstraction}\label{sec:stm_level_of_abstraction}
 As described, \ac{STM} uses the thread model directly to support concurrency. Threads are started in order to introduce concurrency and communication is achieved via shared memory. These concepts are directly related to the \acp{OS} process/thread model described in \bsref{sec:processes_threads}.
