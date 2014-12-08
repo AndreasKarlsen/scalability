@@ -255,7 +255,7 @@ It is not all actor implementations that adhere to all the semantic properties o
 As discussed in \bsref{ssec:actor_modelling}, there is an overhead by creating, sending and receiving messages, as a result of asynchronous message passing as the only communication form. So there should not be too many small messages, but also not few large messages as that will hurt the dynamics among actors. We do not find this as severe to the simplicity of the actor model as the other issues discussed, because no matter what concurrency model you use, you must be careful not to assign too much work to a single entity. \toby{Hvad siger i til det her afsnit?}
 %However, message size and load can be crucial to obtaining an efficient program.
 
-The placement of the actor model on the simplicity spectrum is shown on BLA\toby{indsæt ref}. The actor model provides a fairly simple concurrency model with implicit concurrency that avoids race conditions by design and helps avoid deadlocks. However, there are also a number of issues discussed above which has a negative impact on the simplicity. We have therefore placed the actor model in the middle of the spectrum.\toby{Bliv enige om hvor den skal stå. Jeg er selv ikke sikker.}
+The placement of the actor model on the simplicity spectrum is shown on BLA\toby{indsæt ref}. The actor model provides a fairly simple concurrency model with implicit concurrency that avoids race conditions by design and helps avoid deadlocks. However, there are also a number of issues discussed above which has a negative impact on the simplicity. We have therefore placed the actor model in the middle of the spectrum.\toby{Bliv enige om hvor den skal stå. Jeg er selv ikke sikker. Evt. begrund det med explicit concurrency og den abstraction man får - men stadivæk ikke nemt at lave concurrency}
 
 \missingfigure{Længere til højre end TL, men ved ikke hvor meget?}
 %%%MORE:
@@ -276,9 +276,38 @@ So as the actor model consists of a small amount of constructs that can be combi
 
 \missingfigure{orthogonal - men ikke helt oppe fordi nogle kombinationer er ikke tiladt direkte. Måske også lidt mindre i forhold til deadlocks}
 \subsubsection{Readability evaluation}
+The simplicity and orthogonality directly influences the readability. Simplicity was placed in the middle of the spectrum primarily because a different mindset is required for actor modelling and it introduces some new challenges which must be dealt with, such as non-deterministic message order. This hurts the readability of the actor model, at least until the programmer gets familiar with the different mindset and get accustomed to these challenges. Orthogonality was placed in the high end of the spectrum, as there is a low amount of constructs which is able to be combined in a large number of ways, either directly or indirectly. This influences the readability of the actor model positively.
+
+Additionally, all code in terms of state and behaviour methods associated with an actor is encapsulated and stored within the actor, which makes it easier to understand what a given actor encompasses. A programmer reading an actor program can start out by understanding how a single actor operates and then continue to examine how the actors that it communicates with operates, in order to understand the whole program.\toby{Er denne sætning foreståelig?} However it can also have a negative impact on the readability, as the flow of the program is distributed out into the actors, so there is no single place to get an overview of the flow.\toby{Skal der snakkes mere her?} 
+
+The readability of the actor model is shown on BLA\toby{Indsæt ref} where it is placed between middle and high readability. It is not considered to have a very high readability due to the different mindset and new challenges the model introduces, which can be hard to understand at first.
+
+\missingfigure{Over midten? Ved ikke hvor langt til højre}
+
+%more: 
+% you clearly see what state varaibles an actor will ensure synchronization for in the way the model dictates isolated state
 \subsubsection{Level of abstraction}\label{sec:actor_level_of_abstraction}
+The actor model let the programmer focus on high-level concurrency abstractions and hide the complexities that can easily lead to errors, in order to simplify concurrent programming. Synchronization is accomplished implicitly as a result of actor mailboxes and atomic processing of messages. Threads are still used under the hood to run the actors, with different implementation strategies as discussed in \bsref{ssec:abstraction_over_threads}.
+
+These high level abstractions enables the programmer to model and think about concurrent problems conceptually in terms of actors and their interaction, without having to write the program.
+
+Based on the above considerations we argue that the actor model has a high level of abstraction, as illustrated on BLA\toby{indsæt ref}.
+
+\missingfigure{Høj level of abstraction. Kan vi finde noget der skader degree of level of abstraction? Synes jeg ikke jeg kan.}
+
 \subsubsection{Expressivity}\label{sec:actor_expressivity}
+The expressivity relates closely to the level of abstraction. In the actor model you do not have to explicitly mark which state variables should be ensured mutual exclusion, instead it is done for all state variables implicitly as a result of the design of the model. Fur
+
+%furtore more also does not have to start the underlying threads. The programmer only have to deal with the abstraction of actors. 
+	
+%also very expressive in regard to that you only need the name of another actor, and then the physicial location is up to the actor implementation to figure out which also enables easy distribution of actors onto a cluster of machines (in Akka it is just a matter of specifing it in the config file)
+	%enables the developer to avoid much of the difficulty in regards to distributed computing (implementation specific)
+	%makes the developer able to program the system on his own computer and then just by chaning a simple config file of where it should run, can run distributed.
+	
+\missingfigure{Høj expressivitiy - ved ikke hvor høj}
+
 \subsubsection{Writability evaluation}
+%især i nogle situationer fx. stock broker, hvor man gerne prune non-determinism og især påvirker writability negativ i implementationer der ikke har pattern for dette.
 
 \toby[i]{Til hvor vi skal vælge hvilken actor implementation vi vælger se ``Efficient Testing Of Actor Programs With Non-deterministic Behaviors - Samira Tasharofi'' for kort beskrivelse af Akka og at den ikke overholder nogle af properties}
 \worksheetend
