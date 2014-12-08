@@ -233,7 +233,7 @@ The actor model specifics concurrency and synchronization implicitly as a result
 
 \missingfigure{Figur der viser actor er implicit (langt til venstre, og evt. længere end STM)}
 \subsection{Fault Restrictive or Expressive Model}\label{sec_actor_fault_express}
-The actor model forces some limitations on the programmer. The biggest limitation is that the model disallows the use of shared mutable state and only allows isolated mutable state. Another limitation is that communication is limited to asynchronous message passing between actors solely. Furthermore, the atomic processing of messages ensures that only a single entity accesses mutable state at a time, however this disallows multiple read operations to happen simultaneously which is reasonable in regards to mutual exclusion. The actor model only permits the programmer to model the program by modelling individual actors and how the interact with one another. Based on these observation we say that the actor model is fault restrictive as show in in BLA\toby{indsæt ref}.\toby{Forklar hvorfor vi præcist sætter den hvor vi gør}
+The actor model forces some limitations on the programmer. The biggest limitation is that the model disallows the use of shared mutable state and only allows isolated mutable state. Another limitation is that communication is limited to asynchronous message passing between actors solely. Furthermore, the atomic processing of messages ensures that only a single entity accesses mutable state at a time, however this disallows multiple read operations to happen simultaneously which is reasonable in regards to mutual exclusion. The actor model only permits the programmer to model the program by modelling individual actors and how they interact with one another. Based on these observation we say that the actor model is fault restrictive as show in in BLA\toby{indsæt ref}.\toby{Forklar hvorfor vi præcist sætter den hvor vi gør}
 
 \missingfigure{Figur der vist actor er faul restictive (ved ikke hvor langt til venstre helt, men nok længere end STM)}
 \subsection{Pessimistic or Optimistic Model}
@@ -296,18 +296,41 @@ Based on the above considerations we argue that the actor model has a high level
 \missingfigure{Høj level of abstraction. Kan vi finde noget der skader degree of level of abstraction? Synes jeg ikke jeg kan.}
 
 \subsubsection{Expressivity}\label{sec:actor_expressivity}
-The expressivity relates closely to the level of abstraction. In the actor model you do not have to explicitly mark which state variables should be ensured mutual exclusion, instead it is done for all state variables implicitly as a result of the design of the model. Fur
+Expressivity relates closely to the level of abstraction. The actor model ensures mutual exclusion for all state variables implicitly and let the programmer express programs through the abstraction of actors, without having to worry about the complications of the underlying threads. Furthermore, an actor only need the name of another actor to send it a message. The programmer does not have to worry about the complications in regards to communicating with another actor, such as the physical location of the actor and establishing a connection for sending the message to the actors mailbox. This location transparency enables simple distribution of actors on a cluster of machines. The Akka actor implementation enables the programmer to program the system on a single computer and distribute actors to a cluster of machines by modifying a config file.
 
-%furtore more also does not have to start the underlying threads. The programmer only have to deal with the abstraction of actors. 
-	
-%also very expressive in regard to that you only need the name of another actor, and then the physicial location is up to the actor implementation to figure out which also enables easy distribution of actors onto a cluster of machines (in Akka it is just a matter of specifing it in the config file)
-	%enables the developer to avoid much of the difficulty in regards to distributed computing (implementation specific)
-	%makes the developer able to program the system on his own computer and then just by chaning a simple config file of where it should run, can run distributed.
-	
-\missingfigure{Høj expressivitiy - ved ikke hvor høj}
+However, the conceptual actor model does not provide constructs to prune non-determinism which means the programmer must build patterns for such coordination manually. This hurts the expressivity of the actor model, but most actor implementations typically have some useful coordination patterns, which reduces the impact on expressivity.
+
+Based on these observations we have placed the expressivity in the high end of the spectrum, as shown on BLA\toby{indsæt ref}. We have not placed it on the highest expressivity as programmers may have to build patterns for communication manually.
+
+%TL complications: explicitly start, stop and synchronize threads and choose explicitly which state variables should be ensured mutual exclusion.
+
+\missingfigure{Høj expressivitiy - tæt på højst}
 
 \subsubsection{Writability evaluation}
+%Forhold sig til hver punkt for writability
+	%simplicity
+	%orthogonality
+	%level of abstraction
+	%expressivity
+	
+%Forhold sig til concurrency issues også - evt. generelt som TL har gjort
+
+
+%the implicit mututal exclusion and race condition free of all state variables makes it easiyer to write, as the programmer does not have to worry about which state varaibles should be covered and which should not
+	%ensure race condition free by design is nice
+	%but also does not allow for some state varaibles to not be covered by it, which may be usefull for values that are not changed, so they can be accessed by more entities than one at the same time (which is not possible in the actor model)
+	
+	%if the programmer does not adhere to the async nature of message passing and force blocking behaviour deadlocks can often occur.
+
 %især i nogle situationer fx. stock broker, hvor man gerne prune non-determinism og især påvirker writability negativ i implementationer der ikke har pattern for dette.
+	%mere kompliceret coordination hvis man holder sig kun til aync message passing
+	%mange situationer kan man ommudulere det så at man ikke behøves block behaviour (quoten fra scala in actors)
+	
+%orthogonality
+	%few constructs, so easy overview them and they can be combined in a large number of ways which affect the writability positively (however somethings are not possible - such as having some state variables that allows mutiple entities to access at the time)
+	
+%high level of abstraction and expressivity influcenes the writability positively.
+	%programmer does not have to worry about the complications involved with threads and physical location of actors or mailboxes.
 
 \toby[i]{Til hvor vi skal vælge hvilken actor implementation vi vælger se ``Efficient Testing Of Actor Programs With Non-deterministic Behaviors - Samira Tasharofi'' for kort beskrivelse af Akka og at den ikke overholder nogle af properties}
 \worksheetend
