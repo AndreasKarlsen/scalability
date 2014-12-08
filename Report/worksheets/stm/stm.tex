@@ -227,6 +227,7 @@ As the programmer explicitly has to mark code in atomic blocks to ensure safety,
 There is a risk for starvation when using \ac{STM}. The work of transactions get executed optimistically, and then aborted with there were a conflict. The risk lies in, that if the same transaction keeps getting aborted and must retry its work, it might never finish. To remedy this, different strategies exists. As described in \bsref{subsub:con_managers} a contention manager can use different strategies to determine which transaction should abort, and which should commit. 
 
 \subsection{Side-effects in Transactions}
+\label{subsec:stm:side_effects}
 There is no straight forward approach to handle side-effects, such as exceptions, inside transactions. A viable approach proposed by Tim Harris\cite{harris2005exceptions} is to only propagate the exception when the transaction is successful, since this is the only case a transaction causes changes impacting the rest of the system. However, even though a transaction is successful, if an exception happens all of the content of the transaction might not be executed, and can leave the program in an invalid state. To exemplify, \bsref{lst:stm_exception} illustrates this issue. The method \bscode{move} moves an object from one collection to another. This happens in an atomic block, to ensure thread safety. However, if an exception happens while trying to add the object to the destination at line 7, the programmer must manually secure that it is re-added to the source. If not, the object will be in neither collection if the transaction commits. 
 
 \begin{lstlisting}[label=lst:stm_exception,
@@ -265,6 +266,7 @@ A way to negate this issue, is to retain all changes made in the transaction up 
 Another approach is handle side-effects, is to avoiding them partly or entirely. Functional languages with \ac{STM} such as Clojure or Haskell promotes immutability and is pure in regards to side-effects. This property makes it easier to handle transactions, since there is only side-effects in relation to the transaction itself. 
 
 \subsection{Irreversible Actions}
+\label{subsec:stm_irreversible_actions}
 Transactions in \ac{STM} requires that aborted transactions does not cause effects. That is, if the value of a variable is manipulated in a transaction, and the transaction is aborted, the rest of the system should never see the variable changed. This raises a problem, since some actions are not reversible, e.g. \ac{IO} performed on a disk, or network access. These are irreversible actions, and even by not committing the result of a transaction, the transaction have still affected the system. 
 
 To handle this, special precautions must be taken. There is different approaches to handle this issue. In \cite[p. 4]{harris2003language} all native methods raises a runtime exception. A native method is defined as a method using system calls. In Java context, that is when a method must leave the virtual environment of the \ac{JVM}. In \cite{harris2005exceptions} a proposal to make libraries using native methods implement a specific interface to enable cooperation with \ac{STM}. The idea is, that they will buffer their effect, until they get a callback when their transaction is committed. 
@@ -327,70 +329,70 @@ As discussed in \bsref{subsec:tl_composability} concurrent implementations based
 
 Three main forms of transaction nesting exist: flat nesting, closed nesting and open nesting\cite[p. 1]{kumar2011hparstm}\cite[p. 42]{harris2010transactional}. Flat nesting aborts the outer transaction if a inner transaction aborts and commits from enclosed transactions only take effect when the outer transaction commits. Under closed nesting, aborting a enclosed transaction does not terminate the outer transaction and commits made by enclosed transaction become visible to the outer transaction but not transaction executed by other threads. Under open nesting commits from enclosed transactions become visible to every other transaction and if the outer transaction aborts results of committed enclosed transactions are not rolled back. Flat nesting is simpler than closed and open nesting while open and closed nesting allows for a greater degree of concurrency, especially in cases where aborts are common\cite[p. 43]{harris2010transactional}.
 
-\kasper[inline]{Skal lige overveje om den skal med}
-\begin{lstlisting}[label=lst:observer_transactions,
-  caption={Observer pattern with transactions},
-  language=Java,  
-  showspaces=false,
-  showtabs=false,
-  breaklines=true,
-  showstringspaces=false,
-  breakatwhitespace=true,
-  commentstyle=\color{greencomments},
-  keywordstyle=\color{bluekeywords},
-  stringstyle=\color{redstrings},
-  morekeywords={atomic, retry, orElse, var}]  % Start your code-block
-
-	public class ValueStore implements Observable{
-
-    private int value = 0;
-    private List<Observer> observers = new ArrayList<>();
-
-    public void setValue(int newValue){
-		List<Observer> shallowCopy;        
-        atomic{
-            value = newValue;
-            shallowCopy = new ArrayList<>(observers); 
-        }
-        
-        for (Observer o : shallowCopy) {
-                o.notify(this,newValue);
-        }
-    }
-
-    @Override
-    public void register(Observer observer){
-        atomic{
-            observers.add(observer);
-        }
-    }
-
-    @Override
-    public void unregister(Observer observer){
-        atomic{
-            observers.remove(observer);
-        }
-    }
-	}
-	
-	public class ValueObserver implements Observer {
-
-    @Override
-    public void notify(Observable sender, int value){
-        sender.unregister(this);
-    }
-	}
-
-	public class Main {
-
-    public static void main(String[] args){
-        ValueStore observable = new ValueStore();
-        observable.register(new ValueObserver());
-        observable.setValue(5);
-        System.out.println("Done");
-    }
-	}
-\end{lstlisting}
+%\kasper[inline]{Skal lige overveje om den skal med}
+%\begin{lstlisting}[label=lst:observer_transactions,
+%  caption={Observer pattern with transactions},
+%  language=Java,  
+%  showspaces=false,
+%  showtabs=false,
+%  breaklines=true,
+%  showstringspaces=false,
+%  breakatwhitespace=true,
+%  commentstyle=\color{greencomments},
+%  keywordstyle=\color{bluekeywords},
+%  stringstyle=\color{redstrings},
+%  morekeywords={atomic, retry, orElse, var}]  % Start your code-block
+%
+%	public class ValueStore implements Observable{
+%
+%    private int value = 0;
+%    private List<Observer> observers = new ArrayList<>();
+%
+%    public void setValue(int newValue){
+%		List<Observer> shallowCopy;        
+%        atomic{
+%            value = newValue;
+%            shallowCopy = new ArrayList<>(observers); 
+%        }
+%        
+%        for (Observer o : shallowCopy) {
+%                o.notify(this,newValue);
+%        }
+%    }
+%
+%    @Override
+%    public void register(Observer observer){
+%        atomic{
+%            observers.add(observer);
+%        }
+%    }
+%
+%    @Override
+%    public void unregister(Observer observer){
+%        atomic{
+%            observers.remove(observer);
+%        }
+%    }
+%	}
+%	
+%	public class ValueObserver implements Observer {
+%
+%    @Override
+%    public void notify(Observable sender, int value){
+%        sender.unregister(this);
+%    }
+%	}
+%
+%	public class Main {
+%
+%    public static void main(String[] args){
+%        ValueStore observable = new ValueStore();
+%        observable.register(new ValueObserver());
+%        observable.setValue(5);
+%        System.out.println("Done");
+%    }
+%	}
+%\end{lstlisting}
 \subsection{Ease of Use}
 \label{sec:stm_ease_of_use}
 Through out the literature, one of the main reasons for investigating \ac{STM} as a synchronization mechanism is the claim of \ac{STM} being easier to use than locking and in particular fine grained locking. This section examines two studies into this claim. \bsref{sec:stm_ease_rossbach} examines a study conducted by Rossbach et al while \bsref{sec:stm_ease_pankratius} presents a similar study conducted by Pankratius et al.
@@ -452,12 +454,11 @@ For the reasons described in \bsref{subsec:tl_charac_read_and_write} the evaluat
 
 \subsubsection{Simplicity}
 \label{subsec:stm_char_simplicity}
-While \ac{STM} builds upon the shared memory also present in the \ac{TL} concurrency model it substitutes locking with memory transactions. As discussed in \bsref{}\kasper{Reference when done} \ac{STM} avoid many of the concurrency related issues discussed that plague the  \ac{TL} concurrency model, contributing positively to its simplicity. The programmer does however still have to explicitly state when transaction are to be applied.
+While \ac{STM} builds upon the shared memory also present in the \ac{TL} concurrency model it substitutes locking with memory transactions. As discussed in \bsref{subsec:stm_irreversible_actions} \ac{STM} avoid many of the concurrency related issues discussed that plague the  \ac{TL} concurrency model, contributing positively to its simplicity. The programmer does however still have to explicitly state when transaction are to be applied.
 
 In \bsref{sec:stm_ease_of_use} we discuss two studies into the ease of use of \ac{STM}. The first study reveals that students make fewer errors using \ac{STM} memory than with fine grained locking. Students do however not find \ac{STM} strictly easier than fine grained locking. Rossbach et al. note that students found the concept of transactions difficult to understand at first. The second study revealed that students had a hard time predicting the performance of transaction and as a result had a hard time tuning performance.
 
-\kasper[inline]{Talk about issues with IO and transactions}
-\kasper[inline]{Retry/orElse}
+As discussed in \bsref{subsec:stm:side_effects} and \bsref{subsec:stm_irreversible_actions}, transactions have problems composing with existing programming concepts such as \ac{IO}, exceptions and native method calls. Additional strain is put unto the programmer when combining these constructs with transactions reducing the simplicity of the  model.
 
 Based on the observations we say that \ac{STM} resides towards the high simplicity end of the low - high simplicity spectrum. While \ac{STM} addresses many of the issues that plague the \ac{TL} concurrency model it introduces a number of new issues. These issues along with the findings in the studies discussed in \bsref{sec:stm_ease_of_use} keep \ac{STM} from having high simplicity. The exact position on low - high simplicity spectrum is depicted in \bsref{fig:stm_char_simplicity}.
 
@@ -470,9 +471,9 @@ Based on the observations we say that \ac{STM} resides towards the high simplici
 
 \subsubsection{Orthogonality}\label{sec:stm_orthogonality}
 \label{subsec:stm_orthogonality}
-The \ac{STM} concurrency model consists of a few well defined constructs: threads, communication through shared memory and synchronization using transactions. These constructs can be combined to produce concurrent implementations. As discussed in \bsref{sec:stm_composability} \ac{STM} transactions can be nested, allowing the composition of code segments employing transactions. Nested transactions allow programmers to compose large transactions from smaller transactions, much as a function can be composed from other functions.
+The \ac{STM} concurrency model consists of a few well defined constructs: threads, communication through shared memory and synchronization using transactions. These constructs can be combined to produce concurrent implementations. As discussed in \bsref{sec:stm_composability} \ac{STM} transactions can be nested, allowing the composition of code segments employing transactions. Nested transactions allow programmers to compose large transactions from smaller transactions, much as a function can be composed from other functions. The composability problems described in \bsref{subsec:stm:side_effects} and \bsref{subsec:stm_irreversible_actions} however negatively effect the models orthogonality.
 
-As discussed in \bsref{},\kasper{insert reference when sections are done} transactions have problems composing with existing programming concepts such as \ac{IO}, exceptions and native method calls. This of cause reduces its orthogonality.
+As discussed in \bsref{subsec:stm:side_effects} and \bsref{subsec:stm_irreversible_actions}, transactions have problems composing with existing programming concepts such as \ac{IO}, exceptions and native method calls. This of cause reduces its orthogonality.
 
 \kasper[inline]{Retry/orElse}
 %In order to handle conditional synchronization the \bscode{retry} and \bscode{orElse} constructs. 
@@ -488,14 +489,13 @@ Based on these observations we say that \ac{STM} has high orthogonality limited 
 
 \subsubsection{Readability evaluation}
 \kasper[inline]{Issue med numerering af referenced sektioner}
-As described in \bsref{subsec:stm_char_simplicity} the simplicity of the \ac{STM} concurrency model as residing resides towards the high simplicity end of the low - high simplicity spectrum. In \bsref{subsec:stm_orthogonality} say that the orthogonality resides towards the high end of the low - high orthogonality spectrum limited by poor composition with existing language constructs. These results directly influence the readability of the \ac{STM} concurrency model.
+As described in \bsref{subsec:stm_char_simplicity} the simplicity of the \ac{STM} concurrency model as residing towards the high simplicity end of the low - high simplicity spectrum. In \bsref{subsec:stm_orthogonality} say that the orthogonality resides towards the high end of the low - high orthogonality spectrum limited by poor composition with existing language constructs. These results directly influence the readability of the \ac{STM} concurrency model.
 
-The \ac{STM} concurrency model concurrency model often separates the introduction of concurrency from the application of synchronization in the form of transactions. Such separation makes it harder for the reader to reason about the implementations. By employing transactions the reader does however not have to reason about lock ordering, which as discussed in \bsref{subsec:tl_char_readability} requires the programmer to reason about every code segment in which locks are employed.
+The \ac{STM} concurrency model often separates the introduction of concurrency from the application of synchronization in the form of transactions. Such separation makes it harder for the reader to reason about the implementations. By employing transactions the reader does however not have to reason about lock ordering, which as discussed in \bsref{subsec:tl_char_readability} requires the programmer to reason about every code segment in which locks are employed.
 
 The studies by Rossbach et al and Pankratius et al, discussed in \bsref{sec:stm_ease_of_use}, shown that the concept of transactions can be hard to understand at first, especially when estimating and predicting performance. Understanding the concepts of transactions is key to reasoning about synchronization using \ac{STM} especially when also considering the \bscode{retry} and \bscode{orElse} constructs discussed in \bsref{subsec:stm_conditional_synchronization}.
 
-Considering these observations as well as the evaluation of simplicity and orthogonality we say that the \ac{STM} concurrency model is slightly towards the high end of the low - high readability spectrum. While \ac{STM} addresses many of the more pressing issues found in the \ac{TL} concurrency model, it still relies on shared memory concurrency and applying synchronization to critical regions. This approach has issue with code fragmentation as well as identifying critical regions. Ultimately this, along with the other observations, keeps \ac{STM} from obtaining a high readability score. The exact placement \ac{STM} on the w - high readability spectrum is depicted in \bsref{fig:char_stm_readability}.
-
+Considering these observations as well as the evaluation of simplicity and orthogonality we say that the \ac{STM} concurrency model is slightly towards the high end of the low - high readability spectrum. While \ac{STM} addresses many of the more pressing issues found in the \ac{TL} concurrency model, it still relies on shared memory concurrency and applying synchronization to critical regions. This approach has issue with code fragmentation as well as identifying critical regions. Ultimately this, along with the other observations, keeps \ac{STM} from obtaining a high readability score. The exact placement \ac{STM} on the low - high readability spectrum is depicted in \bsref{fig:char_stm_readability}.
 
 \begin{figure}[htbp]
 \centering
@@ -503,7 +503,6 @@ Considering these observations as well as the evaluation of simplicity and ortho
  \caption{\ac{STM} on the low - high readability spectrum}
 \label{fig:char_stm_readability}
 \end{figure}
-
 
 \subsubsection{Level of abstraction}\label{sec:stm_level_of_abstraction}
 As described, \ac{STM} uses the thread model directly to support concurrency. Threads are started in order to introduce concurrency and communication is achieved via shared memory. These concepts are directly related to the \acp{OS} process/thread model described in \bsref{sec:processes_threads}.
@@ -537,7 +536,16 @@ Transactions not combining well with existing language constructs limit the expr
 \label{fig:char_stm_expressivity}
 \end{figure}
 
-
 \subsubsection{Writability evaluation}
+\ac{STM} allows the programmer to express synchronization by stating that a code segment should be executed atomically. That is, the programmer expresses what should happen, e.g. synchronization should be applied to the code segment, as opposed to expressing how synchronization should be applied. Abstracting away the details of how synchronization is achieved allows the programmer to focus on specifying other aspects of the implementation, such as a clean design and code reuse, instead of dealing with the low level details of locking. The programmer is however not totally liberated from dealing with low level constructs as \ac{STM} still relies on threads and shared memory. Handling such low level constructs limit the models expressivity and in turn its writability.
+
+Based on these observations, along with the evaluation of simplicity, orthogonality, level of abstraction and expressivity, we say that \ac{STM} resides slightly towards the high end of the low - high writability spectrum. The exact position of the \ac{STM} concurrency model is shown in \bsref{fig:char_stm_writability}.
+
+\begin{figure}[htbp]
+\centering
+ \includegraphics[width=0.9\textwidth]{\rootpath/worksheets/stm/figures/stm_char_writability} 
+ \caption{\ac{STM} on the low - high writability spectrum}
+\label{fig:char_stm_writability}
+\end{figure}
 
 \worksheetend
