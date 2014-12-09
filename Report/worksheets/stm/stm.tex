@@ -167,9 +167,9 @@ Within the context of \ac{STM} there exist two different isolation levels: weak 
 
 With the guarantee of isolation, a transaction is perceived as one atomic step. That is, the intermediate states present during the execution of the transaction are not perceived by other parts of the systems, only the committed values become visible to other parts of the system. This always holds in the case of transactions perceiving other transactions. However, if a thread executes transactional code over some data, and another thread executes non-transactional code over the same data, the concepts of weak and strong isolation handle this differently.
 
-In the case of strong isolation it is guaranteed that transactions are atomic with respect to non-transactional access\cite[p. 2083]{herlihy2011tm}. If any data is access both within a transaction as well as out side of a transaction the \ac{STM} implementation will ensure that the variable is accessed atomically in both cases. Guaranteeing isolation atomicity between transactional and non-transactional access comes with a  performance cost\cite{herlihy2011tm}. 
+In the case of strong isolation it is guaranteed that transactions are atomic with respect to non-transactional access\cite[p. 2083]{herlihy2011tm}. If any data is access both within a transaction as well as out side of a transaction the \ac{STM} implementation will ensure that the variable is accessed atomically in both cases. Guaranteeing isolation atomicity between transactional and non-transactional access comes with a performance cost\cite{herlihy2011tm}. 
 
-Weak isolation only guarantees that transactions are atomic with respect to other transactions. That is, it is up to the programmer to ensure that non-transactional access does not interfere with transactional access.
+Weak isolation only guarantees that transactions are atomic with respect to other transactions. That is, it is up to the programmer to ensure that non-transactional access does not interfere with transactional access. In languages with side-effects, this can be hard to ensure. To mitigate this issue, side-effects could be avoided  partly or entirely. Functional languages with \ac{STM} such as Clojure or Haskell promotes immutability and is pure in regards to side-effects. This property makes it easier to handle transactions, since there is only side-effects in relation to the transaction itself. 
 
 \section{Concurrency Issues}
 In this section we present the concurrency issues related to the use of \ac{STM}. We will also relate to the concurrency issues discussed in \bsref{subsec:race_coditions} and \bsref{sec:tl_ci}.
@@ -187,11 +187,9 @@ There is a risk for starvation when using \ac{STM}. The work of transactions get
 
 \subsection{Exceptions in Transactions}
 \label{subsec:stm:side_effects}
-No straight forward approach to handling uncaught exceptions within transaction exist\cite[p. 80]{harris2010transactional}. Should the transaction attempt to commit its current state before propagating the exception or should the transaction be aborted before the exception is propagated to outside the atomic block?  In \cite{harris2003language} the authors propose attempting to commit the current state of the transactions. Using this approach a transaction leaves the program in the same state as a equivalent sequential code segment would have, in the case of an uncaught exception. This approach has the nice property that removing or adding code atomic block around code segments does not change how exceptions should be handled by the programmer\cite[p. 79]{harris2010transactional}.
+No straight forward approach exists to handle uncaught exceptions within transaction\cite[p. 80]{harris2010transactional}. Should the transaction attempt to commit its current state before propagating the exception or should the transaction be aborted before the exception is propagated out of the atomic block? In \cite{harris2003language} the authors propose committing the current state of the transaction before propagating the exception. Using this approach, a transaction leaves the program in the same state as an equivalent sequential code segment would have, in the case of an uncaught exception. This approach has the property that removing or adding atomic blocks around code segments does not change how exceptions should be handled by the programmer\cite[p. 79]{harris2010transactional}.
 
-\bsref{lst:stm_exception} presents the method \bscode{move}, which moves an object from one collection to another. This happens in an atomic block, to ensure atomicity. If the \ac{STM} system commits transactions in the case of a uncaught exception and a exception is raised while trying to add the object to the destination at line 4, the programmer must manually secure that it is re-added to the source. If not, the object will be in neither collection.
-
-In \cite{harris2005exceptions} Tim Harris proposes aborting and undoing the memory operations of a transaction, in the case of uncaught exceptions. As all changes are undone, the programmer is not responsible for ensuring that the program remains in a consistent state\cite[p.3]{harris2005exceptions}\cite[p. 80]{harris2010transactional}. Consider again the example presented in \bsref{lst:stm_exception}. If a exception is raised while adding the object to the destination collection at line 4, the \ac{STM} will undo the changes made by the transaction, reinserting the object into the source collection, before the exception is propagated. Propagating the exception is however problematic as it contains a stack trace from code which memory operations where undone as well as possibly contain references to objects that are to be removed as part of undoing the transaction. Furthermore if the exception is allocated inside the transaction, some way of maintaining the exception past the undo operation must be present. Tim Harris proposes having the \ac{STM} system catch the original exception and replace it with a exception specific to the \ac{STM} system, which is known to be free of the before mentioned issues\cite[p. 3]{harris2005exceptions}. This approach however looses the original information related to the uncaught exception.
+\bsref{lst:stm_exception} presents the method \bscode{move}, which moves an object from one collection to another. This happens in an atomic block, to ensure atomicity. If the \ac{STM} system commits transactions in the case of a uncaught exception and an exception is raised while trying to add the object to the destination at line 4, the programmer must manually secure that it is re-added to the source. If not, the object will be in neither collections.
 
 \begin{lstlisting}[label=lst:stm_exception_new,
   caption={Exceptions in Transaction},
@@ -214,43 +212,7 @@ In \cite{harris2005exceptions} Tim Harris proposes aborting and undoing the memo
 	}      
 \end{lstlisting}
 
-\subsection{Side-effects in Transactions}
-\label{subsec:stm:side_effects}
-There is no straight forward approach to handle side-effects, such as exceptions, inside transactions. A viable approach proposed by Tim Harris\cite{harris2003language} is to only propagate the exception when the transaction is able to commit, since this is the only case a transaction causes changes impacting the rest of the system. However, even though a transaction is successful, if an exception happens all of the content of the transaction might not be executed, and can leave the program in an invalid state. To exemplify, \bsref{lst:stm_exception} illustrates this issue. The method \bscode{move} moves an object from one collection to another. This happens in an atomic block, to ensure thread safety. However, if an exception happens while trying to add the object to the destination at line 7, the programmer must manually secure that it is re-added to the source. If not, the object will be in neither collection if the transaction commits. 
-\kasper{Har ændret referencen til det paper du præsenterede. Måske figuren og skal til passes den da passer til det som præsenteres i det andet paper.}
-\begin{lstlisting}[label=lst:stm_exception,
-  caption={[Exceptions in Transactions]Exceptions in Transactions \cite[p. 3]{harris2003language}},
-  language=Java,  
-  showspaces=false,
-  showtabs=false,
-  breaklines=true,
-  showstringspaces=false,
-  breakatwhitespace=true,
-  commentstyle=\color{greencomments},
-  keywordstyle=\color{bluekeywords},
-  stringstyle=\color{redstrings},
-  morekeywords={atomic, retry, orElse}]  % Start your code-block
-
-	boolean move(Collection source, Collection destination, Object object){
-		atomic{
-			if(!source.remove(object)){
-				return false;
-			} else {
-				try { 
-					destination.add(object);
-				} catch(RuntimeException exception) {
-					source.add(object);
-					throw exception;
-				}
-				return true;
-			}
-		}
-	}      
-\end{lstlisting}
-
-A way to negate this issue, is to retain all changes made in the transaction up until the point of the exception. By letting the \ac{STM} system discard the side-effects happening before the exception, the programmer does not have to undo the actions before the exception. While this is a desirable feature, its implementation is difficult to realize\cite[p. 3]{harris2005exceptions}.
-
-Another approach is handle side-effects, is to avoid them partly or entirely. Functional languages with \ac{STM} such as Clojure or Haskell promotes immutability and is pure in regards to side-effects. This property makes it easier to handle transactions, since there is only side-effects in relation to the transaction itself. 
+In \cite{harris2005exceptions} Tim Harris proposes aborting and undoing the memory operations of a transaction, in the case of uncaught exceptions. As all changes are undone, the programmer is not responsible for ensuring that the program remains in a consistent state\cite[p.3]{harris2005exceptions}\cite[p. 80]{harris2010transactional}. Consider again the example presented in \bsref{lst:stm_exception}. If an exception is raised while adding the object to the destination collection at line 4, the \ac{STM} will undo the changes made by the transaction, reinserting the object into the source collection, before the exception is propagated. Propagating the exception is however problematic as it contains a stack trace from code which memory operations where undone as well as possibly contain references to objects that are to be removed as part of undoing the transaction. Furthermore if the exception is allocated inside the transaction, some way of maintaining the exception past the undo operation must be present. Tim Harris proposes having the \ac{STM} system catch the original exception and replace it with a exception specific to the \ac{STM} system, which is known to be free of the before mentioned issues\cite[p. 3]{harris2005exceptions}. This approach however looses the original information related to the uncaught exception.
 
 \subsection{Irreversible Actions}
 \label{subsec:stm_irreversible_actions}
