@@ -185,6 +185,36 @@ As the programmer explicitly has to mark code in atomic blocks to ensure safety,
 \subsection{Starvation}
 There is a risk for starvation when using \ac{STM}. The work of transactions are executed optimistically, and are aborted if a conflict occurs. If the same transaction keeps getting aborted and must retry its work, it might never finish. To remedy this, different strategies exists. As described in \bsref{subsub:con_managers} a contention manager can use different strategies to ensure that transaction do not starve.
 
+\subsection{Exceptions in Transactions}
+\label{subsec:stm:side_effects}
+No straight forward approach to handling uncaught exceptions within transaction exist\cite[p. 80]{harris2010transactional}. Should the transaction attempt to commit its current state before propagating the exception or should the transaction be aborted before the exception is propagated to outside the atomic block?  In \cite{harris2003language} the authors propose attempting to commit the current state of the transactions. Using this approach a transaction leaves the program in the same state as a equivalent sequential code segment would have, in the case of an uncaught exception. This approach has the nice property that removing or adding code atomic block around code segments does not change how exceptions should be handled by the programmer\cite[p. 79]{harris2010transactional}.
+
+\bsref{lst:stm_exception} presents the method \bscode{move}, which moves an object from one collection to another. This happens in an atomic block, to ensure atomicity. If the \ac{STM} system commits transactions in the case of a uncaught exception and a exception is raised while trying to add the object to the destination at line 4, the programmer must manually secure that it is re-added to the source. If not, the object will be in neither collection.
+
+In \cite{harris2005exceptions} Tim Harris proposes aborting and undoing the memory operations of a transaction, in the case of uncaught exceptions. As all changes are undone, the programmer is not responsible for ensuring that the program remains in a consistent state\cite[p.3]{harris2005exceptions}\cite[p. 80]{harris2010transactional}. Consider again the example presented in \bsref{lst:stm_exception}. If a exception is raised while adding the object to the destination collection at line 4, the \ac{STM} will undo the changes made by the transaction, reinserting the object into the source collection, before the exception is propagated. Propagating the exception is however problematic as it contains a stack trace from code which memory operations where undone as well as possibly contain references to objects that are to be removed as part of undoing the transaction. Furthermore if the exception is allocated inside the transaction, some way of maintaining the exception past the undo operation must be present. Tim Harris proposes having the \ac{STM} system catch the original exception and replace it with a exception specific to the \ac{STM} system, which is known to be free of the before mentioned issues\cite[p. 3]{harris2005exceptions}. This approach however looses the original information related to the uncaught exception.
+
+\begin{lstlisting}[label=lst:stm_exception_new,
+  caption={Exceptions in Transaction},
+  language=Java,  
+  showspaces=false,
+  showtabs=false,
+  breaklines=true,
+  showstringspaces=false,
+  breakatwhitespace=true,
+  commentstyle=\color{greencomments},
+  keywordstyle=\color{bluekeywords},
+  stringstyle=\color{redstrings},
+  morekeywords={atomic, retry, orElse}]  % Start your code-block
+
+	void move(Collection source, Collection destination, Object object){
+		atomic{
+			source.remove(object);
+			destination.add(object);
+		}
+	}      
+\end{lstlisting}
+
+
 \subsection{Side-effects in Transactions}
 \label{subsec:stm:side_effects}
 There is no straight forward approach to handle side-effects, such as exceptions, inside transactions. A viable approach proposed by Tim Harris\cite{harris2003language} is to only propagate the exception when the transaction is able to commit, since this is the only case a transaction causes changes impacting the rest of the system. However, even though a transaction is successful, if an exception happens all of the content of the transaction might not be executed, and can leave the program in an invalid state. To exemplify, \bsref{lst:stm_exception} illustrates this issue. The method \bscode{move} moves an object from one collection to another. This happens in an atomic block, to ensure thread safety. However, if an exception happens while trying to add the object to the destination at line 7, the programmer must manually secure that it is re-added to the source. If not, the object will be in neither collection if the transaction commits. 
@@ -412,9 +442,9 @@ To sum up, \cite{rossbach2010transactional} shows how students find coarse grain
 \label{sec:stm_ease_pankratius}
 In \cite{pankratius2009does} Pankratius et al presents a study comparing \ac{TM} to locking as a synchronization mechanism. The study was conducted using 12 students, divided into teams of two, and tasking them with developing a parallel desktop search engine over the course of 15 weeks. Half the teams where restricted to using locks while the other half had to employ \ac{TM}. Both implementations where restricted to using C++. The locking teams employed Pthreads\cite[p. 2]{pankratius2009does} while the \ac{TM} employed Intel’s STM compiler\cite[p. 3]{pankratius2009does}.
 
-The study shows that the first team to produce a working search engine was the winning \ac{TM}\cite[p. 6]{pankratius2009does}. The team had a working prototype after 5 weeks.   The locking teams spend more time debugging due to segmentation faults\cite[p. 6]{pankratius2009does}. As with the study examined in \bsref{sec:stm_ease_rossbach} the students where presented with a survey. The survey shows that the  winning \ac{TM} based team thought they where not progressing fast enough due to having to use transactions even though they had the first prototype and the least effort of all teams while lock based teams though they where progressing fast even though requiring more effort\cite[p. 6]{pankratius2009does}. Expert reviews revealed that the \ac{TM} based implementations where easier to understand and required fewer parallel consructs\cite[p. 6]{pankratius2009does}. All teams, including the winning \ac{TM} team, had data races which where detected after hand in by code inspection\cite[p. 6]{pankratius2009does}. The winning \ac{TM} team spent less time than the winning lock team and had better performance\cite[p. 23]{pankratius2009does}. All locks based teams attempted to scale by employing many locks (up to 1600),  this proved difficult\cite[p. 23]{pankratius2009does}.
+The study shows that the first team to produce a working search engine was the winning \ac{TM}\cite[p. 6]{pankratius2009does}. The team had a working prototype after 5 weeks.   The locking teams spend more time debugging due to segmentation faults\cite[p. 6]{pankratius2009does}. As with the study examined in \bsref{sec:stm_ease_rossbach} the students where presented with a survey. The survey shows that the  winning \ac{TM} based team thought they where not progressing fast enough due to having to use transactions even though they had the first prototype and the least effort of all teams. The lock based teams though they where progressing fast even though requiring more effort than the \ac{TM} based teams\cite[p. 6]{pankratius2009does}. Expert reviews revealed that the \ac{TM} based implementations where easier to understand and required fewer parallel consructs\cite[p. 6]{pankratius2009does}. All teams, including the winning \ac{TM} team, had data races which where detected after hand in by code inspection\cite[p. 6]{pankratius2009does}. The winning \ac{TM} team spent less time than the winning lock team and had better performance\cite[p. 23]{pankratius2009does}. All locks based teams attempted to scale by employing many locks (up to 1600),  this proved difficult\cite[p. 23]{pankratius2009does}.
 
-Two of the \ac{TM} teams used locks for parts of their implementations, one team had a producer consumer setup which was controlled by a semaphore, while another teams used lock to synchronize a section with intensive\cite[p. 5]{pankratius2009does}. Pankratius et al make the case for locking and \ac{TM} coexisting rather than excluding one another.
+Two of the \ac{TM} teams used locks for parts of their implementations, one team had a producer consumer setup which was controlled by a semaphore, while another teams used a lock to synchronize a section with intensive \ac{IO}\cite[p. 5]{pankratius2009does}. Pankratius et al make the case for locking and \ac{TM} coexisting rather than excluding one another.
 
 \section{\acs{STM} Characteristics}
 \label{sec:stm_eval}
