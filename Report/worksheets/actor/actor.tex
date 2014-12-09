@@ -276,7 +276,7 @@ So as the actor model consists of a small amount of constructs that can be combi
 
 \missingfigure{orthogonal - men ikke helt oppe fordi nogle kombinationer er ikke tiladt direkte. Måske også lidt mindre i forhold til deadlocks}
 \subsubsection{Readability evaluation}
-The simplicity and orthogonality directly influences the readability. Simplicity was placed in the middle of the spectrum primarily because a different mindset is required for actor modelling and it introduces some new challenges which must be dealt with, such as non-deterministic message order. This hurts the readability of the actor model, at least until the programmer gets familiar with the different mindset and get accustomed to these challenges. Orthogonality was placed in the high end of the spectrum, as there is a low amount of constructs which is able to be combined in a large number of ways, either directly or indirectly. This influences the readability of the actor model positively.
+The simplicity and orthogonality directly influences the readability. Simplicity was placed between the middle and high end of the spectrum as it provides a fairly simple concurrency model but a different mindset is required for actor modelling and it introduces some new challenges which must be dealt with, such as non-deterministic message order. This hurts the readability of the actor model, at least until the programmer gets familiar with the different mindset and get accustomed to these challenges. Orthogonality was placed in the high end of the spectrum, as there is a low amount of constructs which is able to be combined in a large number of ways, either directly or indirectly. This influences the readability of the actor model positively.
 
 Additionally, all code in terms of state and behaviour methods associated with an actor is encapsulated and stored within the actor, which makes it easier to understand what a given actor encompasses. A programmer reading an actor program can start out by understanding how a single actor operates and then continue to examine how the actors that it communicates with operates, in order to understand the whole program.\toby{Er denne sætning foreståelig?} However it can also have a negative impact on the readability, as the flow of the program is distributed out into the actors, so there is no single place to get an overview of the flow.\toby{Skal der snakkes mere her?} 
 
@@ -307,30 +307,15 @@ Based on these observations we have placed the expressivity in the high end of t
 \missingfigure{Høj expressivitiy - tæt på højst}
 
 \subsubsection{Writability evaluation}
-%Forhold sig til hver punkt for writability
-	%simplicity
-	%orthogonality
-	%level of abstraction
-	%expressivity
-	
-%Forhold sig til concurrency issues også - evt. generelt som TL har gjort
+The actor model allows the programmer to express concurrency solely through modelling of actor entities and the communication between them. The details and complications of threads, physical location of actors and connection management for sending and receiving messages are abstracted away from the programmer. Furthermore, as the actor model consider only isolated state and atomic processing of messages, it provides simple synchronization by design which avoids race conditions. Abstracting away these complications makes it simpler to write concurrent programs and has a positive influence on the writability. Additionally, the model enables a valuable environment for testing as each actor can be tested in isolation. This also has a positive effect on the writability and makes it simple have use a test-first implementation technique.
 
+However, the notion of no shared state and asynchronous message passing can hurt the writability of the actor model initially as it requires a different mindset. In some situations a non-deterministic message order is not feasible and patterns for coordination between actor is needed. Such patterns does not exist in the conceptual actor model, but are often included in actor implementations which reduces the negative impact on writability. Additionally, the programmer must also take into account some problems only releated to the actor model such as proper message size and overflow of an actor mailbox, as discussed in \bsref{sec:actor_discussion}.
 
-%the implicit mututal exclusion and race condition free of all state variables makes it easiyer to write, as the programmer does not have to worry about which state varaibles should be covered and which should not
-	%ensure race condition free by design is nice
-	%but also does not allow for some state varaibles to not be covered by it, which may be usefull for values that are not changed, so they can be accessed by more entities than one at the same time (which is not possible in the actor model)
-	
-	%if the programmer does not adhere to the async nature of message passing and force blocking behaviour deadlocks can often occur.
+Based on the above observations and the evaluation of simplicity, orthogonality, level of abstraction and expressivity we place the actor model between the middle and high end of the writability spectrum, as shown in BLA\toby{indsæt figur}.
 
-%især i nogle situationer fx. stock broker, hvor man gerne prune non-determinism og især påvirker writability negativ i implementationer der ikke har pattern for dette.
-	%mere kompliceret coordination hvis man holder sig kun til aync message passing
-	%mange situationer kan man ommudulere det så at man ikke behøves block behaviour (quoten fra scala in actors)
-	
-%orthogonality
-	%few constructs, so easy overview them and they can be combined in a large number of ways which affect the writability positively (however somethings are not possible - such as having some state variables that allows mutiple entities to access at the time)
-	
-%high level of abstraction and expressivity influcenes the writability positively.
-	%programmer does not have to worry about the complications involved with threads and physical location of actors or mailboxes.
+\missingfigure{mellem mid og høj}
+
+%if the programmer does not adhere to the async nature of message passing and force blocking behaviour deadlocks can often occur.
 
 \toby[i]{Til hvor vi skal vælge hvilken actor implementation vi vælger se ``Efficient Testing Of Actor Programs With Non-deterministic Behaviors - Samira Tasharofi'' for kort beskrivelse af Akka og at den ikke overholder nogle af properties}
 \worksheetend
