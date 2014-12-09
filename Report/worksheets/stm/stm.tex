@@ -183,7 +183,7 @@ In a setting with shared memory and multiple threads, the risk of race condition
 As the programmer explicitly has to mark code in atomic blocks to ensure safety, the risk of the programmer not marking the code, will make the code prone to race conditions. This holds true only for weak isolation level, as \ac{STM} with strong isolation will account for changes made outside transactions. The responsibility of marking critical regions varies in different implementations of \ac{STM}. Some implementations have special reference types, that can only be modified inside a transaction. This enforces the programmer to use transactions every time he wants to manipulate the value of the reference. An example of using approach is Clojure, which is a functional language that promotes immutability, and only allows mutable references to be manipulated in transactions. In \bsref{lst:stmexample} the variables \bscode{account1} and \bscode{account2} are references, and they can only be manipulated in the transaction block, which is named \bscode{dosync}.
 
 \subsection{Starvation}
-There is a risk for starvation when using \ac{STM}. The work of transactions get executed optimistically, and then aborted if a conflict occurs. If the same transaction keeps getting aborted and must retry its work, it might never finish. To remedy this, different strategies exists. As described in \bsref{subsub:con_managers} a contention manager can use different strategies to ensure that transaction do not starve. 
+There is a risk for starvation when using \ac{STM}. The work of transactions are executed optimistically, and are aborted if a conflict occurs. If the same transaction keeps getting aborted and must retry its work, it might never finish. To remedy this, different strategies exists. As described in \bsref{subsub:con_managers} a contention manager can use different strategies to ensure that transaction do not starve.
 
 \subsection{Exceptions in Transactions}
 \label{subsec:stm:side_effects}
@@ -291,6 +291,7 @@ Besides lazy and eager conflict detection another distinction lies in what trans
 Conflict detection is highly related to the concepts of pessimistic or optimistic concurrency control. In pessimistic concurrency control conflicts are detected and resolved when they happen\cite[p. 20]{harris2010transactional} while optimistic concurrency control detects and resolves conflicts some time after they occur\cite[p. 20]{harris2010transactional}.
 
 \subsubsection{Visible vs Invisible Reads}
+\andreas[inline]{Do we make use of this? Very implementation specific}
 When reading shared data \ac{STM} implementations can either employ visible, invisible or semivisible reads.
 
 Using visible reads a \ac{STM} transaction communicates its operations to other transactions, by registering in shared memory whenever it reads a shared variable\cite[p. 2]{lev2009anatomy}\cite[p. 2085]{herlihy2011tm}. Other transactions, which are about to write to a shared variable, can then consult the written data to identify if they are about to produce a conflict. As transactions write exactly which transaction reads a variable, the writing transaction can choose to abort the reading transactions\cite[p. 2]{lev2009anatomy}.
@@ -449,7 +450,7 @@ Two of the \ac{TM} teams used locks for parts of their implementations, one team
 This section presents how the \ac{STM} concurrency model relates to the selected characteristics presented in \bsref{chap:char}. \andreas{Should we describe which "variant" of the model we evaluate?}
 
 \subsection{Implicit or Explicit Concurrency}
-\ac{STM} as a concurrency model build upon many of the same constructs as the \ac{TL} concurrency model. Threads are started in order to introduce concurrency and race conditions are avoided by specifying critical regions in which code should be executed as a transaction and managed by the \ac{STM} system. It is the task of the programmer to explicitly employ these constructs and as such we say that \ac{STM} employs explicit concurrency. The exact placement is shown in \bsref{fig:stm_char_impli_expli}.
+\ac{STM} as a concurrency model is build upon the constructs of threads and atomic blocks. Threads are used in order to introduce concurrency. To mitigate race conditions critical regions are specified where the program should be executed as a transaction and managed by the \ac{STM} system. It is the task of the programmer to explicitly employ these constructs, hence \ac{STM} employs explicit concurrency. The exact placement is shown in \bsref{fig:stm_char_impli_expli}.
 
 \begin{figure}[htbp]
 \centering
@@ -459,7 +460,7 @@ This section presents how the \ac{STM} concurrency model relates to the selected
 \end{figure}
 
 \subsection{Fault Restrictive or Expressive Model}
-\ac{STM} employs many of the principles also found in the traditional \ac{TL} approach to concurrency. Both express concurrency by starting threads and synchronising access to shared memory. While the \ac{TL} gives programmers control over the low level details of synchronization, \ac{STM} delegates such work to the \ac{STM} system. Furthermore \ac{STM} limits the number of concurrency related errors which the programmer has to reason about. As such we say that \ac{STM} is an expressive concurrency model with fault restrictive elements keeping it for being considered truly expressive\andreas{Maybe we should mention that it depends on the implementation? Some got orElse and retry, others nothing}. The exact placement of \ac{STM} on the fault restrictive - expressive spectrum is depicted in \bsref{fig:stm_char_fault_expressive}.
+\ac{STM} express concurrency by starting threads and synchronising access to shared memory. The synchronization between threads is delegated to the \ac{STM} system. Furthermore \ac{STM} limits the number of concurrency related errors which the programmer has to reason about. As such we say that \ac{STM} is an expressive concurrency model with fault restrictive elements keeping it for being considered truly expressive\andreas{Maybe we should mention that it depends on the implementation? Some got orElse and retry, others nothing}. The exact placement of \ac{STM}, on the fault restrictive - expressive spectrum, is depicted in \bsref{fig:stm_char_fault_expressive}.
 
 \begin{figure}[htbp]
 \centering
@@ -469,7 +470,7 @@ This section presents how the \ac{STM} concurrency model relates to the selected
 \end{figure}
 
 \subsection{Pessimistic or Optimistic Model}
-As describe in \bsref{sec:stm_stm} \ac{STM} transactions are executed concurrently. If the execution is successful, the transaction commits. Such an approach corresponds well with an optimistic approach to concurrency and this is also the consensus in the relevant literature. Guerraoui et al, among others, explicitly state that \ac{STM} is an optimistic model\cite[p. 1]{guerraoui2005toward}. As described in \bsref{sec:stm_conflict_detection}, some \ac{STM} implementations employ eager conflict detection aimed at aborting conflicted transactions as soon as possible. The overall strategy of the model however remains optimistic. As such we say that \ac{STM} is a optimistic concurrency model the exact placement is depicted in \bsref{fig:stm_char_pes_opti}.
+As described in \bsref{sec:stm_stm} \ac{STM} transactions are executed concurrently. If the execution is successful, the transaction commits. Such an approach corresponds well with an optimistic approach to concurrency and this is also the consensus in the relevant literature. Guerraoui et al, among others, explicitly state that \ac{STM} is an optimistic model\cite[p. 1]{guerraoui2005toward}. As described in \bsref{sec:stm_conflict_detection}, some \ac{STM} implementations employ eager conflict detection aimed at aborting conflicted transactions as soon as possible. The overall strategy of the model however remains optimistic. Therefore we say that \ac{STM} is a optimistic concurrency model. The exact placement is depicted in \bsref{fig:stm_char_pes_opti}.
 
 \begin{figure}[htbp]
 \centering
@@ -483,13 +484,13 @@ For the reasons described in \bsref{subsec:tl_charac_read_and_write} the evaluat
 
 \subsubsection{Simplicity}
 \label{subsec:stm_char_simplicity}
-While \ac{STM} builds upon the shared memory also present in the \ac{TL} concurrency model it substitutes locking with memory transactions. As discussed in \bsref{subsec:stm_irreversible_actions} \ac{STM} avoid many of the concurrency related issues discussed that plague the  \ac{TL} concurrency model, contributing positively to its simplicity. The programmer does however still have to explicitly state when transaction are to be applied.
+While \ac{STM} builds upon the shared memory also present in the \ac{TL} concurrency model it substitutes locking with memory transactions. As discussed in \bsref{subsec:stm_irreversible_actions}\andreas{Er det irreversible actions vi vil refere til?} \ac{STM} avoid many of the concurrency related issues discussed that plague the  \ac{TL} concurrency model, contributing positively to its simplicity. The programmer does however still have to explicitly state when transaction are to be applied.\andreas[inline]{A lot of TL comparison, but hard to avoid if we want to make that point}
 
 In \bsref{sec:stm_ease_of_use} we discuss two studies into the ease of use of \ac{STM}. The first study reveals that students make fewer errors using \ac{STM} memory than with fine grained locking. Students do however not find \ac{STM} strictly easier than fine grained locking. Rossbach et al. note that students found the concept of transactions difficult to understand at first. The second study revealed that students had a hard time predicting the performance of transaction and as a result had a hard time tuning performance.
 
-As discussed in \bsref{subsec:stm:side_effects} and \bsref{subsec:stm_irreversible_actions}, transactions have problems composing with existing programming concepts such as \ac{IO}, exceptions and native method calls. Additional strain is put unto the programmer when combining these constructs with transactions reducing the simplicity of the  model.
+As discussed in \bsref{subsec:stm:side_effects} and \bsref{subsec:stm_irreversible_actions}, transactions have problems composing with existing programming concepts such as \ac{IO}, exceptions and native method calls. Additional strain is put unto the programmer when combining these constructs with transactions reducing the simplicity of the model.
 
-Based on the observations we say that \ac{STM} resides towards the high simplicity end of the low - high simplicity spectrum. While \ac{STM} addresses many of the issues that plague the \ac{TL} concurrency model it introduces a number of new issues. These issues along with the findings in the studies discussed in \bsref{sec:stm_ease_of_use} keep \ac{STM} from having high simplicity. The exact position on low - high simplicity spectrum is depicted in \bsref{fig:stm_char_simplicity}.
+Based on these observations, we say that \ac{STM} resides towards the high end of the low - high simplicity spectrum. While \ac{STM} addresses many of the issues that plague the \ac{TL} concurrency model it introduces a number of new issues. These issues along with the findings in the studies discussed in \bsref{sec:stm_ease_of_use} keep \ac{STM} from having high simplicity. The exact position on the low - high simplicity spectrum is depicted in \bsref{fig:stm_char_simplicity}.\andreas[inline]{Again, some TL. Hard to avoid}
 
 \begin{figure}[htbp]
 \centering
@@ -500,7 +501,7 @@ Based on the observations we say that \ac{STM} resides towards the high simplici
 
 \subsubsection{Orthogonality}\label{sec:stm_orthogonality}
 \label{subsec:stm_orthogonality}
-The \ac{STM} concurrency model consists of a few well defined\andreas{Depends, do we count retry, and orElse?} constructs: threads, communication through shared memory and synchronization using transactions. These constructs can be combined to produce concurrent implementations. As discussed in \bsref{sec:stm_composability} \ac{STM} transactions can be nested, allowing the composition of code segments employing transactions. Nested transactions allow programmers to compose large transactions from smaller transactions, much as a function can be composed from other functions. The composability problems described in \bsref{subsec:stm:side_effects} and \bsref{subsec:stm_irreversible_actions} however negatively effect the models orthogonality.
+The \ac{STM} concurrency model consists of a few well defined\andreas{Depends, do we count retry, and orElse?} constructs: threads, communication through shared memory and synchronization using transactions. These constructs can be combined to produce concurrent implementations. As discussed in \bsref{sec:stm_composability} \ac{STM} transactions can be nested, allowing the composition of code segments employing transactions. The composability problems described in \bsref{subsec:stm:side_effects} and \bsref{subsec:stm_irreversible_actions}\andreas{Is that composability problems?} however negatively effect the models orthogonality.
 
 As discussed in \bsref{subsec:stm:side_effects} and \bsref{subsec:stm_irreversible_actions}, transactions have problems composing with existing programming concepts such as \ac{IO}, exceptions and native method calls. This of course reduces its orthogonality.
 
@@ -518,11 +519,11 @@ Based on these observations we say that \ac{STM} has high orthogonality limited 
 
 \subsubsection{Readability evaluation}
 \kasper[inline]{Issue med numerering af referenced sektioner}
-As described in \bsref{subsec:stm_char_simplicity} the simplicity of the \ac{STM} concurrency model as residing towards the high simplicity end of the low - high simplicity spectrum. In \bsref{subsec:stm_orthogonality} say that the orthogonality resides towards the high end of the low - high orthogonality spectrum limited by poor composition with existing language constructs. These results directly influence the readability of the \ac{STM} concurrency model.
+As described in \bsref{subsec:stm_char_simplicity} the simplicity of the \ac{STM} concurrency model is residing towards the high end of the low - high simplicity spectrum. In \bsref{subsec:stm_orthogonality} we say that the orthogonality resides towards the high end of the low - high orthogonality spectrum, limited by poor composition with existing language constructs. These results directly influence the readability of the \ac{STM} concurrency model negatively.
 
-The \ac{STM} concurrency model often separates the introduction of concurrency from the application of synchronization in the form of transactions. Such separation makes it harder for the reader to reason about the implementations. By employing transactions the reader does however not have to reason about lock ordering, which as discussed in \bsref{subsec:tl_char_readability} requires the programmer to reason about every code segment in which locks are employed.
+The \ac{STM} concurrency model often separates the introduction of concurrency, from the synchronization in form of transactions. Such separation makes it harder for the reader to reason about the execution path. By employing transactions the reader does however not have to reason about lock ordering\andreas{Replace with deadlock?}, which as discussed in \bsref{subsec:tl_char_readability} requires the programmer to reason about every code segment in which locks are employed.
 
-The studies by Rossbach et al and Pankratius et al, discussed in \bsref{sec:stm_ease_of_use}, shown that the concept of transactions can be hard to understand at first, especially when estimating and predicting performance. Understanding the concepts of transactions is key to reasoning about synchronization using \ac{STM} especially when also considering the \bscode{retry} and \bscode{orElse} constructs discussed in \bsref{subsec:stm_conditional_synchronization}.
+The studies by Rossbach et al and Pankratius et al, discussed in \bsref{sec:stm_ease_of_use}, shows that the concept of transactions can be hard to understand at first, especially when estimating and predicting performance. Understanding the concepts of transactions is key to reasoning about synchronization using \ac{STM}, especially when also considering the \bscode{retry} and \bscode{orElse} constructs discussed in \bsref{subsec:stm_conditional_synchronization}.
 
 Considering these observations as well as the evaluation of simplicity and orthogonality we say that the \ac{STM} concurrency model is slightly towards the high end of the low - high readability spectrum. While \ac{STM} addresses many of the more pressing issues found in the \ac{TL} concurrency model, it still relies on shared memory concurrency and applying synchronization to critical regions. This approach has issue with code fragmentation as well as identifying critical regions. Ultimately this, along with the other observations, keeps \ac{STM} from obtaining a high readability score. The exact placement \ac{STM} on the low - high readability spectrum is depicted in \bsref{fig:char_stm_readability}.
 
@@ -534,13 +535,11 @@ Considering these observations as well as the evaluation of simplicity and ortho
 \end{figure}
 
 \subsubsection{Level of abstraction}\label{sec:stm_level_of_abstraction}
-As described, \ac{STM} uses the thread model directly to support concurrency. Threads are started in order to introduce concurrency and communication is achieved via shared memory. These concepts are directly related to the \acp{OS} process/thread model described in \bsref{sec:processes_threads}.
+The threads and shared memory used by \ac{STM} are directly related to the \acp{OS} process/thread model described in \bsref{sec:processes_threads}. Synchronization is accomplished using the concept of memory transactions. As such, the details of how synchronization is achieved are abstracted away. That is, transactions say that synchronization should be applied to a code segment while locking says how synchronization should be applied. The abstraction is however somewhat obstructed by transactions combining poorly with some existing language constructs such as exceptions and \ac{IO}, as described in \bsref{subsec:stm:side_effects} and \bsref{subsec:stm_irreversible_actions}.\kasper{Insert reference when done}
 
-Synchronization is accomplished using the concept of memory transactions. As described in \bsref{sec:stm_stm} and \bsref{sec:stm_common_constructs} the programmer marks a code segment that should be executed atomically and managed by the \ac{STM} system. As such, the details of how synchronization is achieved are abstracted away. That is, transactions say that synchronization should be applied to a code segment while locking says how synchronization should be applied. The abstraction is however somewhat obstructed by transactions combining poorly with some existing language constructs such as exceptions and \ac{IO}, as described in \bsref{}.\kasper{Insert reference when done}
+The employed isolation level, described in \bsref{subsec:isolation_level}, impacts the level of abstraction provided by a given \ac{STM} implementation. Under weak isolation the programmer has to reason about non transactional code interfering with transactional code. Strong isolations abstracts away this issue.
 
-The employed isolation level, descried in \bsref{subsec:isolation_level}, impacts the level of abstraction provided by a given \ac{STM} implementation. Under weak isolation the programmer has to reason about non transactional code interfering with transactional code. Strong isolations abstracts away this issue.
-
-While the \ac{STM} concurrency model is some aspects are close to the underlying \ac{OS} constructs, the concept of memory transactions represent a more high level approach to synchronization. Based on these observations we say that \ac{STM} resides slightly towards the low end of the low high level of abstraction spectrum. The exact positions is depicted in \bsref{fig:char_stm_level_of_abstraction}.
+While the \ac{STM} concurrency model in some aspects are close to the underlying \ac{OS} constructs, the concept of memory transactions represent a more high level and declarative approach to synchronization. Based on these observations, we say that \ac{STM} resides slightly towards the lower end of the low - high level of abstraction spectrum. The exact positions is depicted in \bsref{fig:char_stm_level_of_abstraction}.
 
 \begin{figure}[htbp]
 \centering
@@ -552,11 +551,11 @@ While the \ac{STM} concurrency model is some aspects are close to the underlying
 \subsubsection{Expressivity}\label{sec:stm_expressivity}
 %The level of abstraction and expressivity of a concurrency model are tightly coupled. As such the models level of abstraction also impact its expressivity. This is also the case for \ac{STM}.
 
-\ac{STM} handles many of the issues, such as deadlocks, that plague the \ac{TL} concurrency model. Not having to reason about these issues, makes the task of expressing the intent easier. 
+\ac{STM} handles many of the issues, such as deadlocks, that plague the \ac{TL} concurrency model. Not having to reason about these issues, makes expressing intent easier. 
 
-Transactions not combining well with existing language constructs limit the expressivity of the model. Constructs such as exceptions and \ac{IO} currently either lead to non desirable implementation strategies or are simply prohibited inside transactions. As a result the expressivity of the \ac{STM} concurrency model suffers.
+Transactions not combining\andreas{Earlier we used the term composed} well with existing language constructs limit the expressivity of the model. Constructs such as exceptions and \ac{IO} currently either lead to non desirable implementation strategies or are simply prohibited inside transactions. As a result the expressivity of the \ac{STM} concurrency model suffers.
 
-\ac{STM} builds upon threads and share memory which limits its expressivity. Transactions do however represent a more declarative and expressive approach to specifying synchronization. Based on these observations we say that \ac{STM} resides slightly towards the high end of the low - high expressivity spectrum. The exact placement is depicted in \bsref{fig:char_stm_expressivity}.
+\ac{STM} builds upon threads and shared memory which limits its expressivity. Transactions do however represent a more declarative and expressive approach for specifying synchronization. Based on these observations we say that \ac{STM} resides slightly towards the high end, of the low - high expressivity spectrum. The exact placement is depicted in \bsref{fig:char_stm_expressivity}.
 
 \begin{figure}[htbp]
 \centering
@@ -566,9 +565,9 @@ Transactions not combining well with existing language constructs limit the expr
 \end{figure}
 
 \subsubsection{Writability evaluation}
-\ac{STM} allows the programmer to express synchronization by stating that a code segment should be executed atomically. That is, the programmer expresses what should happen, e.g. synchronization should be applied to the code segment, as opposed to expressing how synchronization should be applied. Abstracting away the details of how synchronization is achieved allows the programmer to focus on specifying other aspects of the implementation, such as a clean design and code reuse, instead of dealing with the low level details of locking. The programmer is however not totally liberated from dealing with low level constructs as \ac{STM} still relies on threads and shared memory. Handling such low level constructs limit the models expressivity and in turn its writability.
+\ac{STM} allows the programmer to express synchronizations points in a declarative manner. That is, specifying what should be synchronized, rather than how. Abstracting away the details of how synchronization is achieved allows the programmer to focus on specifying other aspects of the implementation, such as a clean design and code reuse, instead of dealing with the low level details of synchronization. The programmer is however not totally liberated from dealing with low level constructs as \ac{STM} still relies on threads and shared memory. Handling such low level constructs limit the models expressivity and in turn its writability.
 
-Based on these observations, along with the evaluation of simplicity, orthogonality, level of abstraction and expressivity, we say that \ac{STM} resides slightly towards the high end of the low - high writability spectrum. The exact position of the \ac{STM} concurrency model is shown in \bsref{fig:char_stm_writability}.
+Based on these observations, along with the evaluation of simplicity, orthogonality, level of abstraction and expressivity, we say that \ac{STM} resides slightly towards the high end, of the low - high writability spectrum. The exact position of the \ac{STM} concurrency model is shown in \bsref{fig:char_stm_writability}.
 
 \begin{figure}[htbp]
 \centering
