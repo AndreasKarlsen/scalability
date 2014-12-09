@@ -229,11 +229,7 @@ The programmer may therefore have to be observant not to violate the semantic pr
 This section presents how the actor model relates to the selected characteristics presented in \bsref{chap:char}.\toby{Overskrift kunne være: actor model char evaluation?}
 
 \subsection{Implicit or Explicit Concurrency}
-The actor model hides the low level concepts of threads and locking. While it builds upon them, they are implicitly handled by the actor system. The actor model does however expose a number of new constructs in the form of creating actors, sending message and modifying isolated state or behaviour which must be explicitly handled by the programmer. Concurrency is introduced by creating actors and communicating is done explicitly by sending messages. As such we say that the actor model is a explicit concurrency model. This is shown in BLA\toby{indsæt ref}.
-
-%The actor model specifics concurrency and synchronization implicitly as a result of having only isolated mutable state and atomic processing of messages. The mailbox and atomic processing serves as an implicit synchronization point which ensures only a single entity will access mutable state at a time. A consequence of this design is that all state variables in an actor program are implicitly ensured mutual exclusion, unlike in \ac{TL} where you explicitly have to choose which state variables to cover. BLA\toby{indsæt ref} shows that the actor model is very implicit.\toby{Begrund hvorfor, hvis vi ikke sætter den helt til venstre}
-
-\missingfigure{Figur der viser actor er implicit (langt til venstre, og evt. længere end STM)}
+The actor model hides the low level concepts of threads and locking. While it builds upon them, they are implicitly handled by the actor system. The actor model does however expose a number of new constructs in the form of creating actors, sending message and modifying isolated state or behaviour. These must be explicitly handled by the programmer. Concurrency is introduced by creating actors and communicating is done explicitly by sending messages. As such we say that the actor model is a explicit concurrency model. This is shown in \bsref{fig:actor_implicit_explicit}.
 
 \begin{figure}[htbp]
 \centering
@@ -242,9 +238,8 @@ The actor model hides the low level concepts of threads and locking. While it bu
 \label{fig:actor_implicit_explicit}
 \end{figure}
 \subsection{Fault Restrictive or Expressive Model}\label{sec_actor_fault_express}
-The actor model forces some limitations on the programmer. The biggest limitation is that the model prohibits the use of shared mutable state and only allows isolated mutable state. Another limitation is that communication is limited to asynchronous message passing between actors solely. Furthermore, the atomic processing of messages ensures that only a single entity accesses mutable state at a time, however this disallows multiple read operations to happen simultaneously which is reasonable in regards to mutual exclusion. The actor model only permits the programmer to model the program by modelling individual actors and how they interact with one another. Based on these observation we say that the actor model is fault restrictive as shown in BLA\toby{indsæt ref}.\toby{Forklar hvorfor vi præcist sætter den hvor vi gør}
+The actor model forces some limitations on the programmer. The biggest limitation is that the model prohibits the use of shared mutable state and only allows isolated mutable state. Another limitation is that communication is limited to asynchronous message passing between actors solely. Furthermore, the atomic processing of messages ensures that only a single entity accesses mutable state at a time, however this disallows multiple read operations to happen simultaneously which is reasonable in regards to mutual exclusion. The actor model only permits the programmer to model the program by modelling individual actors and how they interact with one another. Based on these observation we say that the actor model is fault restrictive as shown in \bsref{fig:actor_fault_expressive}.
 
-\missingfigure{Figur der vist actor er faul restictive (ved ikke hvor langt til venstre helt, men nok længere end STM)}
 \begin{figure}[htbp]
 \centering
  \includegraphics[width=0.9\textwidth]{\rootpath/worksheets/actor/figures/characteristics/actor_char_fault_expressive} 
@@ -253,9 +248,8 @@ The actor model forces some limitations on the programmer. The biggest limitatio
 \end{figure}
 
 \subsection{Pessimistic or Optimistic Model}
-The atomic processing of messages facilitates a pessimistic approach, as it allows only a single message to be processed at a time which ensures only a single entity will access some mutable state at a time. Race condition issues are therefore avoided by design and a recovery mechanism for two entities simultaneously doing conflicting operations on mutable state is not needed. The actor model is in fact very pessimistic, as it enforces upon all state variables that only a single entity may access it at any given time. This can introduce unnecessary wait overhead if there are many immutable variables, that could have been accessed simultaneously safely. However, if the semantic property of state encapsulation is not adhered to in an actual actor implementation, it is possible to access the isolated state of another actor directly without sending a message, as illustrated earlier in \bsref{lst:actor_state_encapsulation_violation}. An important thing to note is that breaking state encapsulation introduces race conditions again, which the conceptual actor model carefully avoids by design, so there is no recovery mechanism for it.\toby{Evt. slet de to sætninger om ikke at adhere til det, eller hvad synes i?} On BLA\toby{indsæt ref} the placement visualizes the degree of how implicit the actor model is.\toby{Forklar hvorfor den netop står hvor den gør}
+The atomic processing of messages facilitates a pessimistic approach, as it allows only a single message to be processed at a time which ensures only a single entity will access some mutable state at a time. Race condition issues are therefore avoided by design and a recovery mechanism for two entities simultaneously doing conflicting operations on mutable state is not needed. The actor model is in fact very pessimistic, as it enforces upon all state variables that only a single entity may access it at any given time. This can introduce unnecessary wait overhead if there are many immutable variables, that could have been accessed simultaneously safely. However, if the semantic property of state encapsulation is not adhered to in an actual actor implementation, it is possible to access the isolated state of another actor directly without sending a message, as illustrated earlier in \bsref{lst:actor_state_encapsulation_violation}. An important thing to note is that breaking state encapsulation introduces race conditions again, which the conceptual actor model carefully avoids by design, so there is no recovery mechanism for it.\toby{Evt. slet de to sætninger om ikke at adhere til det, eller hvad synes i?} On \bsref{fig:actor_pes_opti} the placement visualizes the degree of how implicit the actor model is.
 
-\missingfigure{Meget pessimistic evt. mere pessimistisk end TL, fordi den restrictier access for alle state varaibler automatisk, hvor man i TL skal vælge hvilke hvilke variabler man gør det på. Det betyder at man kan unlade at gøre det på nogle, f.eks. de der ikke er mutable, men final immutable variable (det kan man ikke i actor).}
 \begin{figure}[htbp]
 \centering
  \includegraphics[width=0.9\textwidth]{\rootpath/worksheets/actor/figures/characteristics/actor_char_pessimistic_optemistic} 
@@ -278,9 +272,8 @@ It is not all actor implementations that adhere to all the semantic properties o
 As discussed in \bsref{ssec:actor_modelling},  there is an overhead in creating, sending and receiving messages. So there should not be too many small messages, but also not few large messages as that will hurt the dynamics among actors. We do not find this as severe to the simplicity of the actor model as the other issues discussed, because no matter what concurrency model you use, you must be careful not to assign too much work to a single entity. \toby{Hvad siger i til det her afsnit?}\kasper{Det er bare iorden.}
 %However, message size and load can be crucial to obtaining an efficient program.
 
-The placement of the actor model on the simplicity spectrum is shown on BLA\toby{indsæt ref}. The actor model provides a fairly simple concurrency model with implicit\kasper{Skal nok ændres} concurrency that avoids race conditions by design and helps avoid deadlocks. However, there are also a number of issues discussed above which has a negative impact on the simplicity. We have therefore placed the actor model in the middle of the spectrum.\toby{Bliv enige om hvor den skal stå. Jeg er selv ikke sikker. Evt. begrund det med explicit concurrency og den abstraction man får - men stadivæk ikke nemt at lave concurrency}
+The placement of the actor model on the simplicity spectrum is shown on \bsref{fig:actor_read_simplicity}. The actor model provides a fairly simple concurrency model that avoids race conditions by design and helps avoid deadlocks. However, there are also a number of issues discussed above which has a negative impact on the simplicity. We have therefore placed the actor model in the middle of the spectrum.
 
-\missingfigure{Længere til højre end TL, men ved ikke hvor meget?}
 \begin{figure}[htbp]
 \centering
  \includegraphics[width=0.9\textwidth]{\rootpath/worksheets/actor/figures/characteristics/actor_char_read_simplicity} 
@@ -299,11 +292,10 @@ The actor model has a small amount of constructs for building concurrent program
 
 Actors can be modelled and combined in a way that produces deadlocks, as discussed in \bsref{ssec:actor_deadlock}. Such combinations are not desirable and therefore not allowed if it was possible to detect such combinations. This hurts the orthogonality of the actor model as some of the combinations are not feasible. However, recall that actors in the system not part of the deadlock are not affected and can continue to run, which means violating the allowed combinations is not as fatal as in other concurrency models that stop the progress of the rest of the system.\toby{ved ikke om jeg skal ahve den sidste sætning med}
 
-So as the actor model consists of a small amount of constructs that can be combined in a large number of ways, it seems to have a high orthogonality. However as there are some combinations that are not directly allowed and others producing deadlocks, it is not fully orthogonal. The degree of orthogonality for the actor model is shown BLA\toby{indsæt ref}.
+So as the actor model consists of a small amount of constructs that can be combined in a large number of ways, it seems to have a high orthogonality. However as there are some combinations that are not directly allowed and others producing deadlocks, it is not fully orthogonal. The degree of orthogonality for the actor model is shown \bsref{fig:actor_orthogonality}.
 
 \toby[i]{Måske noget om at man også kan deadlocke heri, hvilke restricter visse kombinationer, hvis actors modleres som blocking operationer?}
 
-\missingfigure{orthogonal - men ikke helt oppe fordi nogle kombinationer er ikke tiladt direkte. Måske også lidt mindre i forhold til deadlocks}
 \begin{figure}[htbp]
 \centering
  \includegraphics[width=0.9\textwidth]{\rootpath/worksheets/actor/figures/characteristics/actor_char_orthogonality} 
@@ -316,16 +308,14 @@ The simplicity and orthogonality directly influences the readability. Simplicity
 
 Additionally, all code in terms of state and behaviour methods associated with an actor is encapsulated and stored within the actor, which makes it easier to understand what a given actor encompasses. A programmer reading an actor program can start out by understanding how a single actor operates and then continue to examine how the actors that it communicates with operates, eventually leading to an understanding of the entire program. However it can also have a negative impact on the readability, as the flow of the program is distributed out into the actors, so there is no single place to get an overview of the flow.\toby{Skal der snakkes mere her?} 
 
-The readability of the actor model is shown on BLA\toby{Indsæt ref} where it is placed between middle and high readability. It is not considered to have a very high readability due to the different mindset and new challenges the model introduces, which can be hard to understand at first.
+The readability of the actor model is shown on \bsref{fig:actor_readability} where it is placed between middle and high readability. It is not considered to have a very high readability due to the different mindset and new challenges the model introduces, which can be hard to understand at first.
 
-\missingfigure{Over midten? Ved ikke hvor langt til højre}
 \begin{figure}[htbp]
 \centering
  \includegraphics[width=0.9\textwidth]{\rootpath/worksheets/actor/figures/characteristics/actor_char_readability} 
  \caption{The actor model on the low - high readability spectrum}
 \label{fig:actor_readability}
 \end{figure}
-
 
 %more: 
 % you clearly see what state varaibles an actor will ensure synchronization for in the way the model dictates isolated state
@@ -334,9 +324,8 @@ The actor model let the programmer focus on high-level concurrency abstractions 
 
 These high level abstractions enables the programmer to model and think about concurrent problems conceptually in terms of actors and their interaction, without having to write the program.
 
-Based on the above considerations we argue that the actor model has a high level of abstraction, as illustrated on BLA\toby{indsæt ref}.
+Based on the above considerations we argue that the actor model has a high level of abstraction, as illustrated on \bsref{fig:actor_level_of_abstraction}.
 
-\missingfigure{Høj level of abstraction. Kan vi finde noget der skader degree of level of abstraction? Synes jeg ikke jeg kan.}
 \begin{figure}[htbp]
 \centering
  \includegraphics[width=0.9\textwidth]{\rootpath/worksheets/actor/figures/characteristics/actor_char_level_of_abstraction} 
@@ -349,11 +338,9 @@ Expressivity relates closely to the level of abstraction. The actor model ensure
 
 However, the conceptual actor model does not provide constructs to prune non-determinism which means the programmer must build patterns for such coordination manually. This hurts the expressivity of the actor model, but most actor implementations typically have some useful coordination patterns, which reduces the impact on expressivity.
 
-Based on these observations we have placed the expressivity in the high end of the spectrum, as shown on BLA\toby{indsæt ref}. We have not placed it on the highest expressivity as programmers may have to build patterns for communication manually.
+Based on these observations we have placed the expressivity in the high end of the spectrum, as shown on \bsref{fig:actor_expressivity}. We have not placed it on the highest expressivity as programmers may have to build patterns for communication manually.
 
 %TL complications: explicitly start, stop and synchronize threads and choose explicitly which state variables should be ensured mutual exclusion.
-
-\missingfigure{Høj expressivitiy - tæt på højst}
 
 \begin{figure}[htbp]
 \centering
@@ -367,9 +354,8 @@ The actor model allows the programmer to express concurrency solely through mode
 
 However, the notion of no shared state and asynchronous message passing can hurt the writability of the actor model initially as it requires a different mindset. In some situations a non-deterministic message order is not feasible and patterns for coordination between actor is needed. Such patterns does not exist in the conceptual actor model, but are often included in actor implementations which reduces the negative impact on writability. Additionally, the programmer must also take into account some problems only releated to the actor model such as proper message size and overflow of an actor mailbox, as discussed in \bsref{sec:actor_discussion}.
 
-Based on the above observations and the evaluation of simplicity, orthogonality, level of abstraction and expressivity we place the actor model between the middle and high end of the writability spectrum, as shown in BLA\toby{indsæt figur}.
+Based on the above observations and the evaluation of simplicity, orthogonality, level of abstraction and expressivity we place the actor model between the middle and high end of the writability spectrum, as shown in \bsref{fig:actor_writability}.
 
-\missingfigure{mellem mid og høj}
 \begin{figure}[htbp]
 \centering
  \includegraphics[width=0.9\textwidth]{\rootpath/worksheets/actor/figures/characteristics/actor_char_writability} 
