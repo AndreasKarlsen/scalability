@@ -159,12 +159,9 @@ In addition to the \bscode{retry} statement Harris et al. propose the \bscode{or
 
 \subsection{Zombie Transactions}
 \label{subsec:zombie}
-A zombie transaction is a transaction which will eventually abort, but have not yet discovered so. This happens, when a transaction has observed an inconsistent read-set\cite[p. 196]{dice2006transactional}. E.g. if a transaction reads the value of a variable, which is then updated by another transaction afterwards. This is exactly the case of \bscode{t2} in the example in \bsref{fig:transaction}. 
+A zombie transaction is a transaction which will eventually abort, but have not yet discovered so. This happens, when a transaction has observed an inconsistent read-set\cite[p. 196]{dice2006transactional}. E.g. if a transaction reads the value of a variable, which is then updated by another transaction afterwards. This is exactly the case of \bscode{t2} in the example in \bsref{fig:transaction}.
 
-\subsection{Variations in \ac{STM} Design}
-Different approaches for designing \ac{STM} systems exist. Many of the approaches represent a trade off between different aspects of the system. This section describes a number of design issues as well as the trade off's they represent.
-
-\subsubsection{Level of Isolation}
+\subsection{Level of Isolation}
 \label{subsec:isolation_level}
 Within the context of \ac{STM} there exist two different isolation levels: weak isolation and strong isolation. Isolation describes how parts of a system perceive transactions. The terms isolation and atomicity are used interchangeably throughout the literature\cite[p. 30]{harris2010transactional}.
 
@@ -173,6 +170,79 @@ With the guarantee of isolation, a transaction is perceived as one atomic step. 
 In the case of strong isolation it is guaranteed that transactions are atomic with respect to non-transactional access\cite[p. 2083]{herlihy2011tm}. If any data is access both within a transaction as well as out side of a transaction the \ac{STM} implementation will ensure that the variable is accessed atomically in both cases. Guaranteeing isolation atomicity between transactional and non-transactional access comes with a  performance cost\cite{herlihy2011tm}. 
 
 Weak isolation only guarantees that transactions are atomic with respect to other transactions. That is, it is up to the programmer to ensure that non-transactional access does not interfere with transactional access.
+
+\section{Concurrency Issues}
+In this section we present the concurrency issues related to the use of \ac{STM}. We will also relate to the concurrency issues discussed in \bsref{subsec:race_coditions} and \bsref{sec:tl_ci}.
+\label{sec:stm_issues}
+
+% Composition is possible in STM. Reference to Kaspers example about composition.
+% STM compared to locks
+\subsection{Race Conditions}
+In a setting with shared memory and multiple threads, the risk of race conditions are present. In order to negate this risk, \ac{STM} enables the programmer to define blocks of code, that must be executed with atomic semantics. The atomicity of \ac{STM} ensures that the execution appears to take effect instantaneously, hence no race conditions can occur between transactions. This holds for both \ac{STM} with weak and strong isolation.
+
+As the programmer explicitly has to mark code in atomic blocks to ensure safety, the risk of the programmer not marking the code, will make the code prone to race conditions. This holds true only for weak isolation level, as \ac{STM} with strong isolation will account for changes made outside transactions. The responsibility of marking critical regions varies in different implementations of \ac{STM}. Some implementations have special reference types, that can only be modified inside a transaction. This enforces the programmer to use transactions every time he wants to manipulate the value of the reference. An example of using approach is Clojure, which is a functional language that promotes immutability, and only allows mutable references to be manipulated in transactions. In \bsref{lst:stmexample} the variables \bscode{account1} and \bscode{account2} are references, and they can only be manipulated in the transaction block, which is named \bscode{dosync}.
+
+\subsection{Starvation}
+There is a risk for starvation when using \ac{STM}. The work of transactions get executed optimistically, and then aborted if a conflict occurs. If the same transaction keeps getting aborted and must retry its work, it might never finish. To remedy this, different strategies exists. As described in \bsref{subsub:con_managers} a contention manager can use different strategies to ensure that transaction do not starve.
+
+\subsection{Side-effects in Transactions}
+\label{subsec:stm:side_effects}
+There is no straight forward approach to handle side-effects, such as exceptions, inside transactions. A viable approach proposed by Tim Harris\cite{harris2003language} is to only propagate the exception when the transaction is able to commit, since this is the only case a transaction causes changes impacting the rest of the system. However, even though a transaction is successful, if an exception happens all of the content of the transaction might not be executed, and can leave the program in an invalid state. To exemplify, \bsref{lst:stm_exception} illustrates this issue. The method \bscode{move} moves an object from one collection to another. This happens in an atomic block, to ensure thread safety. However, if an exception happens while trying to add the object to the destination at line 7, the programmer must manually secure that it is re-added to the source. If not, the object will be in neither collection if the transaction commits. 
+\kasper{Har ændret referencen til det paper du præsenterede. Måske figuren og skal til passes den da passer til det som præsenteres i det andet paper.}
+\begin{lstlisting}[label=lst:stm_exception,
+  caption={[Exceptions in Transactions]Exceptions in Transactions \cite[p. 3]{harris2003language}},
+  language=Java,  
+  showspaces=false,
+  showtabs=false,
+  breaklines=true,
+  showstringspaces=false,
+  breakatwhitespace=true,
+  commentstyle=\color{greencomments},
+  keywordstyle=\color{bluekeywords},
+  stringstyle=\color{redstrings},
+  morekeywords={atomic, retry, orElse}]  % Start your code-block
+
+	boolean move(Collection source, Collection destination, Object object){
+		atomic{
+			if(!source.remove(object)){
+				return false;
+			} else {
+				try { 
+					destination.add(object);
+				} catch(RuntimeException exception) {
+					source.add(object);
+					throw exception;
+				}
+				return true;
+			}
+		}
+	}      
+\end{lstlisting}
+
+A way to negate this issue, is to retain all changes made in the transaction up until the point of the exception. By letting the \ac{STM} system discard the side-effects happening before the exception, the programmer does not have to undo the actions before the exception. While this is a desirable feature, its implementation is difficult to realize\cite[p. 3]{harris2005exceptions}.
+
+Another approach is handle side-effects, is to avoid them partly or entirely. Functional languages with \ac{STM} such as Clojure or Haskell promotes immutability and is pure in regards to side-effects. This property makes it easier to handle transactions, since there is only side-effects in relation to the transaction itself. 
+
+\subsection{Irreversible Actions}
+\label{subsec:stm_irreversible_actions}
+Transactions in \ac{STM} requires that aborted transactions does not cause effects. That is, if the value of a variable is manipulated in a transaction, and the transaction is aborted, the rest of the system should never see the variable changed. This raises a problem, since some actions are not reversible, e.g. \ac{IO} performed on a disk, or network access. These are irreversible actions, and even by not committing the result of a transaction, the transaction have still affected the system. 
+
+To handle this, special precautions must be taken. There is different approaches to handle this issue. In \cite[p. 4]{harris2003language} all native methods raises a runtime exception. A native method is defined as a method using system calls. In Java context, that is when a method must leave the virtual environment of the \ac{JVM}. In \cite{harris2005exceptions} a proposal to make libraries using native methods implement a specific interface to enable cooperation with \ac{STM}. The idea is, that they will buffer their effect, until they get a callback when their transaction is committed. 
+
+Another approach is, to enable the developer to mark a function, so the \ac{STM} is aware of its side effect. In Clojure it is possible to do this with the \bscode{#IO} macro. If a function is marked, and used in a transaction, a compiletime exception will be raised. In Haskell the \bscode{IO} monad is used to encapsulate the effect, and can be evaluated later, once the transaction is successful.
+
+\subsection{Contention}
+%What is contention
+The amount of read and writes in a memory area can be described as a contention level\cite[p. 2084]{herlihy2011tm}. A high level of contention will cause poor performance in concurrent programs. Especially in \ac{STM}, since multiple transactions trying to manipulate the same memory, a cause a conflict. When the contention level is high, the amount of conflicts will raise, and the work made by transaction being aborted is going to waste. In \ac{TL} a high contention level will cause the threads to wait, at worst being limited to linear execution, but no work will go to waste. 
+
+Due to the performance impact of contention level, it is a significant factor in the design of \ac{STM} implementations. It is an important factor in \cite{harris2003language} and in \cite{herlihy2008transactional} specific research have been done to resolve this issue.
+
+\section{Discussion}
+\label{sec:stm_discussion}
+This sections describes and discusses issues related to \ac{STM}. \bsref{subsec:stm:variations_in_design} describes design alternatives related to \ac{STM} systems. \bsref{sec:stm_composability} describes how \ac{STM} can support composability by allowing transactions to be nested within other transactions. Finally \bsref{sec:stm_ease_of_use} describes tow ease of uses studies conducted into the area of \ac{STM}.
+
+\subsection{Variations in \ac{STM} Design}\label{subsec:stm:variations_in_design}
+Different approaches for designing \ac{STM} systems exist. Many of the approaches represent a trade off between different aspects of the system. This section describes a number of design issues as well as the trade off's they represent.
 
 \subsubsection{Eager vs Lazy Updating}
 Updating memory in a \ac{STM} implementation can be done either using: eager or lazy updating.
@@ -209,78 +279,6 @@ Some \ac{STM} implementations delegate conflict resolution to a component called
 The decision can be delegated to a contention manager. The contention manager encapsulates the \ac{STM} implementations conflict resolution policy\cite[p. 2085]{herlihy2011tm}.
 
 In \cite{scherer2004contention} the authors examine a number of contention manager implementation policies. By benchmarking the a implementation of the policies the authors reveal that all policies which performed well in atleast a single test, performed abysmal in atleast one other test. So no single best contention management policy was identified.
-
-\andreas{Skal vi have noget om lock elison med?}
-
-\section{Concurrency Issues}
-In this section we present the concurrency issues related to the use of \ac{STM}. We will also relate to the concurrency issues discussed in \bsref{subsec:race_coditions} and \bsref{sec:tl_ci}.
-\label{sec:stm_issues}
-
-% Composition is possible in STM. Reference to Kaspers example about composition.
-% STM compared to locks
-\subsection{Race Conditions}
-In a setting with shared memory and multiple threads, the risk of race conditions are present. In order to negate this risk, \ac{STM} enables the programmer to define blocks of code, that must be executed with atomic semantics. The atomicity of \ac{STM} ensures that the execution appears as instantaneous, hence no race conditions can occur between transactions. This holds for both \ac{STM} with weak and strong isolation.
-
-As the programmer explicitly has to mark code in atomic blocks to ensure safety, the risk of the programmer not marking the code, will make the code unsafe to race conditions. This holds true only for weak isolation level, as \ac{STM} with strong isolation will account for changes made outside transactions. The responsibility of marking critical regions varies in different implementations of \ac{STM}. Some implementations have special reference types, that can only be modified inside a transaction. This enforces the programmer to use transactions every time he wants to manipulate the value of the reference. An example of using approach is Clojure, which is a functional language that promotes immutability, and only allows mutable references to be manipulated in transactions. In \bsref{lst:stmexample} the variables \bscode{account1} and \bscode{account1} are references, and they can only be manipulated in the transaction block, which is named \bscode{dosync}.
-
-\subsection{Starvation}
-There is a risk for starvation when using \ac{STM}. The work of transactions get executed optimistically, and then aborted with there were a conflict. The risk lies in, that if the same transaction keeps getting aborted and must retry its work, it might never finish. To remedy this, different strategies exists. As described in \bsref{subsub:con_managers} a contention manager can use different strategies to determine which transaction should abort, and which should commit. 
-
-\subsection{Side-effects in Transactions}
-\label{subsec:stm:side_effects}
-There is no straight forward approach to handle side-effects, such as exceptions, inside transactions. A viable approach proposed by Tim Harris\cite{harris2005exceptions} is to only propagate the exception when the transaction is successful, since this is the only case a transaction causes changes impacting the rest of the system. However, even though a transaction is successful, if an exception happens all of the content of the transaction might not be executed, and can leave the program in an invalid state. To exemplify, \bsref{lst:stm_exception} illustrates this issue. The method \bscode{move} moves an object from one collection to another. This happens in an atomic block, to ensure thread safety. However, if an exception happens while trying to add the object to the destination at line 7, the programmer must manually secure that it is re-added to the source. If not, the object will be in neither collection if the transaction commits. 
-
-\begin{lstlisting}[label=lst:stm_exception,
-  caption={[Exceptions in Transactions]Exceptions in Transactions \cite[p. 3]{harris2005exceptions}},
-  language=Java,  
-  showspaces=false,
-  showtabs=false,
-  breaklines=true,
-  showstringspaces=false,
-  breakatwhitespace=true,
-  commentstyle=\color{greencomments},
-  keywordstyle=\color{bluekeywords},
-  stringstyle=\color{redstrings},
-  morekeywords={atomic, retry, orElse}]  % Start your code-block
-
-	boolean move(Collection source, Collection destination, Object object){
-		atomic{
-			if(!source.remove(object)){
-				return false;
-			} else {
-				try { 
-					destination.add(object);
-				} catch(RuntimeException exception) {
-					source.add(object);
-					throw exception;
-				}
-				return true;
-			}
-		}
-	}
-       
-\end{lstlisting}
-
-A way to negate this issue, is to retain all changes made in the transaction up until the point of the exception. By letting the \ac{STM} system discarding the side-effects happening before the exception, the programmer does not have to undo the actions before the exception. While this is a desirable feature, its implementation is difficult to realize\cite[p. 3]{harris2005exceptions}. 
-
-Another approach is handle side-effects, is to avoiding them partly or entirely. Functional languages with \ac{STM} such as Clojure or Haskell promotes immutability and is pure in regards to side-effects. This property makes it easier to handle transactions, since there is only side-effects in relation to the transaction itself. 
-
-\subsection{Irreversible Actions}
-\label{subsec:stm_irreversible_actions}
-Transactions in \ac{STM} requires that aborted transactions does not cause effects. That is, if the value of a variable is manipulated in a transaction, and the transaction is aborted, the rest of the system should never see the variable changed. This raises a problem, since some actions are not reversible, e.g. \ac{IO} performed on a disk, or network access. These are irreversible actions, and even by not committing the result of a transaction, the transaction have still affected the system. 
-
-To handle this, special precautions must be taken. There is different approaches to handle this issue. In \cite[p. 4]{harris2003language} all native methods raises a runtime exception. A native method is defined as a method using system calls. In Java context, that is when a method must leave the virtual environment of the \ac{JVM}. In \cite{harris2005exceptions} a proposal to make libraries using native methods implement a specific interface to enable cooperation with \ac{STM}. The idea is, that they will buffer their effect, until they get a callback when their transaction is committed. 
-
-Another approach is, to enable the developer to mark a function, so the \ac{STM} is aware of its side effect. In Clojure it is possible to do this with the \bscode{#IO} macro. If a function is marked, and used in a transaction, a compiletime exception will be raised. In Haskell the \bscode{IO} monad is used to encapsulate the effect, and can be evaluated later, once the transaction is successful.
-
-\subsection{Contention}
-%What is contention
-The amount of read and writes in a memory area can be described as a contention level\cite[p. 2084]{herlihy2011tm}. A high level of contention will cause poor performance in concurrent programs. Especially in \ac{STM}, since multiple transactions trying to manipulate the same memory, a cause a conflict. When the contention level is high, the amount of conflicts will raise, and the work made by transaction being aborted is going to waste. In \ac{TL} a high contention level will cause the threads to wait, at worst being limited to linear execution, but no work will go to waste. 
-
-Due to the performance impact of contention level, it is a significant factor in the design of \ac{STM} implementations. It is an important factor in \cite{harris2003language} and in \cite{herlihy2008transactional} specific research have been done to resolve this issue.
-
-\section{Discussion}
-\label{sec:stm_discussion}
 
 \subsection{Composability}
 \label{sec:stm_composability}
@@ -440,7 +438,6 @@ This section presents how the \ac{STM} concurrency model relates to the selected
  \caption{\ac{STM} on the Fault Restrictive - Expressive spectrum}
 \label{fig:stm_char_fault_expressive}
 \end{figure}
-
 
 \subsection{Pessimistic or Optimistic Model}
 As describe in \bsref{sec:stm_stm} \ac{STM} transactions are executed concurrently. If the execution is successful, the transaction commits. Such an approach corresponds well with an optimistic approach to concurrency and this is also the consensus in the relevant literature. Guerraoui et al, among others, explicitly state that \ac{STM} is an optimistic model\cite[p. 1]{guerraoui2005toward}. As described in \bsref{sec:stm_conflict_detection}, some \ac{STM} implementations employ eager conflict detection aimed at aborting conflicted transactions as soon as possible. The overall strategy of the model however remains optimistic. As such we say that \ac{STM} is a optimistic concurrency model the exact placement is depicted in \bsref{fig:stm_char_pes_opti}.
