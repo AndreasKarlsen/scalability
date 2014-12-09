@@ -446,7 +446,7 @@ Two of the \ac{TM} teams used locks for parts of their implementations, one team
 
 \section{\acs{STM} Characteristics}
 \label{sec:stm_eval}
-This section presents how the \ac{STM} concurrency model relates to the selected characteristics presented in \bsref{chap:char}. 
+This section presents how the \ac{STM} concurrency model relates to the selected characteristics presented in \bsref{chap:char}. \andreas{Should we describe which "variant" of the model we evaluate?}
 
 \subsection{Implicit or Explicit Concurrency}
 \ac{STM} as a concurrency model build upon many of the same constructs as the \ac{TL} concurrency model. Threads are started in order to introduce concurrency and race conditions are avoided by specifying critical regions in which code should be executed as a transaction and managed by the \ac{STM} system. It is the task of the programmer to explicitly employ these constructs and as such we say that \ac{STM} employs explicit concurrency. The exact placement is shown in \bsref{fig:stm_char_impli_expli}.
@@ -500,9 +500,9 @@ Based on the observations we say that \ac{STM} resides towards the high simplici
 
 \subsubsection{Orthogonality}\label{sec:stm_orthogonality}
 \label{subsec:stm_orthogonality}
-The \ac{STM} concurrency model consists of a few well defined constructs: threads, communication through shared memory and synchronization using transactions. These constructs can be combined to produce concurrent implementations. As discussed in \bsref{sec:stm_composability} \ac{STM} transactions can be nested, allowing the composition of code segments employing transactions. Nested transactions allow programmers to compose large transactions from smaller transactions, much as a function can be composed from other functions. The composability problems described in \bsref{subsec:stm:side_effects} and \bsref{subsec:stm_irreversible_actions} however negatively effect the models orthogonality.
+The \ac{STM} concurrency model consists of a few well defined\andreas{Depends, do we count retry, and orElse?} constructs: threads, communication through shared memory and synchronization using transactions. These constructs can be combined to produce concurrent implementations. As discussed in \bsref{sec:stm_composability} \ac{STM} transactions can be nested, allowing the composition of code segments employing transactions. Nested transactions allow programmers to compose large transactions from smaller transactions, much as a function can be composed from other functions. The composability problems described in \bsref{subsec:stm:side_effects} and \bsref{subsec:stm_irreversible_actions} however negatively effect the models orthogonality.
 
-As discussed in \bsref{subsec:stm:side_effects} and \bsref{subsec:stm_irreversible_actions}, transactions have problems composing with existing programming concepts such as \ac{IO}, exceptions and native method calls. This of cause reduces its orthogonality.
+As discussed in \bsref{subsec:stm:side_effects} and \bsref{subsec:stm_irreversible_actions}, transactions have problems composing with existing programming concepts such as \ac{IO}, exceptions and native method calls. This of course reduces its orthogonality.
 
 \kasper[inline]{Retry/orElse}
 %In order to handle conditional synchronization the \bscode{retry} and \bscode{orElse} constructs. 
@@ -536,7 +536,7 @@ Considering these observations as well as the evaluation of simplicity and ortho
 \subsubsection{Level of abstraction}\label{sec:stm_level_of_abstraction}
 As described, \ac{STM} uses the thread model directly to support concurrency. Threads are started in order to introduce concurrency and communication is achieved via shared memory. These concepts are directly related to the \acp{OS} process/thread model described in \bsref{sec:processes_threads}.
 
-Synchronization is accomplished using the concept of memory transactions. As described in \bsref{sec:stm_stm} and \bsref{sec:stm_common_constructs}  the programmer marks a code segment that should be executed atomically and managed by the \ac{STM} system. As such, the details of how synchronization is achieved are abstracted away. That is transactions say that synchronization should be applied to a code segment while locking says how synchronization should be applied. The abstraction is however somewhat obstructed by transactions combining poorly with some existing language constructs such as exceptions and \ac{IO}, as described in \bsref{}.\kasper{Insert reference when done}
+Synchronization is accomplished using the concept of memory transactions. As described in \bsref{sec:stm_stm} and \bsref{sec:stm_common_constructs} the programmer marks a code segment that should be executed atomically and managed by the \ac{STM} system. As such, the details of how synchronization is achieved are abstracted away. That is, transactions say that synchronization should be applied to a code segment while locking says how synchronization should be applied. The abstraction is however somewhat obstructed by transactions combining poorly with some existing language constructs such as exceptions and \ac{IO}, as described in \bsref{}.\kasper{Insert reference when done}
 
 The employed isolation level, descried in \bsref{subsec:isolation_level}, impacts the level of abstraction provided by a given \ac{STM} implementation. Under weak isolation the programmer has to reason about non transactional code interfering with transactional code. Strong isolations abstracts away this issue.
 
