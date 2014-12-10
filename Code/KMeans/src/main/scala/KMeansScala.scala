@@ -85,7 +85,6 @@ object KMeansScala extends App {
 
 
         clustering.mergeWith(c);
-        clustering.calcMeansUsingMeanSum();
 
         /*
         var i: Int = 0;
@@ -107,6 +106,7 @@ object KMeansScala extends App {
         consumedMessages += 1
 
         if (nrActors == consumedMessages) { //Barrier ensuring all messages are consumed before sending final result
+          clustering.calcMeansUsingMeanSum();
           System.out.println("Reducer finished")
           context.parent ! ReducerResult(clustering) //Send final result to parent (which is the Master actor)
 
