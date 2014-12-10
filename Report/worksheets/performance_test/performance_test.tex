@@ -1,10 +1,10 @@
 \makeatletter \@ifundefined{rootpath}{\input{../../setup/preamble.tex}}\makeatother
 \worksheetstart{Performance test}{1}{April 24, 2013}{Kasper}{../../}
 
-In order to investigate the performance of the selected models, a performance test will be conducted.
+In order to investigate the performance of the selected models, a performance test will be conducted. This chapter describes the test process along with the implementations and results. 
 \label{chap:performance}
 \section{Definition of Performance Test Approach}
- The $k$-means clustering algorithm has been selected as the basis for the comparison. $k$-means is a good basis for performance analysis of concurrency models as it is computationally demanding and easily partitioned into concurrent tasks\cite[p. 128]{epstein2011towards}. The $k$-means algorithm has been employed by others to measure scalability performance\cite{epstein2011towards}\cite{tardieu2014x10} The N-body problem used for comparison in \cite{totoo2012haskell} was considered as an alternative.
+The $k$-means clustering algorithm has been selected as the basis for the comparison. $k$-means is a good basis for performance analysis of concurrency models as it is computationally demanding and easily partitioned into concurrent tasks\cite[p. 128]{epstein2011towards}. The $k$-means algorithm has been employed by others to measure scalability performance\cite{epstein2011towards}\cite{tardieu2014x10} The N-body problem used for comparison in \cite{totoo2012haskell} was considered as an alternative.
 
 $k$-means aims at clustering $n$ data points, into $k \leq n$ clusters\cite[p. 451]{dataminingconceptsandtechniques}\cite[p. 128]{epstein2011towards}. Each cluster $k$ is initially assigned a random centroid representing the mean of the cluster. For each of the data points, a distance to the centroid of each of the $k$ clusters is calculated. The data point is then assigned to the cluster to which it is closest. After every data point has been assigned, new centroids are calculated, based on the data points assigned to the clusters. The process is then repeated, using the newly calculated clusters centroids as the basis for the distance calculations. The algorithm terminates when the cluster centroids stop changing or when a set number of iterations has been completed\cite[p. 128]{epstein2011towards}. The algorithm is exemplified in \bsref{fig:kmeans}. Centroids are represented by triangles and data points by circles.
 
@@ -33,7 +33,7 @@ Test 2 & 100,000-5,000,000 & 4          			& 5           & 10
 \captionof{table}{Description of tests} \label{tab:test_description} 
 \end{center}
 
-\kasper{Hardware specs}
+\kasper[inline]{Hardware specs}
 \begin{center}
 \begin{table}[h]
 \begin{tabular}{c|cccc}
@@ -59,13 +59,89 @@ defined as:
 
 where $cov(a,i)$ is the covariance between the two vectors $a$ and $i$ and $\sigma_a \times \sigma_i$ is the product of the vectors standard deviations. 
 \section{Test Implementations}
-Presentation of \ac{TL}, \ac{STM}, and Actor test implementations.
+This section presents a small overview of the implementations used in the performance test. As described in \bsref{sec:intro_scope}, one implementation has been made for each selected concurrency model all the chosen languages run on the \ac{JVM}. The \ac{TL} based implementation was done in Java, the \ac{STM} based implementation in Clojure and the actor based implementation was done in Scala. The calculations needed to cluster vectors is implemented in Java and reused throughout all implementations. This ensures that the computations themselves do not impact the results. Each implementations simply creates its own skeleton for driving the clustering process using its corresponding concurrency model and employs the common clustering implementation to handle the clustering details. 
+
+\subsection{\ac{TL} Implementation}
+Java was chosen for the \ac{TL} based implementation because of its well documented support for the concurrency model. The \ac{TL} implementation maps the reducer and mappers directly to their own thread by providing a implementation of the \bscode{Runnable} interface. A producer consumer setup, controlled by a semaphore, is employed. The mappers cluster the subset of data which they receive and pass the result to the reducer by adding it to a queue. Finally the reducer is signalled via the semaphore. The reducer aggregate the results as they become available from the mappers  and prepares for the next iteration by calculating the new cluster means. The \bscode{run} method of the \bscode{Mapper} class is shown in \bsref{lst:tl_implementation}. On line 3 the mapper uses the common clustering service to to cluster the data it received according to the supplied means. The resulting clustering is added to a queue shared with the reducer and all other mappers on line 7. Access to the queue is synchronized by using a lock, preventing other mappers, as well as the reducer from accessing the queue while the mapper adds the result. Finally the reducer is signalling the reducer using the semaphore. All non local variables are supplied in the \bscode{Mapper} classes constructor. 
+
+\begin{lstlisting}[float,label=lst:tl_implementation,
+  caption={\ac{TL} Implementation},
+  language=Java,  
+  showspaces=false,
+  showtabs=false,
+  breaklines=true,
+  showstringspaces=false,
+  breakatwhitespace=true,
+  commentstyle=\color{greencomments},
+  keywordstyle=\color{bluekeywords},
+  stringstyle=\color{redstrings}]  % Start your code-block
+
+    @Override
+    public void run() {
+        Clustering clustering = ClusteringService.ClusterKMeansMSIncremental(data, means);
+        //Hand off data
+        lock.lock();
+        queue.add(clustering);
+        lock.unlock();
+        semaphore.release(1);
+    }  
+\end{lstlisting}
+
+\subsection{\ac{STM} Implementation}
+
+\subsection{Actor Implementation}
+Scala was selected for the actor based implementation as it good support for actors in the form of the AKKA actor framework. AKKA has replaced the Scala actors as the default actor framework for Scala applications.
+
+\kasper[inline]{Actor properties}
+
+A central master actor is responsible driving the clustering process. It handles distributing the data to the mappers as well as running the clustering process for the required number of iterations. \bsref{label=lst:actor_implementation} shows the \bscode{Mapper} and \bscode{Reducer} implementations used in the implementations. On line 4 the mapper receives the data it is to cluster, the representing the cluster centroids and the name of the reducer actor in a message from the master actor. On line 5 the mapper clusters its data segment using the common clustering service, before sending the result to the reducer on line 6.
+
+The reducer receives the result from the mappers on line 15. On line 15 the reducer merges the received intermediate result with the previously received results. If the current message is the last message the reducer then calculates the means for the new clusters on line 20 and sends clusters to the master actor.
+
+\begin{lstlisting}[float,label=lst:actor_implementation,
+  caption={Actor Implementation},
+  language=Scala,  
+  showspaces=false,
+  showtabs=false,
+  breaklines=true,
+  showstringspaces=false,
+  breakatwhitespace=true,
+  commentstyle=\color{greencomments},
+  keywordstyle=\color{bluekeywords},
+  stringstyle=\color{redstrings}]  % Start your code-block
+
+  class Mapper extends Actor {
+
+    def receive = {
+      case MapWork(data: List[Vector], means: List[Vector], reducer: ActorRef) =>
+        val clustering: Clustering = ClusteringService.ClusterKMeansMSIncremental(data, means)
+        reducer ! MapperResult(clustering)
+    }
+  }
+
+  class Reducer(nrActors: Int, nrClusters: Int) extends Actor {
+    var consumedMessages: Int = 0
+    var clustering: Clustering = new Clustering(nrClusters)
+
+    def receive = {
+      case MapperResult(c: Clustering) =>
+        clustering.mergeWith(c);
+        consumedMessages += 1
+
+        if (nrActors == consumedMessages) {
+            clustering.calcMeansUsingMeanSum();
+            context.parent ! ReducerResult(clustering)
+        }
+    }
+  }  
+\end{lstlisting}
+
 
 \section{Test Results}
 \begin{tikzpicture}
 	\begin{axis}[
 		legend entries={\ac{TL},Actor,\ac{STM}},
-		legend pos=outer north east,
+		legend pos=north west,
 		grid = both,
 		xlabel=\#vectors,
 		ylabel=Miliseconds,
