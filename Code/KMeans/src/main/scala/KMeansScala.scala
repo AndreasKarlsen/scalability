@@ -83,8 +83,8 @@ object KMeansScala extends App {
           sw.stop();
           ResultWriter.PrintResult(sw, nrVectors, nrIterations, nrClusters, nrActors, "Akka", "")
           context.system.shutdown() // Stop the actor system
-          ResultWriter.printVectors(newMeans)
-          ResultWriter.writeVectorsToDisk(newMeans,"Akka")
+          //ResultWriter.printVectors(newMeans)
+          //ResultWriter.writeVectorsToDisk(newMeans,"Akka")
         }
     }
   }
