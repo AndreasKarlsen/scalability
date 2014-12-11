@@ -21,11 +21,11 @@ public class ResultWriter {
 
 
 
-    public static void PrintResult(Stopwatch sw, int maxIterationCount, int nrClusters,int nrMappers, String implementation, String outputFolderName){
+    public static void PrintResult(Stopwatch sw, int nrVectors, int maxIterationCount, int nrClusters,int nrMappers, String implementation, String outputFolderName){
         long elapsedSeconds = sw.elapsed(TimeUnit.MILLISECONDS);
 
         try {
-            ResultWriter.WriteResult(elapsedSeconds,TimeUnit.MILLISECONDS,maxIterationCount,nrClusters,nrMappers,implementation, outputFolderName);
+            ResultWriter.WriteResult(elapsedSeconds,TimeUnit.MILLISECONDS, nrVectors, maxIterationCount,nrClusters,nrMappers,implementation, outputFolderName);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -33,7 +33,7 @@ public class ResultWriter {
         System.out.println(elapsedSeconds);
     }
 
-    public static void WriteResult(long time, TimeUnit unit, int nrIterations, int nrClusters, int nrMappers, String implementation, String outputFolder) throws IOException {
+    public static void WriteResult(long time, TimeUnit unit, int nrVectors, int nrIterations, int nrClusters, int nrMappers, String implementation, String outputFolder) throws IOException {
         String path = Vars.getPath();
         Path p = Paths.get(path);
         if (Files.notExists(p)){
@@ -52,11 +52,12 @@ public class ResultWriter {
             }
         }
 
-        String fileName = "M"+nrMappers+"C"+nrClusters+"I"+nrIterations+".td";
+        String fileName = "V"+nrVectors+"M"+nrMappers+"C"+nrClusters+"I"+nrIterations+".td";
         path = Paths.get(p.toString(),fileName).toString();
         try (PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(path,true)))) {
             writer.println("Timestamp: "+sdf.format(new Date()));
             writer.println("Implementation: " + implementation);
+            writer.println("Vectors: " + nrVectors);
             writer.println("Mappers: " + nrMappers);
             writer.println("Clusters: " + nrClusters);
             writer.println("Iterations: " + nrIterations);

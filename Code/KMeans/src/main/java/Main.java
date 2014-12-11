@@ -244,7 +244,7 @@ public class Main {
             itrCount++;
         }
         sw.stop();
-        ResultWriter.PrintResult(sw,maxIterationCount,nrClusters,nrThreads, "Java", outputFolderName);
+        ResultWriter.PrintResult(sw,vectors.size(),maxIterationCount,nrClusters,nrThreads, "Java", outputFolderName);
         executor.shutdown();
     }
 
@@ -263,7 +263,7 @@ public class Main {
             itrCount++;
         }
         sw.stop();
-        ResultWriter.PrintResult(sw,maxIterationCount,nrClusters,0, "Java", "");
+        ResultWriter.PrintResult(sw, vectors.size(),maxIterationCount,nrClusters,0, "Java", "");
 
     }
 
@@ -297,7 +297,7 @@ public class Main {
             itrCount++;
         }
         sw.stop();
-        ResultWriter.PrintResult(sw,maxIterationCount, nrClusters, nrThreads, "JavaNaive", outputFolderName);
+        ResultWriter.PrintResult(sw,vectors.size(), maxIterationCount, nrClusters, nrThreads, "JavaNaive", outputFolderName);
         executor.shutdown();
     }
 }

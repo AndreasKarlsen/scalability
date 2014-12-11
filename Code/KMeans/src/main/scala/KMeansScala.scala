@@ -15,9 +15,9 @@ import kmeans.model.Vector
 import collection.JavaConversions._ //Required for the for loops over Java collections
 
 object KMeansScala extends App {
-  val _nrClusters: Int = 5
-  val _nrIterations: Int = 1
-  val vectors: java.util.List[Vector] = DataGenerator.generateRandomVectors(500000)
+  //val _nrClusters: Int = 5
+  //val _nrIterations: Int = 1
+  //val vectors: java.util.List[Vector] = DataGenerator.generateRandomVectors(500000)
 
   //RunStaticTest();
   //RunClustering(vectors, _nrClusters, 2, _nrIterations)
@@ -34,7 +34,7 @@ object KMeansScala extends App {
     val system = ActorSystem("KMeansSystem")
 
     // create the master
-    val master = system.actorOf(Props(new Master(nrActors, partitioning, means.size, nrIterations, printMeans)), name = "master")
+    val master = system.actorOf(Props(new Master(vectors.size(), nrActors, partitioning, means.size, nrIterations, printMeans)), name = "master")
 
     // start the calculation
     master ! Calculate(means)
@@ -55,7 +55,7 @@ object KMeansScala extends App {
   case class ReducerResult(finalClustering: Clustering)
 
   //Both master and listener for final result
-  class Master(nrActors: Int, partitioning: Partitioning[Vector], nrClusters: Int, nrIterations: Int, printMeans: Boolean) extends Actor {
+  class Master(nrVectors: Int, nrActors: Int, partitioning: Partitioning[Vector], nrClusters: Int, nrIterations: Int, printMeans: Boolean) extends Actor {
     var itrCount: Int = 0
     val mapperRouter = context.actorOf(Props[Mapper].withRouter(RoundRobinRouter(nrActors)), name = "mapperRouter")
     val sw: Stopwatch = Stopwatch.createStarted
@@ -81,7 +81,7 @@ object KMeansScala extends App {
         }
         else{
           sw.stop();
-          ResultWriter.PrintResult(sw, nrIterations, nrClusters, nrActors, "Akka", "")
+          ResultWriter.PrintResult(sw, nrVectors, nrIterations, nrClusters, nrActors, "Akka", "")
           context.system.shutdown() // Stop the actor system
           ResultWriter.printVectors(newMeans)
           ResultWriter.writeVectorsToDisk(newMeans,"Akka")
