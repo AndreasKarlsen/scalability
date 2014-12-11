@@ -9,6 +9,9 @@
            [kmeans.parsing DataParser])
   (:gen-class))
 
+(defn string-to-number [s]
+  ;(Integer/parseInt s))
+  (read-string s))
 
 (defn work [amount current]
   (if (< amount current)
@@ -23,24 +26,24 @@
       (elapsed (. TimeUnit MILLISECONDS)))))
 
 (defn partition-workers [vectors, workers]
-  (. (Partitioner.) (partition vectors workers)))
+  (. (Partitioner.) (partition vectors (string-to-number workers))))
 
 (defn generate-data []
   (. DataGenerator (generateData)))
 
-(defn generate-means [count]
+(defn generate-random-vectors [count]
   (. DataGenerator (generateRandomVectors count)))
 
 (defn clustering [data means]
   (. ClusteringService (ClusterKMeansMSIncremental data means)))
 
 (defn mapper [data means clusters]
-  (println (str "Running mapper: " (.. Thread (currentThread) (getId))))
+  ;(println (str "Running mapper: " (.. Thread (currentThread) (getId))))
   (let [cluster (clustering data means)]
-    (println (str "Mapper: " (.. Thread (currentThread) (getId)) " done clustering"))
+   ; (println (str "Mapper: " (.. Thread (currentThread) (getId)) " done clustering"))
     (dosync
       (commute clusters conj cluster)))
-  (println (str "Mapper: " (.. Thread (currentThread) (getId)) " done delivering"))
+  ;(println (str "Mapper: " (.. Thread (currentThread) (getId)) " done delivering"))
   clusters)
 
 (defn map-partitioners [partitions means clusters]
@@ -78,8 +81,8 @@
         (. means add (. (. clustering (get current)) getMean))
         (recur (+ current 1))))))
 
-(defn print-result [sw, maxIterationCount, nrClusters, nrThreads, outputFolderName]
-  (. ResultWriter (PrintResult sw maxIterationCount nrClusters nrThreads "Clojure" outputFolderName)))
+(defn print-result [sw, amount-of-vectors, maxIterationCount, nrClusters, nrThreads, outputFolderName]
+  (. ResultWriter (PrintResult sw amount-of-vectors maxIterationCount nrClusters nrThreads "Clojure" outputFolderName)))
 
 (defn print-means [means]
   (print "Means: ")
@@ -91,7 +94,7 @@
           (recur (+ current 1))))))
   (println ""))
 
-(defn run-clustering [vectors means nrWorkers maxIterations]
+(defn run-clustering [vectors means nrWorkers maxIterations vector-size]
   (let
     [partitioning (partition-workers vectors nrWorkers)
      nrClusters (. means (size))
@@ -112,7 +115,7 @@
     (print (. stopwatch
              (stop)
              (elapsed (. TimeUnit MILLISECONDS))))
-    (print-result stopwatch maxIterations nrClusters nrWorkers "")))
+    (print-result stopwatch vector-size maxIterations nrClusters (string-to-number nrWorkers) "")))
 
 (defn run-static-test []
   (let
@@ -122,13 +125,16 @@
     (. ResultWriter (printVectors static-means))
     (. ResultWriter (writeVectorsToDisk static-means, "Clojure"))))
 
-(defn run-clustering-standard []
+(defn run-clustering-standard [vector-size nrWorkers]
   (let
-    [vectors (generate-data)
-     means (generate-means 5)]
-    (run-clustering vectors means, 4, 1))
+    [vectors (generate-random-vectors (string-to-number vector-size))
+     means (generate-random-vectors 5)]
+    (run-clustering vectors means, nrWorkers, 10, vector-size))
   )
+
+; #vectors #mappers
 (defn -main [& args]
-  ;(run-clustering-standard)
-  (run-static-test)
+  (println (first args) (first (rest args)))
+  (run-clustering-standard (first args) (first (rest args)))
+  ;(run-static-test)
   (shutdown-agents))

@@ -23,8 +23,6 @@ import kmeans.partitioning.Partition;
 import kmeans.partitioning.Partitioner;
 import kmeans.partitioning.Partitioning;
 
-import javax.xml.crypto.Data;
-
 /**
  * Created by Kasper on 22-09-2014.
  */
