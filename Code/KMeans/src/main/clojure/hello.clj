@@ -66,7 +66,7 @@
     (loop [current 0]
       (when (< current number-of-clusters)
         (. merged-clusters (mergeWith (. clusters (get current))))
-        (println (str "Reducer recevied nr: " current))
+        ;(println (str "Reducer recevied nr: " current))
         (recur (+ current 1))))
     merged-clusters))
 
@@ -99,14 +99,15 @@
      stopwatch (. Stopwatch (createStarted))]
     (loop [current 0]
       (when (< current maxIterations)
-        (println "Running mappers")
+        ;(println "Running mappers")
         (doall (map deref (map-partitioners partitions means clusters))) ; Synchronization before reduce
-        (println "Running reducers")
+        ;(println "Running reducers")
         (let [reducer (merge-clusters @clusters nrClusters)]
           (. reducer calcMeansUsingMeanSum)
           (calculate-means (. reducer getClusters) means))
-        (print-means means)
-        (println (str "Reducer finished iteration " (+ current 1)))
+        (dosync
+          (ref-set clusters '()))
+        ;(println (str "Reducer finished iteration " (+ current 1)))
         (recur (+ current 1))))
     (print (. stopwatch
              (stop)
@@ -117,7 +118,7 @@
   (let
     [static-vectors (. DataParser (parseStaticData))
      static-means (. DataParser (parseStaticDataMeans))]
-    (run-clustering static-vectors static-means 5 1)
+    (run-clustering static-vectors static-means 5 2)
     (. ResultWriter (printVectors static-means))
     (. ResultWriter (writeVectorsToDisk static-means, "Clojure"))))
 

@@ -29,6 +29,7 @@ public class ResultWriter {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        System.out.println("Elapsed milliseconds:");
         System.out.println(elapsedSeconds);
     }
 
