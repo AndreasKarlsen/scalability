@@ -23,6 +23,8 @@ import kmeans.partitioning.Partition;
 import kmeans.partitioning.Partitioner;
 import kmeans.partitioning.Partitioning;
 
+import javax.xml.crypto.Data;
+
 /**
  * Created by Kasper on 22-09-2014.
  */
@@ -30,11 +32,38 @@ public class Main {
 
     public static int _nrClusters = 5;
     public static int _nrIterations = 1;
+    public static boolean useArgs = true;
 
     public static void main(String[] args) {
         try {
+            if (useArgs){
+                if(args.length != 2) {
+                    System.out.println("Invalid number of arguments");
+                    System.exit(0);
+                }
 
-            RunStaticTest();
+                String arg1 = args[0];
+                String arg2 = args[1];
+
+                int nrVectors = 0;
+                int nrMappers = 0;
+                try {
+                    nrVectors = Integer.parseInt(arg1);
+                    nrMappers = Integer.parseInt(arg2);
+
+                }catch (NumberFormatException e){
+                    System.out.println("Parameters are not valid integers");
+                    System.exit(0);
+                }
+
+                List<Vector> vectors = DataGenerator.generateRandomVectors(nrVectors);
+                RunClustering(vectors,5,nrMappers,10);
+            }else{
+                List<Vector> vectors = DataGenerator.generateData();
+                RunClustering(vectors,5,5,1);
+            }
+
+
 
             //List<Vector> vectors = DataGenerator.generateData();
             //RunClusteringSingleThread(vectors,5,1);
@@ -101,7 +130,7 @@ public class Main {
 
         List<Vector> staticVectors = DataParser.parseStaticData();
         List<Vector> staticMeans = DataParser.parseStaticDataMeans();
-        RunClustering(staticVectors,staticMeans,5,1,"");
+        RunClustering(staticVectors,staticMeans,5,2,"");
         ResultWriter.printVectors(staticMeans);
         ResultWriter.writeVectorsToDisk(staticMeans, "Java");
     }
@@ -196,9 +225,10 @@ public class Main {
         ReentrantLock lock = new ReentrantLock();
         Queue<Clustering> queue = new LinkedList<>();
         int itrCount = 0;
+        System.out.println("Starting clustering...");
         Stopwatch sw = Stopwatch.createStarted();
         while (itrCount < maxIterationCount) {
-            System.out.println("Starting iteration: " + (itrCount + 1));
+            //System.out.println("Starting iteration: " + (itrCount + 1));
             for (Partition<Vector> p : partitioning.getPartitions()) {
                 executor.execute(new Mapper(sem, lock, p.getData(), means, queue));
             }
@@ -210,7 +240,7 @@ public class Main {
             for (Cluster c : clustering.getClusters()) {
                 means.add(c.getMean());
             }
-            System.out.println("Finishing iteration: " + (itrCount + 1));
+            //System.out.println("Finishing iteration: " + (itrCount + 1));
             itrCount++;
         }
         sw.stop();

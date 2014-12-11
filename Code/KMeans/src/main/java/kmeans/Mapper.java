@@ -31,14 +31,14 @@ public class Mapper implements  Runnable{
     @Override
     public void run() {
 
-        System.out.println("Thread: "+Thread.currentThread().getId()+" started.");
+        //System.out.println("Thread: "+Thread.currentThread().getId()+" started.");
         Clustering clustering = ClusteringService.ClusterKMeansMSIncremental(data, means);
-        System.out.println("Thread: "+Thread.currentThread().getId()+" done clustering.");
+        //System.out.println("Thread: "+Thread.currentThread().getId()+" done clustering.");
         //Hand off data
         lock.lock();
         queue.add(clustering);
         lock.unlock();
         semaphore.release(1);
-        System.out.println("Thread: "+Thread.currentThread().getId()+" done delivering.");
+        //System.out.println("Thread: "+Thread.currentThread().getId()+" done delivering.");
     }
 }

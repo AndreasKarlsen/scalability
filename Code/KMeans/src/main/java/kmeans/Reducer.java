@@ -34,7 +34,7 @@ public class Reducer implements Runnable{
 
     @Override
     public void run() {
-        System.out.println("Reducer started");
+        //System.out.println("Reducer started");
 
         int recieved = 0;
         Clustering clustering = new Clustering(nrClusters);; //intermediate result
@@ -46,7 +46,7 @@ public class Reducer implements Runnable{
                 temp= queue.poll();
                 lock.unlock();
                 recieved++;
-                System.out.println("Reducer recieved nr: "+recieved);
+                //System.out.println("Reducer recieved nr: "+recieved);
 
                 clustering.mergeWith(temp);
             }
@@ -59,6 +59,6 @@ public class Reducer implements Runnable{
 
         }
 
-        System.out.println("Reducer finished");
+        //System.out.println("Reducer finished");
     }
 }

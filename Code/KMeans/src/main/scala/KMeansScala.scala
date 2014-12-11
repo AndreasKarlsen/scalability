@@ -19,8 +19,34 @@ object KMeansScala extends App {
   val _nrIterations: Int = 1
   val vectors: java.util.List[Vector] = DataGenerator.generateRandomVectors(500000)
 
-  RunStaticTest();
+  //RunStaticTest();
   //RunClustering(vectors, _nrClusters, 2, _nrIterations)
+
+  def RunClustering(vectors: java.util.List[Vector], nrClusters: Int, nrActors: Int, nrIterations: Int) : Unit = {
+    val means: java.util.List[Vector] = DataGenerator.generateRandomVectors(nrClusters) // Generate initial means
+    RunClustering(vectors,means,nrActors,nrIterations,false)
+  }
+
+  def RunClustering(vectors: java.util.List[Vector], means : java.util.List[Vector],  nrActors: Int, nrIterations: Int, printMeans: Boolean) : Unit = {
+    val partitioning: Partitioning[Vector] = new Partitioner[Vector]().partition(vectors, nrActors) //Paritionining of data to given number of mapper actors
+
+    // Create an Akka system
+    val system = ActorSystem("KMeansSystem")
+
+    // create the master
+    val master = system.actorOf(Props(new Master(nrActors, partitioning, means.size, nrIterations, printMeans)), name = "master")
+
+    // start the calculation
+    master ! Calculate(means)
+
+
+  }
+
+  def RunStaticTest(): Unit ={
+    val staticVectors = DataParser.parseStaticData
+    val staticMeans = DataParser.parseStaticDataMeans
+    RunClustering(staticVectors, staticMeans,5,2,true)
+  }
 
   //Message types
   case class Calculate(means: java.util.List[Vector])
@@ -37,12 +63,12 @@ object KMeansScala extends App {
 
     def receive = {
       case Calculate(means: java.util.List[Vector]) =>
-        System.out.println("Starting iteration: " + (itrCount + 1))
+        //System.out.println("Starting iteration: " + (itrCount + 1))
         for (p : Partition[Vector] <- partitioning.getPartitions()) {
           mapperRouter ! MapWork(p.getData(), means, reducer) //Evenly distributes mapperwork across all the mapper actors
         }
       case ReducerResult(finalClustering: Clustering) =>
-        System.out.println("Finishing iteration: " + (itrCount + 1))
+        //System.out.println("Finishing iteration: " + (itrCount + 1))
         itrCount += 1
 
         val newMeans: java.util.List[Vector] = new util.ArrayList[Vector]()
@@ -67,11 +93,11 @@ object KMeansScala extends App {
 
     def receive = {
       case MapWork(data: java.util.List[Vector], means: java.util.List[Vector], reducer: ActorRef) =>
-        System.out.println("Actor: " + self.path.name + " started.")
+        //System.out.println("Actor: " + self.path.name + " started.")
         val clustering: Clustering = ClusteringService.ClusterKMeansMSIncremental(data, means)
-        System.out.println("Actor: " + self.path.name + " done clustering.")
+        //System.out.println("Actor: " + self.path.name + " done clustering.")
         reducer ! MapperResult(clustering)
-        System.out.println("Actor: " + self.path.name + " sent MapperResult message to Reducer.")
+        //System.out.println("Actor: " + self.path.name + " sent MapperResult message to Reducer.")
     }
   }
 
@@ -81,33 +107,14 @@ object KMeansScala extends App {
 
     def receive = {
       case MapperResult(c: Clustering) =>
-        System.out.println("Reducer consumed actor message: " + (consumedMessages + 1))
-
-
+        //System.out.println("Reducer consumed actor message: " + (consumedMessages + 1))
+        
         clustering.mergeWith(c);
-
-        /*
-        var i: Int = 0;
-
-        //Merge clusters
-        while (i < nrClusters) {
-          val c1: Cluster = clustering.getClusters.get(i)
-          val c2: Cluster = c.getClusters.get(i)
-          c1.mergeWith(c2)
-          i += 1
-        }
-
-        //Calculate new means
-        for (c: Cluster <- clustering.getClusters()) {
-          c.calcMean(c.getMeanSums)
-        }
-        */
-
         consumedMessages += 1
 
         if (nrActors == consumedMessages) { //Barrier ensuring all messages are consumed before sending final result
           clustering.calcMeansUsingMeanSum();
-          System.out.println("Reducer finished")
+          //System.out.println("Reducer finished")
           context.parent ! ReducerResult(clustering) //Send final result to parent (which is the Master actor)
 
           //Reset the reducer for next iteration
@@ -115,32 +122,6 @@ object KMeansScala extends App {
           clustering = new Clustering(nrClusters)
         }
     }
-  }
-
-  def RunClustering(vectors: java.util.List[Vector], nrClusters: Int, nrActors: Int, nrIterations: Int) : Unit = {
-    val means: java.util.List[Vector] = DataGenerator.generateRandomVectors(nrClusters) // Generate initial means
-    RunClustering(vectors,means,nrActors,nrIterations,false)
-  }
-
-  def RunClustering(vectors: java.util.List[Vector], means : java.util.List[Vector],  nrActors: Int, nrIterations: Int, printMeans: Boolean) : Unit = {
-    val partitioning: Partitioning[Vector] = new Partitioner[Vector]().partition(vectors, nrActors) //Paritionining of data to given number of mapper actors
-
-    // Create an Akka system
-    val system = ActorSystem("KMeansSystem")
-
-    // create the master
-    val master = system.actorOf(Props(new Master(nrActors, partitioning, means.size, nrIterations, printMeans)), name = "master")
-
-    // start the calculation
-     master ! Calculate(means)
-
-
-  }
-
-  def RunStaticTest(): Unit ={
-    val staticVectors = DataParser.parseStaticData
-    val staticMeans = DataParser.parseStaticDataMeans
-    RunClustering(staticVectors, staticMeans,5,2,true)
   }
 
 }
