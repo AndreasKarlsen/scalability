@@ -115,7 +115,7 @@
     (print (. stopwatch
              (stop)
              (elapsed (. TimeUnit MILLISECONDS))))
-    (print-result stopwatch vector-size maxIterations nrClusters (string-to-number nrWorkers) "")))
+    (print-result stopwatch (string-to-number vector-size) maxIterations nrClusters (string-to-number nrWorkers) "")))
 
 (defn run-static-test []
   (let
