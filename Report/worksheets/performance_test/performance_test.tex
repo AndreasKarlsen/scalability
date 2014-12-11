@@ -94,7 +94,7 @@ Scala was selected for the actor based implementation as it good support for act
 
 \kasper[inline]{Actor properties}
 
-A central master actor is responsible driving the clustering process. It handles distributing the data to the mappers as well as running the clustering process for the required number of iterations. \bsref{label=lst:actor_implementation} shows the \bscode{Mapper} and \bscode{Reducer} implementations used in the implementations. On line 4 the mapper receives the data it is to cluster, the representing the cluster centroids and the name of the reducer actor in a message from the master actor. On line 5 the mapper clusters its data segment using the common clustering service, before sending the result to the reducer on line 6.
+A central master actor is responsible for driving the clustering process. It handles distributing the data to the mappers as well as running the clustering process for the required number of iterations. \bsref{label=lst:actor_implementation} shows the \bscode{Mapper} and \bscode{Reducer} actors of the implementation. On line 4 the mapper receives the data it is to cluster, the representing the cluster centroids and the name of the reducer actor in a message from the master actor. On line 5 the mapper clusters its data segment using the common clustering service, before sending the result to the reducer on line 6.
 
 The reducer receives the result from the mappers on line 15. On line 15 the reducer merges the received intermediate result with the previously received results. If the current message is the last message the reducer then calculates the means for the new clusters on line 20 and sends clusters to the master actor.
 
