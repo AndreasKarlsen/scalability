@@ -12,9 +12,12 @@ public class Vars {
 
     public static String getPath(){
         if(path == null){
+            path = "Data";
+            /*
             File f = new File(".");
             path = f.getAbsoluteFile().getParentFile().getAbsoluteFile().getParentFile().getAbsolutePath();
             path = Paths.get(path, "Data").toString();
+            */
         }
 
         return path;

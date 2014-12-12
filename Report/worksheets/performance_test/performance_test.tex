@@ -16,7 +16,7 @@ $k$-means aims at clustering $n$ data points, into $k \leq n$ clusters\cite[p. 4
 
 Two tests, each with their own purpose, will be conducted. Both tests will be based on a data set of vectors, where each vector consists of 100 integer data points. In the context of performance analysis, only the effort taken to cluster the data is of interest, as opposed to the resulting clustering. As a result, randomly generated data is sufficient.
 
-The first test will be based on a fixed size data set, while the number of concurrent tasks will be scaled up. The goal is to determine how the selected concurrency models, scale as more concurrent tasks are added. The test will be based on a data set of 1,000,000 vectors. Five clusters will be created, using a maximum of eight concurrent tasks. The algorithm will run for 10 iterations.
+The first test will be based on a fixed size data set, while the number of concurrent tasks will be scaled up. The goal is to determine how the selected concurrency models, scale as more concurrent tasks are added. The test will be based on a data set of 2,000,000 vectors. Five clusters will be created, using a maximum of eight concurrent tasks. The algorithm will run for 10 iterations.
 
 The second second test will be based on a fixed number of concurrent tasks, while the size of the dataset will be scaled up. The goal of this test is to determine how the selected concurrency model, scale as the size of the dataset increases. The test will be conducted using four concurrent tasks, while scaling the data set from 100,000 vectors to 5,000,000 vectors. As with the previous test, five clusters will be created and the algorithm will run for 10 iterations.
 
@@ -24,9 +24,10 @@ The parameters of the two tests are depicted in \bsref{tab:test_description}.
 
 \begin{center}
 \begin{table}[h]
+\centering
 \begin{tabular}{c|cccc}
        & \# Vectors        & \# Concurrent tasks 	& \# Clusters & \# Iterations \\ \hline
-Test 1 & 1,000,000         & 1-8        			& 5           & 10            \\
+Test 1 & 2,000,000         & 2-8        			& 5           & 10            \\
 Test 2 & 100,000-5,000,000 & 4          			& 5           & 10           
 \end{tabular}
 \end{table}
@@ -36,6 +37,7 @@ Test 2 & 100,000-5,000,000 & 4          			& 5           & 10
 \kasper[inline]{Hardware specs}
 \begin{center}
 \begin{table}[h]
+\centering
 \begin{tabular}{c|cccc}
          & CPU & Memory & Harddrive & Operating system \\ \hline
 Hardware &     &        &           &                 
@@ -204,5 +206,42 @@ The \bscode{Reducer} actor receives the result from \bscode{Mappers} on line 15,
 	\end{axis}
 \end{tikzpicture}
 
+\begin{center}
+\begin{table}[h]
+\centering
+\begin{tabular}{c|ccc}
+\# Concurrent tasks & \ac{TL}   & \ac{STM}   & Actor \\ \hline
+2                   &           &            &       \\
+3                   &           &            &       \\
+4                   &           &            &       \\
+5                   &           &            &       \\
+6                   &           &            &       \\
+7                   &           &            &       \\
+8                   &           &            &      
+\end{tabular}
+\end{table}
+\label{table:test_results_concurrent_tasks}
+\end{center}
+
+\begin{center}
+\begin{table}[h]
+\centering
+\begin{tabular}{c|ccc}
+\# Vectors & \ac{TL}   & \ac{STM}   & Actor \\ \hline
+100000     &           &            &       \\
+300000     &           &            &       \\
+500000     &           &            &       \\
+1000000    &           &            &       \\
+1500000    &           &            &       \\
+2500000    &           &            &       \\
+3000000    &           &            &       \\
+3500000    &           &            &       \\
+4000000    &           &            &       \\
+4500000    &           &            &       \\
+5000000    &           &            &      
+\end{tabular}
+\end{table}
+\label{table:test_results_vector}
+\end{center}
 
 \worksheetend
