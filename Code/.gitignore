@@ -5,6 +5,7 @@
 
 *.class
 *.testdata
+*.td
 
 # Temp Files
 *~
