@@ -8,7 +8,7 @@ import kmeans.model.Vector
  */
 object MainScala {
 
-  val useArgs = true;
+  val useArgs = false;
 
 
   def main(args: Array[String]) {
@@ -39,8 +39,8 @@ object MainScala {
       val vectors: List[Vector] = DataGenerator.generateRandomVectors(nrVectors)
       KMeansScala.RunClustering(vectors, 5, nrMappers, 10);
     }else{
-      val vectors: List[Vector] = DataGenerator.generateData
-      KMeansScala.RunClustering(vectors, 5, 5, 1);
+      val vectors: List[Vector] = DataGenerator.generateRandomVectors(100000)
+      KMeansScala.RunClustering(vectors, 5, 5, 10);
     }
   }
 }
