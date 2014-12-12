@@ -14,11 +14,13 @@ $k$-means aims at clustering $n$ data points, into $k \leq n$ clusters\cite[p. 4
 \caption{On the left data points are assigned to the nearest centroid (cluster) based on the calculated distances. On the right, a new centroid is computed for each cluster.}\label{fig:kmeans}
 \end{figure}
 
+The implementations will follow a template similar to that of Map-Reduce\cite{dean2008mapreduce}, known from functional programming, as well as the Google and Hadoop MapReduce frameworks. MapReduce employs a set of mappers to apply a function to each data point. This function outputs a number of results, that are then aggregated to the final result using a reducer. This is analogous to the \bscode{map} and \bscode{reduce} functions, known from functional programming. For the $k$-means performance test, a set of mappers will be assigned a set of vectors, for which it will calculate the distance to each of the $k$ cluster centroids and assign it to the nearest cluster. A reducer will then aggregate the results from the mappers and calculate the new cluster centroids. The process will continue until the stated number of iterations are achieved.
+
 Two tests, each with their own purpose, will be conducted. Both tests will be based on a data set of vectors, where each vector consists of 100 integer data points. In the context of performance analysis, only the effort taken to cluster the data is of interest, as opposed to the resulting clustering. As a result, randomly generated data is sufficient.
 
-The first test will be based on a fixed size data set, while the number of concurrent tasks will be scaled up. The goal is to determine how the selected concurrency models, scale as more concurrent tasks are added. The test will be based on a data set of 2,000,000 vectors. Five clusters will be created, using a maximum of eight concurrent tasks. The algorithm will run for 10 iterations.
+The first test will be based on a fixed size data set, while the number of mapper tasks will be scaled up. The goal is to determine how the selected concurrency models, scale as more concurrent tasks are added. The test will be based on a data set of 2,000,000 vectors. Five clusters will be created, using a maximum of 7 mapper tasks. The algorithm will run for 10 iterations.
 
-The second second test will be based on a fixed number of concurrent tasks, while the size of the dataset will be scaled up. The goal of this test is to determine how the selected concurrency model, scale as the size of the dataset increases. The test will be conducted using four concurrent tasks, while scaling the data set from 100,000 vectors to 5,000,000 vectors. As with the previous test, five clusters will be created and the algorithm will run for 10 iterations.
+The second second test will be based on a fixed number of concurrent tasks as well as a fixed size dataset, while the number of iterations will be scaled up.  Synchronization is applied whenever mappers hand over their work to the reducer. Scaling up the number of iterations will scale up the number of times synchronization code for each of the selected models is executed. As such this test seeks to investigate the impact each synchronization mechanism has on the performance of the clustering algorithm. The test will employ a dataset of 2,000,000 vectors along with four mapper tasks. The number of iterations will be scaled from one to 100.
 
 The parameters of the two tests are depicted in \bsref{tab:test_description}.
 
@@ -26,9 +28,9 @@ The parameters of the two tests are depicted in \bsref{tab:test_description}.
 \begin{table}[h]
 \centering
 \begin{tabular}{c|cccc}
-       & \# Vectors        & \# Concurrent tasks 	& \# Clusters & \# Iterations \\ \hline
-Test 1 & 2,000,000         & 2-8        			& 5           & 10            \\
-Test 2 & 100,000-5,000,000 & 4          			& 5           & 10           
+       & \# Vectors        & \# Mappers			 	& \# Clusters & \# Iterations \\ \hline
+Test 1 & 2,000,000         & 1-7        			& 5           & 10            \\
+Test 2 & 2,000,000		   & 4          			& 5           & 1-100           
 \end{tabular}
 \end{table}
 \captionof{table}{Description of tests} \label{tab:test_description} 
@@ -45,8 +47,6 @@ Hardware &     &        &           &
 \end{table}
 \captionof{table}{Hardware specifications} \label{tab:hardware_specs} 
 \end{center}
-
-The implementations will follow a template similar to that of Map-Reduce\cite{dean2008mapreduce}, known from functional programming, as well as the Google and Hadoop MapReduce frameworks. MapReduce employs a set of mappers to apply a function to each data point. This function outputs a number of results, that are then aggregated to the final result using a reducer. This is analogous to the \bscode{map} and \bscode{reduce} functions, known from functional programming. For the $k$-means performance test, a set of mappers will be assigned a set of vectors, for which it will calculate the distance to each of the $k$ cluster centroids and assign it to the nearest cluster. A reducer will then aggregate the results from the mappers and calculate the new cluster centroids. The process will continue until the stated 10 iterations are achieved.
 
 \subsection{Distance Measure}
 A large part of the computations involved in the $k$-means algorithm, lies in calculating the distance between each of the data points and the cluster centroids. Different ways of calculating this distance exists. Simple, yet efficient, calculations such as Manhattan and Euclidean\cite[p. 41]{amatriain2011data} distances are fast to compute. Where the more complex similarity measures such as Pearson Correlation Coefficient and Cosine similarity\cite[p. 42]{amatriain2011data}\cite{breese1998empirical} are slower to compute but provide a more accurate result.
@@ -210,14 +210,14 @@ The \bscode{Reducer} actor receives the result from \bscode{Mappers} on line 15,
 \begin{table}[h]
 \centering
 \begin{tabular}{c|ccc}
-\# Concurrent tasks & \ac{TL}   & \ac{STM}   & Actor \\ \hline
+\# Mapper tasks 	& \ac{TL}   & \ac{STM}   & Actor \\ \hline
+1                   &           &            &       \\
 2                   &           &            &       \\
 3                   &           &            &       \\
 4                   &           &            &       \\
 5                   &           &            &       \\
 6                   &           &            &       \\
-7                   &           &            &       \\
-8                   &           &            &      
+7                   &           &            &      
 \end{tabular}
 \end{table}
 \label{table:test_results_concurrent_tasks}
@@ -227,21 +227,21 @@ The \bscode{Reducer} actor receives the result from \bscode{Mappers} on line 15,
 \begin{table}[h]
 \centering
 \begin{tabular}{c|ccc}
-\# Vectors & \ac{TL}   & \ac{STM}   & Actor \\ \hline
-100000     &           &            &       \\
-300000     &           &            &       \\
-500000     &           &            &       \\
-1000000    &           &            &       \\
-1500000    &           &            &       \\
-2500000    &           &            &       \\
-3000000    &           &            &       \\
-3500000    &           &            &       \\
-4000000    &           &            &       \\
-4500000    &           &            &       \\
-5000000    &           &            &      
+\# Iterations 	& \ac{TL}   & \ac{STM}   & Actor \\ \hline
+1     			&           &            &       \\
+10	     		&           &            &       \\
+20	     		&           &            &       \\
+30	    		&           &            &       \\
+40	    		&           &            &       \\
+50	    		&           &            &       \\
+60	    		&           &            &       \\
+70	    		&           &            &       \\
+80	    		&           &            &       \\
+90	    		&           &            &       \\
+100	    		&           &            &      
 \end{tabular}
 \end{table}
-\label{table:test_results_vector}
+\label{table:test_results_iterations}
 \end{center}
 
 \worksheetend
