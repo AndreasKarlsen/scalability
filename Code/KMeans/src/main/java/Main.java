@@ -30,7 +30,7 @@ public class Main {
 
     public static int _nrClusters = 5;
     public static int _nrIterations = 1;
-    public static boolean useArgs = true;
+    public static boolean useArgs = false;
 
     public static void main(String[] args) {
         try {
@@ -57,8 +57,8 @@ public class Main {
                 List<Vector> vectors = DataGenerator.generateRandomVectors(nrVectors);
                 RunClustering(vectors,5,nrMappers,10);
             }else{
-                List<Vector> vectors = DataGenerator.generateData();
-                RunClustering(vectors,5,5,1);
+                List<Vector> vectors = DataGenerator.generateRandomVectors(10000);
+                RunClustering(vectors,5,5,10);
             }
 
 
