@@ -42,17 +42,15 @@ Test 2 & 2,000,000		   & 4          			& 5           & 1-100
 \captionof{table}{Description of tests} \label{tab:test_description} 
 \end{center}
 
-\kasper[inline]{Hardware specs}
-\begin{center}
-\begin{table}[h]
-\centering
-\begin{tabular}{c|cccc}
-         & CPU & Memory & Harddrive & Operating system \\ \hline
-Hardware &     &        &           &                 
-\end{tabular}
-\end{table}
-\captionof{table}{Hardware specifications} \label{tab:hardware_specs} 
-\end{center}
+The tests are performed on a Macbook Pro from 2014, with the following specifications:
+\begin{itemize}
+	\item \textbf{CPU} 2.8 GHz Intel Core i7 \footnote{\url{http://ark.intel.com/products/83503/Intel-Core-i7-4980HQ-Processor-6M-Cache-up-to-4_00-GHz}}
+	\item \textbf{Memory} 16 GB 1600 MHz DDR3L
+	\item \textbf{\ac{OS}} OSX 10.10.1 (14B25)
+	\item \textbf{\ac{JVM}} Oracle Java HotSpot(TM) 64\-Bit 1.8.0\_20\-b26  
+\end{itemize}
+
+\andreas{Maybe put in the jvm parameters}
 
 \subsection{Distance Measure}
 A large part of the computations involved in the $k$-means algorithm, lies in calculating the distance between each of the data points and the cluster centroids. Different ways of calculating this distance exists. Simple, yet efficient, calculations such as Manhattan and Euclidean\cite[p. 41]{amatriain2011data} distances are fast to compute. Where the more complex similarity measures such as Pearson Correlation Coefficient and Cosine similarity\cite[p. 42]{amatriain2011data}\cite{breese1998empirical} are slower to compute but provide a more accurate result.
@@ -96,8 +94,9 @@ Java was chosen for the \ac{TL} based implementation because of its well documen
 \end{lstlisting}
 
 \subsection{\ac{STM} Implementation}
-Clojure was selected for the \ac{STM} based implementation because of its native support for \ac{STM}. As described in BLA\andreas{Find reference}, the native support enables compiler and runtime optimisations, which potentially is a big factor in regards to performance. 
-
+\andreas[inline]{Is it clear, that it is only the sync method that differ? Do we state that we reuse the means calc?}
+\andreas[inline]{We should reference to the source code}
+As our preliminary investigation showed in \bsref{sec:prelim_stm}, a number of programming languages and libraries have emerged to support TM. To our best knowledge, Clojure is the only official language running on the \ac{JVM} that natively support \ac{STM}. The native support enables compiler and runtime optimisations, which potentially is a big performance factor. Due to these reasons, Clojure have been chosen as the language for the \ac{STM} implementation
 
 \begin{lstlisting}[float,label=lst:stm_implementation,
   caption={\ac{STM} Implementation},
@@ -110,17 +109,17 @@ Clojure was selected for the \ac{STM} based implementation because of its native
   commentstyle=\color{greencomments},
   keywordstyle=\color{bluekeywords},
   stringstyle=\color{redstrings}]  % Start your code-block
-
-    (defn mapper [data means clusters]
-  (let [cluster (clustering data means)]
-    (dosync
-      (commute clusters conj cluster)))
-  clusters)
+  
+  (def clusters (ref '()))
+    
+  (defn mapper [data means clusters]
+    (let [cluster (clustering data means)]
+      (dosync
+        (commute clusters conj cluster)))
+    clusters)
 \end{lstlisting}
 
-
-
-
+The central point of the implementation, is shown at line 1 in \bsref{lst:stm_implementation}. It is the reference named \bscode{clusters} to a list. When calculating the means a vector, containing the initial values, is split up into the amount of mappers defined. The mappers work on each of their slice, and add their result to the list. The reducer is then using the list to pick up the slices, and reduce by merging the slices and calculating the means. Line 3 in\bsref{lst:stm_implementation} shows the definition of the mapper function. Each mapper is executed in a \bscode{future}\footnote{\url{http://clojuredocs.org/clojure.core/future}}, which is a concurrency unit, that yields a non-blocking result. The future can be queried for the result, in which it will block until the result is delivered. The \bscode{cluster} binding on line 4 is the actual calculation, bound to a value. The \bscode{cluster} value is then added into the list of \bscode{clusters}, by using the \bscode{commute}\footnote{\url{http://clojuredocs.org/clojure.core/commute}} function. \bscode{commute} is a special function in Clojure, that can be used to update references inside transactions, when the update is commutativity. That is, the order the list is updated in, does not matter. For non-commutative operations, \bscode{alter}\footnote{\url{http://clojuredocs.org/clojure.core/alter}} can be used, albeit it is not as fast as \bscode{commute}.\andreas{Need cite! Noget med, at alter genlæser ved read, gør commute ikke}. All this happens inside the \bscode{dosync} transaction block, that ensures synchronisation in concurrent operations. The reducer must wait until all the mappers have updated the list with their result. This is enforced by dereferencing the future the mapper is executed in, which will force synchronisation, so the reducer have all the slices of the vector.
 
 \subsection{Actor Implementation}
 Scala was selected for the actor based implementation as it has good support for actors in the form of the AKKA actor framework. AKKA has replaced the Scala actors as the default actor framework for Scala applications.

@@ -272,7 +272,7 @@ It is not all actor implementations that adhere to all the semantic properties o
 As discussed in \bsref{ssec:actor_modelling}, there is an overhead in creating, sending and receiving messages. This means that there should not be too many small messages, as that will create a large overhead in relation to the number of messages. However, there should not be few large messages, as that will hurt the dynamics among actors. We do not find this as severe to the simplicity of the actor model as the other issues discussed, because no matter what concurrency model you use, you must be careful not to assign too much work to a single entity.
 %However, message size and load can be crucial to obtaining an efficient program.
 
-The placement of the actor model on the simplicity spectrum is shown on \bsref{fig:actor_read_simplicity}. The actor model provides a fairly simple concurrency model that avoids race conditions by design and helps avoid deadlocks. However, there are also a number of issues discussed above which has a negative impact on the simplicity. We have therefore placed the actor model in the middle of the spectrum.
+The placement of the actor model on the simplicity spectrum is shown on \bsref{fig:actor_read_simplicity}. The actor model provides a fairly simple concurrency model that avoids race conditions by design and helps avoid deadlocks. However, there are also a number of issues discussed above which has a negative impact on the simplicity. We have therefore placed the actor model between the middle and high simplicity end of the spectrum.
 
 \begin{figure}[htbp]
 \centering
