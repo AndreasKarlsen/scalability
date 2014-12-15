@@ -61,10 +61,10 @@ defined as:
 
 where $cov(a,i)$ is the covariance between the two vectors $a$ and $i$ and $\sigma_a \times \sigma_i$ is the product of the vectors standard deviations. 
 \section{Test Implementations}
-This section presents a small overview of the implementations used in the performance test. As described in \bsref{sec:intro_scope}, one implementation has been made for each of the selected concurrency models, and all of the chosen languages run on the \ac{JVM}. The \ac{TL} based implementation is done in Java, the \ac{STM} based implementation in Clojure and the actor based implementation in Scala. The calculations needed to cluster vectors is implemented in Java and reused throughout all implementations. This ensures that the computations themselves do not impact the results. Each implementation simply creates its own skeleton for driving the clustering process using its corresponding concurrency model, and employs the common clustering implementation to handle the clustering details. 
+This section presents a small overview of the implementations used in the performance test. As described in \bsref{sec:intro_scope}, one implementation has been made for each selected concurrency model all the chosen languages run on the \ac{JVM}\andreas{Der er noget galt med den sætning}. The \ac{TL} based implementation was done in Java, the \ac{STM} based implementation in Clojure and the actor based implementation was done in Scala. The calculations needed to cluster vectors is implemented in Java and reused throughout all implementations. This ensures that the computations themselves do not impact the results. Each implementations simply creates its own skeleton for driving the clustering process using its corresponding concurrency model and employs the common clustering implementation to handle the clustering details. 
 
 \subsection{\ac{TL} Implementation}
-Java has been chosen for the \ac{TL} based implementation because of its well documented support for the concurrency model and widespread use. The \ac{TL} implementation maps the reducer and mappers directly to their own thread by providing an implementation of the \bscode{Runnable} interface.\toby{Måske lige hårdt nok at gå igang, enten hav hovedideen i hvordan vi vil implementere k-means i forhold til en map-reduce tankegang før hver implementation, eller forklar det i TL afsnittet her.} A producer consumer setup, controlled by a semaphore, is employed. The mappers cluster the subset of data which they receive and pass the result to the reducer by adding it to a queue. Finally the reducer is signalled via the semaphore. The reducer aggregate the results as they become available from the mappers  and prepares for the next iteration by calculating the new cluster means. The \bscode{run} method of the \bscode{Mapper} class is shown in \bsref{lst:tl_implementation}. On line 3 the mapper uses the common clustering service to cluster the data it received according to the supplied means. The resulting clustering is added to a queue shared with the reducer and all other mappers on line 6. Access to the queue is synchronized by using a lock, preventing other mappers, as well as the reducer from accessing the queue while the mapper adds the result. Finally the reducer is signalling the reducer using the semaphore on line 8. All non local variables, such as the data and queue, are supplied in the \bscode{Mapper} classes constructor. 
+Java was chosen for the \ac{TL} based implementation because of its well documented support for the concurrency model. The \ac{TL} implementation maps the reducer and mappers directly to their own thread by providing a implementation of the \bscode{Runnable} interface. A producer consumer setup, controlled by a semaphore, is employed. The mappers cluster the subset of data which they receive and pass the result to the reducer by adding it to a queue. Finally the reducer is signalled via the semaphore.\andreas{Who is the producer/consumer?} The reducer aggregate the results as they become available from the mappers  and prepares for the next iteration by calculating the new cluster means. The \bscode{run} method of the \bscode{Mapper} class is shown in \bsref{lst:tl_implementation}. On line 3 the mapper uses the common clustering service to to cluster the data it received according to the supplied means. The resulting clustering is added to a queue shared with the reducer and all other mappers on line 7. Access to the queue is synchronized by using a lock, preventing other mappers, as well as the reducer from accessing the queue while the mapper adds the result. Finally the reducer is signalling the reducer using the semaphore\andreas{Er det ikke mapperen der signalere til reduceren?}. All non local variables are supplied in the \bscode{Mapper} classes constructor. 
 
 \begin{lstlisting}[float,label=lst:tl_implementation,
   caption={\ac{TL} Implementation},
@@ -90,9 +90,34 @@ Java has been chosen for the \ac{TL} based implementation because of its well do
 \end{lstlisting}
 
 \subsection{\ac{STM} Implementation}
+Clojure was selected for the \ac{STM} based implementation because of its native support for \ac{STM}. As described in BLA\andreas{Find reference}, the native support enables compiler and runtime optimisations, which potentially is a big factor in regards to performance. 
+
+
+\begin{lstlisting}[float,label=lst:stm_implementation,
+  caption={\ac{STM} Implementation},
+  language=clojure,  
+  showspaces=false,
+  showtabs=false,
+  breaklines=true,
+  showstringspaces=false,
+  breakatwhitespace=true,
+  commentstyle=\color{greencomments},
+  keywordstyle=\color{bluekeywords},
+  stringstyle=\color{redstrings}]  % Start your code-block
+
+    (defn mapper [data means clusters]
+  (let [cluster (clustering data means)]
+    (dosync
+      (commute clusters conj cluster)))
+  clusters)
+\end{lstlisting}
+
+
+
+
 
 \subsection{Actor Implementation}
-The Scala language has been selected for the actor based implementation, as it has good support for actors in the form of the Akka actor framework. Akka is a well-known and popular actor implementation\toby{kan cite "efficient testing artikeln" om at det er en populær actor implementation hvis det er} used by companies such as Cisco, Ebay, Amazon and Blizzard\footnote{\url{http://akka.io/}}. Akka has even replaced the Scala Actors as the default actor framework for Scala applications\footnote{Changes in Ver. 2.10.0: \url{http://www.scala-lang.org/download/changelog.html}}.
+Scala was selected for the actor based implementation as it has good support for actors in the form of the AKKA actor framework. AKKA has replaced the Scala actors as the default actor framework for Scala applications.
 
 \subsubsection{Akka Adherence to Semantic Properties}\toby{Evt. hav det efter implementation bliver forklaret hvis det passer bedre}
 The Akka framework uses light-weight actors which means that several actors may share a single thread\cite[p. 13]{akkaDoc}, as discussed in \bsref{ssec:abstraction_over_threads}. 
