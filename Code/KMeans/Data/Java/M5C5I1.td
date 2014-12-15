@@ -10,5 +10,5 @@ Implementation: Java
 Mappers: 5
 Clusters: 5
 Iterations: 1
-Time: 4673 MILLISECONDS
+Time: 2000 MILLISECONDS
 
