@@ -61,10 +61,10 @@ defined as:
 
 where $cov(a,i)$ is the covariance between the two vectors $a$ and $i$ and $\sigma_a \times \sigma_i$ is the product of the vectors standard deviations. 
 \section{Test Implementations}
-This section presents a small overview of the implementations used in the performance test. As described in \bsref{sec:intro_scope}, one implementation has been made for each of the selected concurrency models, and all of the chosen languages run on the \ac{JVM}. The \ac{TL} based implementation is done in Java, the \ac{STM} based implementation in Clojure and the actor based implementation in Scala. The calculations needed to cluster vectors is implemented in Java and reused throughout all implementations. This ensures that the computations themselves do not impact the results. Each implementation simply creates its own skeleton for driving the clustering process using its corresponding concurrency model, and employs the common clustering implementation to handle the clustering details. 
+This section presents a small overview of the implementations used in the performance test. As described in \bsref{sec:intro_scope}, one implementation has been made for each selected concurrency model all the chosen languages run on the \ac{JVM}\andreas{Der er noget galt med den sætning}. The \ac{TL} based implementation was done in Java, the \ac{STM} based implementation in Clojure and the actor based implementation was done in Scala. The calculations needed to cluster vectors is implemented in Java and reused throughout all implementations. This ensures that the computations themselves do not impact the results. Each implementations simply creates its own skeleton for driving the clustering process using its corresponding concurrency model and employs the common clustering implementation to handle the clustering details. 
 
 \subsection{\ac{TL} Implementation}
-Java has been chosen for the \ac{TL} based implementation because of its well documented support for the concurrency model and widespread use. The \ac{TL} implementation maps the reducer and mappers directly to their own thread by providing an implementation of the \bscode{Runnable} interface.\toby{Måske lige hårdt nok at gå igang, enten hav hovedideen i hvordan vi vil implementere k-means i forhold til en map-reduce tankegang før hver implementation, eller forklar det i TL afsnittet her.} A producer consumer setup, controlled by a semaphore, is employed. The mappers cluster the subset of data which they receive and pass the result to the reducer by adding it to a queue. Finally the reducer is signalled via the semaphore. The reducer aggregate the results as they become available from the mappers  and prepares for the next iteration by calculating the new cluster means. The \bscode{run} method of the \bscode{Mapper} class is shown in \bsref{lst:tl_implementation}. On line 3 the mapper uses the common clustering service to cluster the data it received according to the supplied means. The resulting clustering is added to a queue shared with the reducer and all other mappers on line 6. Access to the queue is synchronized by using a lock, preventing other mappers, as well as the reducer from accessing the queue while the mapper adds the result. Finally the reducer is signalling the reducer using the semaphore on line 8. All non local variables, such as the data and queue, are supplied in the \bscode{Mapper} classes constructor. 
+Java was chosen for the \ac{TL} based implementation because of its well documented support for the concurrency model. The \ac{TL} implementation maps the reducer and mappers directly to their own thread by providing a implementation of the \bscode{Runnable} interface. A producer consumer setup, controlled by a semaphore, is employed. The mappers cluster the subset of data which they receive and pass the result to the reducer by adding it to a queue. Finally the reducer is signalled via the semaphore.\andreas{Who is the producer/consumer?} The reducer aggregate the results as they become available from the mappers  and prepares for the next iteration by calculating the new cluster means. The \bscode{run} method of the \bscode{Mapper} class is shown in \bsref{lst:tl_implementation}. On line 3 the mapper uses the common clustering service to to cluster the data it received according to the supplied means. The resulting clustering is added to a queue shared with the reducer and all other mappers on line 7. Access to the queue is synchronized by using a lock, preventing other mappers, as well as the reducer from accessing the queue while the mapper adds the result. Finally the reducer is signalling the reducer using the semaphore\andreas{Er det ikke mapperen der signalere til reduceren?}. All non local variables are supplied in the \bscode{Mapper} classes constructor. 
 
 \begin{lstlisting}[float,label=lst:tl_implementation,
   caption={\ac{TL} Implementation},
@@ -90,34 +90,38 @@ Java has been chosen for the \ac{TL} based implementation because of its well do
 \end{lstlisting}
 
 \subsection{\ac{STM} Implementation}
+Clojure was selected for the \ac{STM} based implementation because of its native support for \ac{STM}. As described in BLA\andreas{Find reference}, the native support enables compiler and runtime optimisations, which potentially is a big factor in regards to performance. 
+
+
+\begin{lstlisting}[float,label=lst:stm_implementation,
+  caption={\ac{STM} Implementation},
+  language=clojure,  
+  showspaces=false,
+  showtabs=false,
+  breaklines=true,
+  showstringspaces=false,
+  breakatwhitespace=true,
+  commentstyle=\color{greencomments},
+  keywordstyle=\color{bluekeywords},
+  stringstyle=\color{redstrings}]  % Start your code-block
+
+    (defn mapper [data means clusters]
+  (let [cluster (clustering data means)]
+    (dosync
+      (commute clusters conj cluster)))
+  clusters)
+\end{lstlisting}
+
+
+
+
 
 \subsection{Actor Implementation}
-The Scala language has been selected for the actor based implementation, as it has good support for actors in the form of the Akka actor framework. Akka is a well-known and popular actor implementation\toby{kan cite "efficient testing artikeln" om at det er en populær actor implementation hvis det er} used by companies such as Cisco, Ebay, Amazon and Blizzard\footnote{\url{http://akka.io/}}. Akka has even replaced the Scala Actors as the default actor framework for Scala applications\footnote{Changes in Ver. 2.10.0: \url{http://www.scala-lang.org/download/changelog.html}}.
+Scala was selected for the actor based implementation as it has good support for actors in the form of the AKKA actor framework. AKKA has replaced the Scala actors as the default actor framework for Scala applications.
 
 \kasper[inline]{Actor properties}
-%better performance, automatic load-balancing, improves resilience and fault-tolerance, and introduces opaque actor references for better encapsulation.
-%Akka does not guarantee message delivery and therefore does not provide the fairness property of the actor semantics.
-%Akka infrastructure guarantees sender-receiver constraint (so messages are recevied in the 
-%Coordination pattern: Akka does not implement local synchronization constraints
-%Does not guarenntee safe message and use references in messsage to get better performance
-%Også i forhold til at være et library generelt (altså hvis man kan kalde metoder fordi en actor er et object igennem Scala's almindeige kode)
-	%programmer have to adhere to coding conventions for avoiding shared state use in
-%light-weight threads
-	%which decreases the ease of use and some of the gains that the conceptual actor model facilitates
-	
-%both Scala actor and Akka libraries do not enforce the programmers to adhere to the basics of the actor model 
 
-%%PROPERTIES
-%atomic processing of messages: overholdes
-%fairness: breakes
-%encapsulation: breakes pga. message contents kopirers med reference (så man kan få adgang til en anden actros state gennem en message ref)
-	% Men man kan selv specificere en anden serilization strategi, hvor man kan vælge det skal deep-copies hvis det er
-	% Yderligere Men: det er sikret at andet kode ikke kan kalde metoder direkte på aktoerer, men kun gennem messages
-%location transpareceny: overholdes, man skal ikke for hver enkelt actor specificere den physical location
-	%http://doc.akka.io/docs/akka/snapshot/general/remoting.html
-
-
-A central \bscode{Master} actor is responsible for driving the clustering process. It handles distribution of data to the mappers and running the clustering process for the required number of iterations. \bsref{lst:actor_implementation} shows the \bscode{Mapper} and \bscode{Reducer} actors of the implementation. On line 3-7 the behaviour method scope is defined for the \bscode{Mapper} actor. There is only a single behaviour method defined for this actor, which is for a \bscode{MapWork} message on line 4. Such a message contains the data that should be clustered, the cluster centroids and a reference to the \bscode{Reducer} actor, sent from the \bscode{Master} actor. On line 5 the \bscode{Mapper} clusters its data segment using the common clustering service, followed on line 6 by sending the result as a \bscode{MapperResult} message to the \bscode{Reducer}.
+A central master actor is responsible driving the clustering process. It handles distributing the data to the mappers as well as running the clustering process for the required number of iterations. \bsref{label=lst:actor_implementation} shows the \bscode{Mapper} and \bscode{Reducer} implementations used in the actor implementation. On line 4 the mapper receives the data it is to cluster, the representing the cluster centroids and the name of the reducer actor in a message from the master actor. On line 5 the mapper clusters its data segment using the common clustering service, before sending the result to the reducer on line 6.
 
 On line 10-24 the \bscode{Reducer} actor is defined. First on line 11-12 some isolated state variables are defined, followed by the behaviour method scope on line 14-24.
 The \bscode{Reducer} actor receives the result from \bscode{Mappers} on line 15, where the \bscode{Reducer} merges the received intermediate result with the previously received results. On line 19-22, if the current message is the last message then the \bscode{Reducer} calculates the means for the new clusters and sends the \bscode{ReducerResult} message to the master actor.
