@@ -1,5 +1,93 @@
 \makeatletter \@ifundefined{rootpath}{\input{../../setup/preamble.tex}}\makeatother
 \worksheetstart{Comparison of Results}{1}{April 24, 2013}{Andreas}{../../}
+This chapter presents a comparison of the selected concurrency models and their characteristics. The comparison leads up to a description of when to apply each of the selected concurrency models.
+\label{chap:results}
+
 \kasper[inline]{Boxing af integers i Java implementation. int[] halverede tid sammemlignet med ArrayList<Integer>}
 \andreas[inline]{Actors er svært at bruge hvis der er en eksisterende kodebase, da det kræver en modelering fra bunden. Actors kræver, at hele systemet bliver designet omkring det.}
+\section{Characteristics}
+This section presents a characteristics based comparison of the selected concurrency models.
+
+\subsection{Implicit or Explicit Concurrency}
+
+\begin{figure}[htbp]
+\centering
+ \includegraphics[width=0.9\textwidth]{\rootpath/worksheets/result/figures/results_char_implicit_explicit} 
+ \caption{Selected concurrency model on the Implicit - Explicit concurrency spectrum}
+\label{fig:results_char_impli_expli}
+\end{figure}
+
+\subsection{Fault Restrictive or Expressive Model}
+
+\begin{figure}[htbp]
+\centering
+ \includegraphics[width=0.9\textwidth]{\rootpath/worksheets/result/figures/results_char_fault_expressive} 
+ \caption{Selected concurrency models on the Fault Restrictive - Expressive spectrum}
+\label{fig:results_char_fault_expressive}
+\end{figure}
+
+\subsection{Pessimistic or Optimistic Model}
+
+\begin{figure}[htbp]
+\centering
+ \includegraphics[width=0.9\textwidth]{\rootpath/worksheets/result/figures/results_char_pessimistic_optemistic} 
+ \caption{Selected concurrency models on the Pessimistic - Optimistic spectrum}
+\label{fig:results_char_pes_opti}
+\end{figure}
+
+\subsection{Simplicity}
+
+\begin{figure}[htbp]
+\centering
+ \includegraphics[width=0.9\textwidth]{\rootpath/worksheets/result/figures/results_char_simplicity} 
+ \caption{Selected concurrency models on the low - high simplicity spectrum}
+\label{fig:results_char_simplicity}
+\end{figure}
+
+\subsection{Orthogonality}
+
+
+\begin{figure}[htbp]
+\centering
+ \includegraphics[width=0.9\textwidth]{\rootpath/worksheets/result/figures/results_char_orthogonality} 
+ \caption{Selected concurrency models on the low - high orthogonality spectrum}
+\label{fig:results_char_orthogonality}
+\end{figure}
+
+\subsection{Readability}
+
+\begin{figure}[htbp]
+\centering
+ \includegraphics[width=0.9\textwidth]{\rootpath/worksheets/result/figures/results_char_readability} 
+ \caption{Selected concurrency models on the low - high readability spectrum}
+\label{fig:results_char_readability}
+\end{figure}
+
+\subsection{Level of abstraction}
+
+\begin{figure}[htbp]
+\centering
+ \includegraphics[width=0.9\textwidth]{\rootpath/worksheets/result/figures/results_char_level_of_abstraction} 
+ \caption{Selected concurrency models on the low - high level of abstraction spectrum}
+\label{fig:results_char_level_of_abstraction}
+\end{figure}
+
+\subsection{Expressivity}
+
+\begin{figure}[htbp]
+\centering
+ \includegraphics[width=0.9\textwidth]{\rootpath/worksheets/result/figures/results_char_expressivity} 
+ \caption{Selected concurrency models on the low - high expressivity spectrum}
+\label{fig:results_char_expressivity}
+\end{figure}
+
+\subsection{Writability evaluation}
+
+\begin{figure}[htbp]
+\centering
+ \includegraphics[width=0.9\textwidth]{\rootpath/worksheets/result/figures/results_char_writability} 
+ \caption{Selected concurrency models on the low - high writability spectrum}
+\label{fig:results_char_writability}
+\end{figure}
+
 \worksheetend
