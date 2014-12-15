@@ -39,8 +39,8 @@ object MainScala {
       val vectors: List[Vector] = DataGenerator.generateRandomVectors(nrVectors)
       KMeansScala.RunClustering(vectors, 5, nrMappers, 10);
     }else{
-      val vectors: List[Vector] = DataGenerator.generateRandomVectors(10000)
-      KMeansScala.RunClustering(vectors, 5, 5, 1);
+      val vectors: List[Vector] = DataGenerator.generateRandomVectors(100000)
+      KMeansScala.RunClustering(vectors, 5, 5, 10);
     }
   }
 }
