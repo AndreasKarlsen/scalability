@@ -118,9 +118,23 @@ The central point of the implementation, is shown at line 1 in \bsref{lst:stm_im
 \subsection{Actor Implementation}
 Scala was selected for the actor based implementation as it has good support for actors in the form of the AKKA actor framework. AKKA has replaced the Scala actors as the default actor framework for Scala applications.
 
-\kasper[inline]{Actor properties}
+\subsubsection{Akka Adherence to Semantic Properties}\toby{Evt. hav det efter implementation bliver forklaret hvis det passer bedre}
+The Akka framework uses light-weight actors which means that several actors may share a single thread\cite[p. 13]{akkaDoc}, as discussed in \bsref{ssec:abstraction_over_threads}. 
+In relation to the semantic properties of the actor model, mentioned in \bsref{ssec:actor_s_properties}, Akka adheres to the property of atomic processing of messages and location transparency. Location transparency is ensured by using actor references, that are created by specifying a name together with an actor type\cite[p. 24]{akkaDoc}. 
 
-A central master actor is responsible driving the clustering process. It handles distributing the data to the mappers as well as running the clustering process for the required number of iterations. \bsref{label=lst:actor_implementation} shows the \bscode{Mapper} and \bscode{Reducer} implementations used in the actor implementation. On line 4 the mapper receives the data it is to cluster, the representing the cluster centroids and the name of the reducer actor in a message from the master actor. On line 5 the mapper clusters its data segment using the common clustering service, before sending the result to the reducer on line 6.
+However, the properties of fairness and encapsulation are not adhered to, in order to improve performance. Akka employs an at-most-once message delivery semantics which means that a message is either delivered zero or one times, as that has the lowest implementation overhead\cite[p. 27]{akkaDoc}. This violates the fairness property which assumes that all messages are eventually delivered. However, it is possible to enforce stricter reliability in Akka, but on the cost of local-only deployment\cite[p. 29]{akkaDoc}. Akka does also not adhere to the encapsulation property, as it implements message passing by sending message contents by reference which enables the possibility of shared mutable state, as discussed in \bsnameref{sssec:safe_msg_passing}. However this only applies to local actors, when messages are sent to remote actors the message contents are instead copied. Additionally, these are only the default serialization settings and Akka enables the programmer to specify different serialization techniques\cite[p. 219]{akkaDoc}.
+
+As Akka does not adhere to all the semantic properties of the actor model, it enables the possibility of issues such as race conditions, that the conceptual actor model avoids by design. To alleviate these issues Akka have some actor best practices, such as do not pass mutable objects between actors, that the programmer should adhere to\cite[p. 12]{akkaDoc}. It is a trade-off between programmer concerns and implementation performance.
+
+%MERE:
+%Akka facilitates fault toleracne, persistence and automatic load balancing.
+	% se side 1-2 i Akka scala documentation
+	% og se efficient testing artikeln s. 12 (under actors)
+
+%Quote fra efficient testing artikeln:
+%Note that exploiting the benefits of the actor model for programming does not require a language that enforces strict actor semantics; it is sufficient to have a library providing asynchronous messaging between concurrent objects, and to adhere to coding conventions for avoiding shared state.
+\subsubsection{Akka Implementation}
+A central \bscode{Master} actor is responsible for driving the clustering process. It handles distribution of data to the mappers and running the clustering process for the required number of iterations. \bsref{lst:actor_implementation} shows the \bscode{Mapper} and \bscode{Reducer} actors of the implementation. On line 3-7 the behaviour method scope is defined for the \bscode{Mapper} actor. There is only a single behaviour method defined for this actor, which is for a \bscode{MapWork} message on line 4. Such a message contains the data that should be clustered, the cluster centroids and a reference to the \bscode{Reducer} actor, sent from the \bscode{Master} actor. On line 5 the \bscode{Mapper} clusters its data segment using the common clustering service, followed on line 6 by sending the result as a \bscode{MapperResult} message to the \bscode{Reducer}.
 
 On line 10-24 the \bscode{Reducer} actor is defined. First on line 11-12 some isolated state variables are defined, followed by the behaviour method scope on line 14-24.
 The \bscode{Reducer} actor receives the result from \bscode{Mappers} on line 15, where the \bscode{Reducer} merges the received intermediate result with the previously received results. On line 19-22, if the current message is the last message then the \bscode{Reducer} calculates the means for the new clusters and sends the \bscode{ReducerResult} message to the master actor.
