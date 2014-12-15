@@ -14,7 +14,13 @@ $k$-means aims at clustering $n$ data points, into $k \leq n$ clusters\cite[p. 4
 \caption{On the left data points are assigned to the nearest centroid (cluster) based on the calculated distances. On the right, a new centroid is computed for each cluster.}\label{fig:kmeans}
 \end{figure}
 
-The implementations will follow a template similar to that of Map-Reduce\cite{dean2008mapreduce}, known from functional programming, as well as the Google and Hadoop MapReduce frameworks. MapReduce employs a set of mappers to apply a function to each data point. This function outputs a number of results, that are then aggregated to the final result using a reducer. This is analogous to the \bscode{map} and \bscode{reduce} functions, known from functional programming. For the $k$-means performance test, a set of mappers will be assigned a set of vectors, for which it will calculate the distance to each of the $k$ cluster centroids and assign it to the nearest cluster. A reducer will then aggregate the results from the mappers and calculate the new cluster centroids. The process will continue until the stated number of iterations are achieved.
+The implementations will follow a template similar to that of Map-Reduce\cite{dean2008mapreduce}, known from functional programming, as well as the Google and Hadoop MapReduce frameworks. MapReduce employs a set of mappers to apply a function to each data point. This function outputs a number of results, that are then aggregated to the final result using a reducer. This is analogous to the \bscode{map} and \bscode{reduce} functions, known from functional programming. Our $k$-means MapReduce process is illustrated in \bsref{fig:kmeans_mapreduce}. A set of mappers will be assigned a set of vectors, for which it will calculate the distance to each of the $k$ cluster centroids and assign it to the nearest cluster. A reducer will then aggregate the results from the mappers and calculate the new cluster centroids. The process will continue until the stated number of iterations are achieved.
+
+\begin{figure}[ht!]
+\centering
+\includegraphics[scale=0.5]{\rootpath/worksheets/performance_test/figures/mapreduce_figure}
+\caption{$k$-means MapReduce process}\label{fig:kmeans_mapreduce}
+\end{figure}
 
 Two tests, each with their own purpose, will be conducted. Both tests will be based on a data set of vectors, where each vector consists of 100 integer data points. In the context of performance analysis, only the effort taken to cluster the data is of interest, as opposed to the resulting clustering. As a result, randomly generated data is sufficient.
 
