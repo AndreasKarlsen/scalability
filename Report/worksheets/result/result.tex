@@ -33,6 +33,7 @@ BLA
 \end{figure}
 
 \subsection{Pessimistic or Optimistic Model}
+\bsref{fig:results_char_pes_opti} the placement of the selected concurrency models on the Pessimistic - Optimistic spectrum. \ac{TL} and the actor model are pessimistic while \ac{STM} is a optimistic concurrency model. \ac{TL} guards against race conditions by providing mutual exclusion and the actor model enforces state encapsulation guarding against race conditions. \ac{STM} attempts to execute its transactions concurrently retry the transaction if any conflicts occur.
 
 \begin{figure}[htbp]
 \centering
