@@ -86,6 +86,13 @@ Lastly, \ac{TL} consists of the thread and lock constructs that are also possibl
 \end{figure}
 
 \subsection{Level of abstraction}
+The placements of the three concurrency models on the level of abstraction spectrum are shown in \bsref{fig:results_char_level_of_abstraction}.
+
+The actor model is placed on the high end of the spectrum as it allows the programmer to think and model concurrent problems using high-level abstractions, without having to worry about low-level details. It abstracts away low-level threads by using the actor construct and synchronization is accomplished implicitly as a result of actor mailboxes and atomic processing of messages.\toby{Skal vi ikke sætte den højere i level of abstraction? ellers skal vi nok have et modargument hvorfor den skal være så langt fra høj}
+
+\ac{STM} resides slightly towards the low end of the level of abstraction spectrum as it uses a high-level transaction abstraction for synchronization, but also low-level threads. Using transactions the details of how synchronization is achieved are abstracted away. 
+
+\ac{TL} is placed at the low end of the spectrum as it uses threads and locks which are tightly coupled with the hardware architecture. In relation to \ac{STM}, transactions state that synchronization should be applied to a code segment while locking state how synchronization should be applied.
 
 \begin{figure}[htbp]
 \centering
