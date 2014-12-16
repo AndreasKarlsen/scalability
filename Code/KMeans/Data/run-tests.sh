@@ -12,10 +12,13 @@ function test {
     for j in {1..8}
     do
       java -jar $1.jar 2000000 $j 10
-    done 
-    for j in {1..100}
+    done
+    for j in {1..100} 
     do
+    if (( $j % 10 == 0 )) || (( $j == 1 ))
+    then 
       java -jar $1.jar 2000000 4 $j
+    fi
     done
   done
 }

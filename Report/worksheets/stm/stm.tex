@@ -295,7 +295,7 @@ As discussed in \bsref{subsec:tl_composability} concurrent implementations based
 	}
        
 \end{lstlisting}
-The neesting of transactions need not be direct but can occur through method calls. \bsref{lst:stm_nested_transactions_real} a example based on transferring funds from one account to another. Here an outer transaction, defined on line 1, encloses two method calls to \bscode{withdraw} and \bscode{deposit} which are defined using transactions. The transactions are effectively nested within the outer transaction.
+The neesting of transactions need not be direct but can occur through method calls. \bsref{lst:stm_nested_transactions_real} an example based on transferring funds from one account to another. Here an outer transaction, defined on line 1, encloses two method calls to \bscode{withdraw} and \bscode{deposit} which are defined using transactions. The transactions are effectively nested within the outer transaction.
 \begin{lstlisting}[label=lst:stm_nested_transactions_real,
   caption={Real world nested transactions},
   language=Java,  
