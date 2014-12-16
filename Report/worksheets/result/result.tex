@@ -43,6 +43,11 @@ BLA
 \end{figure}
 
 \subsection{Simplicity}
+\bsref{fig:results_char_simplicity} shows the placement of the selected concurrency models on the low - high simplicity spectrum. The \ac{TL} concurrency model has low simplicity due to the number of concurrency related errors, programmers have to reason about. The implicit relationship between the data to which synchronization is applied and the synchronization itself exacerbates.
+
+\ac{STM} and the actor model are more simple models, but both of the models fail to reach the high simplicity extreme due to a number of concurrency related issues. \ac{STM} suffers from the same implicit relation ships between data and synchronization that the \ac{TL} concurrency model also had. While \ac{STM} eliminates the issue of deadlocks, it has problems combining with existing language construct such as exceptions and \ac{IO}. Studies have shown that the concept of memory transactions can be hard to grasp for novice programmers.
+
+The actor model is the most simple of the three selected concurrency models. It does however still have a number of issues reducing its simplicity. Many programmers are used to the school of thought know from imperative \ac{OOP}. The actor model employs different school of thought that programmers will have to be familiar with in order to create well structured programs. The asynchronous nature of the model be a problem in scenarios where synchronous would be beneficial.
 
 \begin{figure}[htbp]
 \centering
