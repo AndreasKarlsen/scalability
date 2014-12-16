@@ -100,6 +100,11 @@ The actor model encapsulates functionality and concurrency related code within a
 \end{figure}
 
 \subsection{Expressivity}
+\bsref{fig:results_char_readability} depicts the placement of the selected concurrency models on the low - high expressivity spectrum. \ac{TL} has the lowest expressivity due to the number of concurrency related issues programmers has to reason about. Having to consider these issues limits the focus programmers can put into concisely expressing the intended functionality.
+
+\ac{STM} resides just above the middle of the spectrum. As discussed, \ac{STM} eliminates the issues of deadlocks but introduces a number of new issues. While these issue are not directly fatal they do limit the expressivity of the model as transaction have problems combining with existing language concepts such as exceptions and \ac{IO}.
+
+The actor model has the highest expressivity. It provides high level construct allowing programmers to concisely express concurrency related operations such as the introduction of new computational agents and communication between these agents. Location transparency allows communication to be expressed identically in the context of single machine applications and distributed systems. Communication within the actor model is limited to asynchronous message passing. If the programmer wishes to employ synchronous communication this has to be simulated trough patterns. Some implementations do however have build in versions of the most common patterns, such as request-reply.
 
 \begin{figure}[htbp]
 \centering
@@ -120,4 +125,7 @@ The actor model encapsulates functionality and concurrency related code within a
 \section{\acl{TL}}
 \section{\acl{STM}}
 \section{Actor Model}
+
+\kasper[inline]{Combine models instead of competing}
+\kasper[inline]{TL $>$ stm hvis der er meget IO}
 \worksheetend
