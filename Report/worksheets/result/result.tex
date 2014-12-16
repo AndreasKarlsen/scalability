@@ -9,7 +9,7 @@ This chapter presents a comparison of the selected concurrency models and their 
 This section presents a characteristics based comparison of the selected concurrency models.
 
 \subsection{Implicit or Explicit Concurrency}
-The placement of the three concurrency models on the implicit to explicit spectrum is shown in \bsref{fig:results_char_impli_expli}.
+The placements of the three concurrency models on the implicit to explicit spectrum are shown in \bsref{fig:results_char_impli_expli}.
 
 \ac{TL} and \ac{STM} are both placed high on the explicit end of the scale. They both require the programmer to explicitly manage threads and either use locks or transactions for marking critical regions. The actor model is more implicit than the other models as it hides the concepts of marking critical regions and low level threads. The actor model does however introduce new constructs, in the form of actors and messages, that must be explicitly used for programming concurrent programs.
 
@@ -35,7 +35,7 @@ The actor model on the other hand is towards the fault restrictive end, as it fo
 \end{figure}
 
 \subsection{Pessimistic or Optimistic Model}
-\bsref{fig:results_char_pes_opti} the placement of the selected concurrency models on the Pessimistic - Optimistic spectrum. \ac{TL} and the actor model are pessimistic while \ac{STM} is a optimistic concurrency model. \ac{TL} guards against race conditions by providing mutual exclusion and the actor model enforces state encapsulation guarding against race conditions. \ac{STM} attempts to execute its transactions concurrently retry the transaction if any conflicts occur.
+\bsref{fig:results_char_pes_opti} shows the placement of the selected concurrency models on the Pessimistic - Optimistic spectrum. \ac{TL} and the actor model are pessimistic while \ac{STM} is an optimistic concurrency model. \ac{TL} guards against race conditions by providing mutual exclusion and the actor model enforces state encapsulation guarding against race conditions. \ac{STM} attempts to execute its transactions concurrently and retries the transactions if any conflicts occur.
 
 \begin{figure}[htbp]
 \centering
@@ -59,7 +59,15 @@ The actor model is the most simple of the three selected concurrency models. It 
 \end{figure}
 
 \subsection{Orthogonality}
+The placements of the three concurrency models on the orthogonality spectrum are shown in \bsref{fig:results_char_orthogonality}. All the models are placed between the middle and high end of the orthogonality spectrum.
 
+The actor model is highly orthogonal as it embodies only the two constructs of actors and messages which can be combined in a large number of ways. There are however some combinations which are only possible indirectly by using additional actors, such as sending a message to multiple actors at the same time. Furthermore some combinations can produce deadlocks which are undesirable, but embracing the non-deterministic nature of asynchronous message passing helps avoid these. The indirect and deadlock combinations keeps the model from being truly orthogonal.
+
+\ac{STM} consists of the thread and transaction constructs\toby{Skal vi snakke om at de kommunikere gennem shared memory og synkroniserer over transaktioner?} that also can be combined in a number of ways. However, transactions have problems
+composing with existing programming concepts such as IO, exceptions and
+native method calls which results in the placement on the spectrum between middle and high orthogonality.
+
+Lastly, \ac{TL} consists of the thread and lock constructs that are also possible to combine in a large number of ways. However the model makes it fairly easy to mistakenly produce combinations that can lead to program errors, such as deadlocks, which are hard to detect and recover from. This has a high negative impact on the orthogonality and is the reason why \ac{TL} has been placed lowest on the orthogonality spectrum of the three models.
 
 \begin{figure}[htbp]
 \centering
