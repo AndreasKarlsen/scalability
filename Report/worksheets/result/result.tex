@@ -77,6 +77,11 @@ Lastly, \ac{TL} consists of the thread and lock constructs that are also possibl
 \end{figure}
 
 \subsection{Readability}
+\bsref{fig:results_char_readability} depicts the placement of the selected concurrency models on the low - high readability spectrum. The \ac{TL} has the lowest readability due to its implicit relationship between data and synchronization as well as fragmentation of the implementation. In order to reason about deadlocks the programmer has to reason about every point in which locking is applied as well as how these code segments interact. This has proven to be no easy task.
+
+\ac{STM} is placed just below the middle of the spectrum. \ac{STM} removes the issues of deadlocks but still suffers from a implicit relationship between data and synchronization as well as code fragmentation. Understanding the concept of transactions can be hard for novice programmers and predicting their performance can be problematic. \ac{STM} handles composability by allowing transactions to be nested. 
+
+The actor model encapsulates functionality and concurrency related code within actors. Due to actors only interacting via asynchronous message passing an actor can be viewed as an isolated computational agent, allowing its functionality to be understood by examining how it reacts to messages. While each actor can be reasoned about separately, reasoning about the systems as a whole is harder. Distributing functionality throughout actors fragments the functionality making it difficult to gain an overview. Allowing actors to create new actors exacerbates the problem limiting the readability of the model.
 
 \begin{figure}[htbp]
 \centering
