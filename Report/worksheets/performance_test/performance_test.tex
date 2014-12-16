@@ -1,5 +1,5 @@
 \makeatletter \@ifundefined{rootpath}{\input{../../setup/preamble.tex}}\makeatother
-\worksheetstart{Performance test}{1}{April 24, 2013}{Kasper}{../../}
+\worksheetstart{Performance Test}{1}{April 24, 2013}{Kasper}{../../}
 %
 In order to investigate the performance of the selected models, a performance test will be conducted. This chapter describes the test process along with the implementations and results. 
 \label{chap:performance}
@@ -70,7 +70,9 @@ The most noticeable specification of the test setup, is the amount of cores on t
 
 \andreas{Maybe put in the jvm parameters}
 \section{Test Implementations}
-This section presents a small overview of the implementations used in the performance test. As described in \bsref{sec:intro_scope}, one implementation has been made for each of the selected concurrency models, and all of the chosen languages run on the \ac{JVM}. The \ac{TL} based implementation is done in Java, the \ac{STM} based implementation in Clojure and the actor based implementation in Scala. The calculations needed to cluster vectors is implemented in Java and reused throughout all implementations. This ensures that the computations themselves do not impact the results. Each implementation simply creates its own skeleton for driving the clustering process using its corresponding concurrency model, and employs the common clustering implementation to handle the clustering details.
+This section presents a small overview of the implementations used in the performance test. As described in \bsref{sec:intro_scope}, one implementation has been made for each of the selected concurrency models, and all of the chosen languages run on the \ac{JVM}. The \ac{TL} based implementation is done in Java, the \ac{STM} based implementation in Clojure and the actor based implementation in Scala. The calculations needed to cluster vectors is implemented in Java and reused throughout all implementations. This ensures that the computations themselves do not impact the results. Each implementation simply creates its own skeleton for driving the clustering process using its corresponding concurrency model, and employs the common clustering implementation to handle the clustering details. 
+
+In order to ensure a fair comparison between the implementations execution time, the amount of work they do must be equivalent. As they implementations share the same code base for cluster calculations, it is only the concurrency mechanism and driving skeleton that we must ensure does the same. To verify this, we have made a static set of vectors, which we can run across on all the implementations, and compare the result of the final means. We can verify, that the result is the same, and while we cannot guarantee that the work is identical, as there is multiple ways to get to the same result, this is a positive indication that the same work is performed across the implementations. 
 \andreas[inline]{The source code is available at the enclosed DVD together with instructions for running it}
 
 \subsection{\ac{TL} Implementation}
