@@ -9,6 +9,9 @@ This chapter presents a comparison of the selected concurrency models and their 
 This section presents a characteristics based comparison of the selected concurrency models.
 
 \subsection{Implicit or Explicit Concurrency}
+The placement of the three concurrency models on the implicit to explicit spectrum is shown in \bsref{fig:results_char_impli_expli}.
+
+\ac{TL} and \ac{STM} are both placed high on the explicit end of the scale. They both require the programmer to explicitly manage threads and either use locks or transactions for marking critical regions. The actor model is more implicit than the other models as it hides the concepts of marking critical regions and low level threads. The actor model does however introduce new constructs, in the form of actors and messages, that must be explicitly used for programming concurrent programs.
 
 \begin{figure}[htbp]
 \centering
@@ -18,6 +21,9 @@ This section presents a characteristics based comparison of the selected concurr
 \end{figure}
 
 \subsection{Fault Restrictive or Expressive Model}
+\bsref{fig:results_char_fault_expressive} shows how the three concurrency models are placed on the fault restrictive to expressive spectrum.
+
+BLA
 
 \begin{figure}[htbp]
 \centering
