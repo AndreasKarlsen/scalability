@@ -23,7 +23,9 @@ The placement of the three concurrency models on the implicit to explicit spectr
 \subsection{Fault Restrictive or Expressive Model}
 \bsref{fig:results_char_fault_expressive} shows how the three concurrency models are placed on the fault restrictive to expressive spectrum.
 
-BLA
+\ac{STM} and \ac{TL} are both placed towards the expressive end of the scale. \ac{TL} forces very few restrictions upon the programmer which gives him freedom in relation to expressing low-level synchronization details. However, this is on the cost of the programmer being left alone in ensuring correct execution. \ac{STM} is more fault restrictive than \ac{TL} as it delegates the low-level synchronization details to the STM system. 
+
+The actor model on the other hand is towards the fault restrictive end, as it forces many restrictions on the programmer. It allows only isolated state and communication is limited to asynchronous message passing. Furthermore the design of the model disallows multiple reads operations to happen simultaneously. Lastly, it is only possible to model concurrency with actor and the interaction between them through messages, which means it is not possible to use threads directly.
 
 \begin{figure}[htbp]
 \centering
