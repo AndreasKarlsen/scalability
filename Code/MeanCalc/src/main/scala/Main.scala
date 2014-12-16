@@ -11,6 +11,7 @@ object Main {
   def main(args: Array[String]) {
     if(args.length == 1){
       MeanCalculator.Calculate(args(0))
+      println("Done")
     }else{
       println("Invalid input...")
     }
@@ -55,7 +56,7 @@ object MeanCalculator {
               count = count + 1
             }
           }
-          if (count > 0) sw.println(path + ": " + (milisecs / count))
+          if (count > 0) sw.println(folder+"\\"+path + ": " + (milisecs / count))
         }
       }
     }
