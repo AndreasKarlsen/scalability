@@ -5,5 +5,5 @@
                  [com.google.guava/guava "18.0"]]
   :source-paths      ["src/main/clojure"]
   :java-source-paths ["src/main/java"]
-  :javac-options ["-target" "1.7" "-source" "1.7"]
+  :javac-options ["-target" "1.8" "-source" "1.8"]
   :main hello)

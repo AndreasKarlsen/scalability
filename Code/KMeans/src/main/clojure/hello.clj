@@ -40,7 +40,7 @@
 (defn mapper [data means clusters]
   ;(println (str "Running mapper: " (.. Thread (currentThread) (getId))))
   (let [cluster (clustering data means)]
-   ; (println (str "Mapper: " (.. Thread (currentThread) (getId)) " done clustering"))
+    ; (println (str "Mapper: " (.. Thread (currentThread) (getId)) " done clustering"))
     (dosync
       (commute clusters conj cluster)))
   ;(println (str "Mapper: " (.. Thread (currentThread) (getId)) " done delivering"))
@@ -101,7 +101,7 @@
      partitions (. partitioning (getPartitions))
      stopwatch (. Stopwatch (createStarted))]
     (loop [current 0]
-      (when (< current maxIterations)
+      (when (< current (string-to-number maxIterations))
         ;(println "Running mappers")
         (doall (map deref (map-partitioners partitions means clusters))) ; Synchronization before reduce
         ;(println "Running reducers")
@@ -115,7 +115,7 @@
     (print (. stopwatch
              (stop)
              (elapsed (. TimeUnit MILLISECONDS))))
-    (print-result stopwatch (string-to-number vector-size) maxIterations nrClusters (string-to-number nrWorkers) "")))
+    (print-result stopwatch (string-to-number vector-size) (string-to-number maxIterations) nrClusters (string-to-number nrWorkers) "")))
 
 (defn run-static-test []
   (let
@@ -125,16 +125,19 @@
     (. ResultWriter (printVectors static-means))
     (. ResultWriter (writeVectorsToDisk static-means, "Clojure"))))
 
-(defn run-clustering-standard [vector-size nrWorkers]
+(defn run-clustering-standard [vector-size nrWorkers maxIterations]
   (let
     [vectors (generate-random-vectors (string-to-number vector-size))
      means (generate-random-vectors 5)]
-    (run-clustering vectors means, nrWorkers, 10, vector-size))
+    (run-clustering vectors means, nrWorkers, maxIterations, vector-size))
   )
 
 ; #vectors #mappers
 (defn -main [& args]
-  (println (first args) (first (rest args)))
-  (run-clustering-standard (first args) (first (rest args)))
-  ;(run-static-test)
-  (shutdown-agents))
+  (let [nr-vectors (nth args 0)
+        nr-mappers (nth args 1)
+        nr-iterations (nth args 2)]
+    (println nr-vectors nr-mappers nr-iterations)
+    (run-clustering-standard nr-vectors nr-mappers nr-iterations)
+    ;(run-static-test)
+    (shutdown-agents)))
