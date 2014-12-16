@@ -30,24 +30,27 @@ public class Main {
 
     public static int _nrClusters = 5;
     public static int _nrIterations = 1;
-    public static boolean useArgs = false;
+    public static boolean useArgs = true;
 
     public static void main(String[] args) {
         try {
             if (useArgs){
-                if(args.length != 2) {
+                if(args.length != 3) {
                     System.out.println("Invalid number of arguments");
                     System.exit(0);
                 }
 
                 String arg1 = args[0];
                 String arg2 = args[1];
+                String arg3 = args[2];
 
                 int nrVectors = 0;
                 int nrMappers = 0;
+                int nrIterations = 0;
                 try {
                     nrVectors = Integer.parseInt(arg1);
                     nrMappers = Integer.parseInt(arg2);
+                    nrIterations = Integer.parseInt(arg3);
 
                 }catch (NumberFormatException e){
                     System.out.println("Parameters are not valid integers");
@@ -55,7 +58,7 @@ public class Main {
                 }
 
                 List<Vector> vectors = DataGenerator.generateRandomVectors(nrVectors);
-                RunClustering(vectors,5,nrMappers,10);
+                RunClustering(vectors,5,nrMappers,nrIterations);
             }else{
                 List<Vector> vectors = DataGenerator.generateRandomVectors(10000);
                 RunClustering(vectors,5,5,10);
