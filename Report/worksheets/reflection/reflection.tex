@@ -9,6 +9,7 @@ This chapter presents a reflection on a number of decisions made throughout the 
 \lone[inline]{We wanted to compare the models, but there is variations of the models, which we did not know when we started}
 \lone[inline]{We using models to be more general about the concepts. But we use a specific implementations. There is a dilemma between not judging on the same implementations in concepts and performance, but also wanting to cover more than a specific implementation}
 \lone[i]{Reflect on the choice of using only Actor model and not CSP}
+\toby[i]{Måske også reflekterer over vores map-reduce valg af i forhold til implementationen - men synes ikke der er så meget at reflektere over}
 
 \section{Performance Test}
 \lone[inline]{k-means is good for parallel, but sucks for concurrency. Realization point: When we realized, all implementations only need to sync when the mappers delivers to the reducers}
@@ -17,5 +18,11 @@ The choice to employ the $k$-means clustering algorithm for testing performance 
 Designing test cases that emphasised the performance of the concurrency models proved to be problematic. The original idea was to have two tests: one scaling the number of vectors and one scaling the number of mappers. Each of these tests where to be run for 10 iterations. As the Map-Reduce design of the implementations allowed for very limited use of synchronization, the concurrency model employed had limited impact on the overall performance. As a result, the performance of the implementations were very similar.\toby{Evt. indsæt reference til bilag med resultaterne} To overcome this issue the tests where moved from employing a large dataset over a small number of iterations to employing a smaller dataset and running for a high number of iterations. Reducing the size of dataset limits the time spent on clustering and increasing the number of iterations results in the code segments related to the concurrency models being executed more often. As a result the concurrent models had a larger impact on the results providing a clearer picture of their performance.
 
 Employing an inherently concurrent problem such as the dining philosopher problem\cite[p. 673]{hoare1978communicating} or the santa clause problem\cite{trono1994new} could be an alternative to the $k$-means clustering algorithm. Throughput, such as the number of times philosophers gets to eat within a given time period, could have been measured as an alternative to run time.
+
+\section{Common Cluster Code}\toby{Måske anden titel? Implementation technique? anden?}
+The choice of using the same code base for cluster calculations across all concurrency model implementations was done in order to measure only the concurrency mechanisms of each model. This may pose the threat of making it difficult or impossible to spilt the $k$-means clustering algorithm up differently for each of the models. One split of the algorithm may fit better for a given model than the others. However in our case we did not experience a split that was not possible due to the common cluster code. 
+
+Due to the common cluster code being developed simountainsly with the \ac{TL} implementation, it pose the threat of over-fitting the cluster code for the \ac{TL} concurrency model. That is, forcing the mindset of programming with \ac{TL} upon the other concurrency models through the cluster code. We are not of the impressions that we have done this, as we were able to model both the actor model and \ac{STM} implementation without any restrictions posed from \ac{TL}. However as the cluster code is written in Java, we were forced to use the datastructes from Java, such as the Java List, in the actor model and \ac{STM} implementations.
+
 
 \worksheetend
