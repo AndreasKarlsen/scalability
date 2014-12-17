@@ -24,9 +24,9 @@ The implementations will follow a template similar to that of Map-Reduce\cite{de
 
 Two tests, each with their own purpose, will be conducted. Both tests will be based on a data set of vectors, where each vector consists of 100 integer data points. Each test will be run five times and the used result will be the mean runtime. In the context of performance analysis, only the effort taken to cluster the data is of interest, as opposed to the resulting clustering. Due to this, randomly generated data is sufficient.
 
-The first test will be based on a fixed size data set, while the number of mapper tasks will be scaled up. The goal is to determine how the selected concurrency models, scale as more concurrent tasks are added. The test will be based on a data set of 2,000,000 vectors. Five clusters will be created, using a maximum of 7 mapper tasks. The algorithm will run for 10 iterations.
+The first test will be based on a fixed size data set, while the number of mapper tasks will be scaled up. The goal is to determine how the selected concurrency models, scale as more concurrent tasks are added. The test will be based on a data set of 10,000 vectors. Five clusters will be created, using a maximum of 7 mapper tasks. The algorithm will run for 100,000 iterations.
 
-The second second test will be based on a fixed number of concurrent tasks as well as a fixed size dataset, while the number of iterations will be scaled up.  Synchronization is applied whenever mappers hand over their work to the reducer. Scaling up the number of iterations will scale up the number of times synchronization code for each of the selected models is executed. As such this test seeks to investigate the impact each synchronization mechanism has on the performance of the clustering algorithm. The test will employ a dataset of 2,000,000 vectors along with four mapper tasks. The number of iterations will be scaled from one to 100 in intervals of 10.
+The second second test will be based on a fixed number of concurrent tasks as well as a fixed size dataset, while the number of iterations will be scaled up.  Synchronization is applied whenever mappers hand over their work to the reducer. Scaling up the number of iterations will scale up the number of times synchronization code for each of the selected models is executed. As such this test seeks to investigate the impact each synchronization mechanism has on the performance of the clustering algorithm. The test will employ a dataset of 10,000 vectors along with four mapper tasks. The number of iterations will be scaled from one to 100,000 in intervals of 10,000.
 
 The parameters of the two tests are depicted in \bsref{tab:test_description}.
 
@@ -35,8 +35,8 @@ The parameters of the two tests are depicted in \bsref{tab:test_description}.
 \centering
 \begin{tabular}{c|cccc}
        & \# Vectors        & \# Mappers			 	& \# Clusters & \# Iterations \\ \hline
-Test 1 & 2,000,000         & 1-7        			& 5           & 10            \\
-Test 2 & 2,000,000		   & 4          			& 5           & 1-100           
+Test 1 & 10,000            & 1-7        			& 5           & 100,000      \\
+Test 2 & 10,000			   & 7          			& 5           & 1-100,000
 \end{tabular}
 \end{table}
 \captionof{table}{Description of tests} \label{tab:test_description} 
@@ -45,16 +45,24 @@ Test 2 & 2,000,000		   & 4          			& 5           & 1-100
 \subsection{Distance Measure}
 A large part of the computations involved in the $k$-means algorithm, lies in calculating the distance between each of the data points and the cluster centroids. Different ways of calculating this distance exists. Simple, yet efficient, calculations such as Manhattan and Euclidean\cite[p. 41]{amatriain2011data} distances are fast to compute. Where the more complex similarity measures such as Pearson Correlation Coefficient and Cosine similarity\cite[p. 42]{amatriain2011data}\cite{breese1998empirical} are slower to compute but provide a more accurate result.
 
-\kasper[inline]{Remember to draw in the choice of distance measure in reflection}
-The \ac{PCC} will be used for the performance test, as it represents one of the most complex computations. Having a complex distance calculation will increase the workload which will be run concurrently, increasing the focus on the concurrency aspect of the performance test. We are aware that choosing a complex calculation, pushes the results towards favoring concurrent execution over sequential execution. The \ac{PCC} is 
-defined as:
-
-\begin{equation}\label{pearsonverbose}
-\frac{cov(a,i)}{\sigma_a \times \sigma_i} = \frac{\sum_j(v_{a,j}-\bar{v}_a)(v_{i,j}-\bar{v}_i)}{\sqrt{{\sum_j}(v_{a,j}-\bar{v}_a)^2 \sum_j(v_{i,j}-\bar{v}_i)^2}}
+The Manhattan distance will be used for the performance test as it represents on of the more simple computations. Having a simple calculation will limit the amount of work spent on computing the clusters. As such the work done by the concurrency models will have a greater impact on the results. The Manhattan distance is defined as:
+ 
+\begin{equation}\label{eq:mandistance}
+man(v_a,v_i)=\sum_{j=1}^{n}\lvert v_{a,j}-v_{i,j}\rvert
 \end{equation}
 
-where $cov(a,i)$ is the covariance between the two vectors $a$ and $i$ and $\sigma_a \times \sigma_i$ is the product of the vectors standard deviations. 
+where $man(v_a,v_i)$ is the Manhattan distance between the two $v_a$ and $v_i$ and $n$ is the length of these vectors.
+
+%\kasper[inline]{Remember to draw in the choice of distance measure in reflection}
+%The \ac{PCC} will be used for the performance test, as it represents one of the most complex computations. Having a complex distance calculation will increase the workload which will be run concurrently, increasing the focus on the concurrency aspect of the performance test. We are aware that choosing a complex calculation, pushes the results towards favoring concurrent execution over sequential execution. The \ac{PCC} is 
+%defined as:
 %
+%\begin{equation}\label{pearsonverbose}
+%\frac{cov(a,i)}{\sigma_a \times \sigma_i} = \frac{\sum_j(v_{a,j}-\bar{v}_a)(v_{i,j}-\bar{v}_i)}{\sqrt{{\sum_j}(v_{a,j}-\bar{v}_a)^2 \sum_j(v_{i,j}-\bar{v}_i)^2}}
+%\end{equation}
+%
+%where $cov(a,i)$ is the covariance between the two vectors $a$ and $i$ and $\sigma_a \times \sigma_i$ is the product of the vectors standard deviations. 
+%%
 \subsection{Hardware}
 As difference in execution time, between the implementations is in focus, the absolute execution time barely matters. Listing the specification of the hardware, is mainly due to reproducibility and transparency.
 The tests will be performed on a high-grade consumer PC. Macbook Pro from 2014, with the following specifications:
