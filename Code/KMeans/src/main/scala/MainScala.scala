@@ -8,7 +8,7 @@ import kmeans.model.Vector
  */
 object MainScala {
 
-  val useArgs = false;
+  val useArgs = true;
 
 
   def main(args: Array[String]) {
