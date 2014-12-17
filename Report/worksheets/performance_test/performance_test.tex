@@ -1,6 +1,6 @@
 \makeatletter \@ifundefined{rootpath}{\input{../../setup/preamble.tex}}\makeatother
-\worksheetstart{Performance test}{1}{April 24, 2013}{Kasper}{../../}
-
+\worksheetstart{Performance Test}{1}{April 24, 2013}{Kasper}{../../}
+%
 In order to investigate the performance of the selected models, a performance test will be conducted. This chapter describes the test process along with the implementations and results. 
 \label{chap:performance}
 \section{Definition of Performance Test Approach}
@@ -22,11 +22,11 @@ The implementations will follow a template similar to that of Map-Reduce\cite{de
 \caption{$k$-means MapReduce process}\label{fig:kmeans_mapreduce}
 \end{figure}
 
-Two tests, each with their own purpose, will be conducted. Both tests will be based on a data set of vectors, where each vector consists of 100 integer data points. Each test will be run five times and the used result will be the mean runtime. In the context of performance analysis, only the effort taken to cluster the data is of interest, as opposed to the resulting clustering. As a result, randomly generated data is sufficient.
+Two tests, each with their own purpose, will be conducted. Both tests will be based on a data set of vectors, where each vector consists of 100 integer data points. Each test will be run five times and the used result will be the mean runtime. In the context of performance analysis, only the effort taken to cluster the data is of interest, as opposed to the resulting clustering. Due to this, randomly generated data is sufficient.
 
 The first test will be based on a fixed size data set, while the number of mapper tasks will be scaled up. The goal is to determine how the selected concurrency models, scale as more concurrent tasks are added. The test will be based on a data set of 2,000,000 vectors. Five clusters will be created, using a maximum of 7 mapper tasks. The algorithm will run for 10 iterations.
 
-The second second test will be based on a fixed number of concurrent tasks as well as a fixed size dataset, while the number of iterations will be scaled up.  Synchronization is applied whenever mappers hand over their work to the reducer. Scaling up the number of iterations will scale up the number of times synchronization code for each of the selected models is executed. As such this test seeks to investigate the impact each synchronization mechanism has on the performance of the clustering algorithm. The test will employ a dataset of 2,000,000 vectors along with four mapper tasks. The number of iterations will be scaled from one to 100.
+The second second test will be based on a fixed number of concurrent tasks as well as a fixed size dataset, while the number of iterations will be scaled up.  Synchronization is applied whenever mappers hand over their work to the reducer. Scaling up the number of iterations will scale up the number of times synchronization code for each of the selected models is executed. As such this test seeks to investigate the impact each synchronization mechanism has on the performance of the clustering algorithm. The test will employ a dataset of 2,000,000 vectors along with four mapper tasks. The number of iterations will be scaled from one to 100 in intervals of 10.
 
 The parameters of the two tests are depicted in \bsref{tab:test_description}.
 
@@ -42,16 +42,6 @@ Test 2 & 2,000,000		   & 4          			& 5           & 1-100
 \captionof{table}{Description of tests} \label{tab:test_description} 
 \end{center}
 
-The tests are performed on a Macbook Pro from 2014, with the following specifications:
-\begin{itemize}
-	\item \textbf{CPU} 2.8 GHz Intel Core i7 \footnote{\url{http://ark.intel.com/products/83503/Intel-Core-i7-4980HQ-Processor-6M-Cache-up-to-4_00-GHz}}
-	\item \textbf{Memory} 16 GB 1600 MHz DDR3L
-	\item \textbf{\ac{OS}} OSX 10.10.1 (14B25)
-	\item \textbf{\ac{JVM}} Oracle Java HotSpot(TM) 64\-Bit 1.8.0\_20\-b26  
-\end{itemize}
-
-\andreas{Maybe put in the jvm parameters}
-
 \subsection{Distance Measure}
 A large part of the computations involved in the $k$-means algorithm, lies in calculating the distance between each of the data points and the cluster centroids. Different ways of calculating this distance exists. Simple, yet efficient, calculations such as Manhattan and Euclidean\cite[p. 41]{amatriain2011data} distances are fast to compute. Where the more complex similarity measures such as Pearson Correlation Coefficient and Cosine similarity\cite[p. 42]{amatriain2011data}\cite{breese1998empirical} are slower to compute but provide a more accurate result.
 
@@ -64,8 +54,26 @@ defined as:
 \end{equation}
 
 where $cov(a,i)$ is the covariance between the two vectors $a$ and $i$ and $\sigma_a \times \sigma_i$ is the product of the vectors standard deviations. 
+%
+\subsection{Hardware}
+As difference in execution time, between the implementations is in focus, the absolute execution time barely matters. Listing the specification of the hardware, is mainly due to reproducibility and transparency.
+The tests will be performed on a high-grade consumer PC. Macbook Pro from 2014, with the following specifications:
+\begin{itemize}
+	\item \textbf{CPU} 2.8 GHz Intel Core i7 \footnote{\url{http://ark.intel.com/products/83503/Intel-Core-i7-4980HQ-Processor-6M-Cache-up-to-4_00-GHz}}
+	\item \textbf{Memory} 16 GB 1600 MHz DDR3L
+	\item \textbf{\ac{OS}} OSX 10.10.1 (14B25)
+	\item \textbf{\ac{JVM}} Java HotSpot(TM) 64-Bit Server VM (build 25.20-b23, mixed mode)
+\end{itemize}
+%The result of the performance test is only interesting when comparing the different implementations
+
+The most noticeable specification of the test setup, is the amount of cores on the \ac{CPU}. There are 8 logical cores, where 4 of them are physical. The amount of cores will enable us to test the scalability of the different implementations. In some research\ac{harris2003language}, the scalability of different implementations varied after surpassing 35 cores. While it could be interesting to employ our test in such a setting, it is not available to us.
+
+\andreas{Maybe put in the jvm parameters}
 \section{Test Implementations}
-This section presents a small overview of the implementations used in the performance test. As described in \bsref{sec:intro_scope}, one implementation has been made for each of the selected concurrency models, and all of the chosen languages run on the \ac{JVM}. The \ac{TL} based implementation is done in Java, the \ac{STM} based implementation in Clojure and the actor based implementation in Scala. The calculations needed to cluster vectors is implemented in Java and reused throughout all implementations. This ensures that the computations themselves do not impact the results. Each implementation simply creates its own skeleton for driving the clustering process using its corresponding concurrency model, and employs the common clustering implementation to handle the clustering details.
+This section presents a small overview of the implementations used in the performance test. As described in \bsref{sec:intro_scope}, one implementation has been made for each of the selected concurrency models, and all of the chosen languages run on the \ac{JVM}. The \ac{TL} based implementation is done in Java, the \ac{STM} based implementation in Clojure and the actor based implementation in Scala. The calculations needed to cluster vectors is implemented in Java and reused throughout all implementations. This ensures that the computations themselves do not impact the results. Each implementation simply creates its own skeleton for driving the clustering process using its corresponding concurrency model, and employs the common clustering implementation to handle the clustering details. 
+
+In order to ensure a fair comparison between the implementations execution time, the amount of work they do must be equivalent. As they implementations share the same code base for cluster calculations, it is only the concurrency mechanism and driving skeleton that we must ensure does the same. To verify this, we have made a static set of vectors, which we can run across on all the implementations, and compare the result of the final means. We can verify, that the result is the same, and while we cannot guarantee that the work is identical, as there is multiple ways to get to the same result, this is a positive indication that the same work is performed across the implementations. 
+\andreas[inline]{The source code is available at the enclosed DVD together with instructions for running it}
 
 \subsection{\ac{TL} Implementation}
 Java has been chosen for the \ac{TL} based implementation because of its well documented support for the concurrency model and widespread use. The \ac{TL} implementation maps the reducer and mappers directly to their own thread by providing an implementation of the \bscode{Runnable} interface. A producer consumer setup, controlled by a semaphore, is employed. The mappers cluster the subset of data which they receive and pass the result to the reducer by adding it to a queue. Finally the reducer is signalled via the semaphore.\andreas{Who is the producer/consumer?} The reducer aggregate the results as they become available from the mappers  and prepares for the next iteration by calculating the new cluster means. The \bscode{run} method of the \bscode{Mapper} class is shown in \bsref{lst:tl_implementation}. On line 3 the mapper uses the common clustering service to cluster the data it received according to the supplied means. The resulting clustering is added to a queue shared with the reducer and all other mappers on line 6. Access to the queue is synchronized by using a lock, preventing other mappers, as well as the reducer from accessing the queue while the mapper adds the result. Finally the mapper signals the reducer using the semaphore on line 8. All non local variables, such as the data and queue, are supplied in the \bscode{Mapper} classes constructor.
@@ -94,10 +102,33 @@ Java has been chosen for the \ac{TL} based implementation because of its well do
 \end{lstlisting}
 
 \subsection{\ac{STM} Implementation}
-\andreas[inline]{Is it clear, that it is only the sync method that differ? Do we state that we reuse the means calc?}
-\andreas[inline]{We should reference to the source code}
-As our preliminary investigation showed in \bsref{sec:prelim_stm}, a number of programming languages and libraries have emerged to support TM. To our best knowledge, Clojure is the only official language running on the \ac{JVM} that natively support \ac{STM}. The native support enables compiler and runtime optimisations, which potentially is a big performance factor. Due to these reasons, Clojure have been chosen as the language for the \ac{STM} implementation
+As our preliminary investigation showed in \bsref{sec:prelim_stm}, a number of programming languages and libraries have emerged to support \ac{STM}. To our best knowledge, Clojure is the only official language running on the \ac{JVM} that natively support \ac{STM}. The native support enables compiler and runtime optimisations, which potentially is a big performance factor. Due to these reasons, Clojure have been chosen as the language for the \ac{STM} implementation
 
+\subsubsection{Clojures \acs{STM} Design}
+In \bsnameref{sec:stm_discussion} we discussed the impact of \ac{STM} designs variations. In the following section, we will briefly describe the \ac{STM} design in Clojure.
+
+%Level of Isolation
+The isolation level of transaction in Clojure is strong. Clojure employs a special type for references named \bscode{ref}\footnote{\url{http://clojuredocs.org/clojure.core/ref}}. It is only possible to modify this reference  inside transactions. Due to this, Clojure does not have to account for modifications of references happening outside of transactions, and can secure strong isolation without any penalty. This is a property made possible due to transaction being built in to the language. There exists other types of references that can be used to share mutable storage. These are Atoms, Agents, and Var, and they can also only be used inside a transaction block.
+
+%Conditional Synchronization
+It is not possible to make use of conditional synchronization in Clojure. The \bscode{dosync} function takes a number of expressions which are evaluation in a transaction. Consequently, \andreas{NOT DONE}
+
+%Exceptions
+If an exception is raised inside a transaction, the transaction is aborted and the exception is propagated out of the transaction\footnote{\url{http://clojuredocs.org/clojure.core/dosync}}. As discussed in \bsnameref{subsec:stm:side_effects}, this does not change the way the programmer should handle exceptions compared to sequential code. It is however not possible to wrap a transactional block around an existing implementation, to secure it runs correct concurrently. This is due to the aforementioned special constructs in Clojure, that must be used together with a transaction.
+
+%Irreversible Actions
+
+
+%Contention level
+%Eager vs Lazy updating
+%Conflict Detection
+%Visible vs Invisible Reads
+%Composability
+
+
+
+
+\subsubsection{Implementation}
 \begin{lstlisting}[float,label=lst:stm_implementation,
   caption={\ac{STM} Implementation},
   language=clojure,  
@@ -187,44 +218,41 @@ The \bscode{Reducer} actor receives the result from \bscode{Mappers} on line 15,
 \section{Test Results}
 \begin{tikzpicture}
 	\begin{axis}[
-		legend entries={\ac{TL},Actor,\ac{STM}},
+		legend entries={\acs{TL},\acs{STM}, Actor},
 		legend pos=north west,
 		grid = both,
-		xlabel=\#vectors,
+		xlabel=Mapper tasks,
 		ylabel=Miliseconds,
 		xmin=0,
 		ymin=0, 
-		title=Test results for scaling \#vectors,
-		label=fig:tr_scale_vectors]		
+		title=Test results for scaling number of mapper tasks,
+		label=fig:tr_scale_mappers]		
 	\addplot[color=red,mark=x] coordinates {
-		(100000,2)
-		(200000,4)
-		(500000,10)
-		(1000000,22)
-		(2000000,47)
-		(3000000,63)
-		(4000000,83)
-		(5000000,113)
+		(1,57491)
+		(2,29730)
+		(3,25102)
+		(4,19166)
+		(5,17490)
+		(6,15405)
+		(7,13888)
 	};
 	\addplot[color=blue,mark=x] coordinates {
-		(100000,10)
-		(200000,20)
-		(500000,30)
-		(1000000,40)
-		(2000000,50)
-		(3000000,60)
-		(4000000,70)
-		(5000000,80)
+		(1,57491)
+		(2,29730)
+		(3,25102)
+		(4,19166)
+		(5,17490)
+		(6,15405)
+		(7,13888)
 	};
 	\addplot[color=green,mark=x] coordinates {
-		(100000,20)
-		(200000,30)
-		(500000,40)
-		(1000000,50)
-		(2000000,60)
-		(3000000,70)
-		(4000000,80)
-		(5000000,90)
+		(1,57491)
+		(2,29730)
+		(3,25102)
+		(4,19166)
+		(5,17490)
+		(6,15405)
+		(7,13888)
 	};
 	\end{axis}
 \end{tikzpicture}
@@ -234,13 +262,13 @@ The \bscode{Reducer} actor receives the result from \bscode{Mappers} on line 15,
 \centering
 \begin{tabular}{c|ccc}
 \# Mapper tasks 	& \ac{TL}   & \ac{STM}   & Actor \\ \hline
-1                   &           &            &       \\
-2                   &           &            &       \\
-3                   &           &            &       \\
-4                   &           &            &       \\
-5                   &           &            &       \\
-6                   &           &            &       \\
-7                   &           &            &      
+1                   &           &     57491       &       \\
+2                   &           &     29730       &       \\
+3                   &           &     25102       &       \\
+4                   &           &     19166       &       \\
+5                   &           &     17490       &       \\
+6                   &           &     15405       &       \\
+7                   &           &     13888       &      
 \end{tabular}
 \end{table}
 \label{table:test_results_concurrent_tasks}

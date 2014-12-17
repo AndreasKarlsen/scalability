@@ -76,7 +76,7 @@ Lastly, \ac{TL} consists of the thread and lock constructs that are also possibl
 \label{fig:results_char_orthogonality}
 \end{figure}
 
-\subsection{Readability}
+\subsection{Readability}\label{sec:result_char_readability}
 \bsref{fig:results_char_readability} depicts the placement of the selected concurrency models on the low - high readability spectrum. The \ac{TL} has the lowest readability due to its implicit relationship between data and synchronization as well as fragmentation of the implementation. In order to reason about deadlocks the programmer has to reason about every point in which locking is applied as well as how these code segments interact. This has proven to be no easy task.
 
 \ac{STM} is placed just below the middle of the spectrum. \ac{STM} removes the issues of deadlocks but still suffers from a implicit relationship between data and synchronization as well as code fragmentation. Understanding the concept of transactions can be hard for novice programmers and predicting their performance can be problematic. \ac{STM} handles composability by allowing transactions to be nested. 
@@ -107,6 +107,11 @@ The actor model is placed on the high end of the spectrum as it allows the progr
 \end{figure}
 
 \subsection{Expressivity}
+\bsref{fig:results_char_readability} depicts the placement of the selected concurrency models on the low - high expressivity spectrum. \ac{TL} has the lowest expressivity due to the number of concurrency related issues programmers has to reason about. Having to consider these issues limits the focus programmers can put into concisely expressing the intended functionality.
+
+\ac{STM} resides just above the middle of the spectrum. As discussed, \ac{STM} eliminates the issues of deadlocks but introduces a number of new issues. While these issue are not directly fatal they do limit the expressivity of the model as transaction have problems combining with existing language concepts such as exceptions and \ac{IO}.
+
+The actor model has the highest expressivity. It provides high level construct allowing programmers to concisely express concurrency related operations such as the introduction of new computational agents and communication between these agents. Location transparency allows communication to be expressed identically in the context of single machine applications and distributed systems. Communication within the actor model is limited to asynchronous message passing. If the programmer wishes to employ synchronous communication this has to be simulated trough patterns. Some implementations do however have build in versions of the most common patterns, such as request-reply.
 
 \begin{figure}[htbp]
 \centering
@@ -116,6 +121,11 @@ The actor model is placed on the high end of the spectrum as it allows the progr
 \end{figure}
 
 \subsection{Writability evaluation}
+\bsref{fig:results_char_readability} show the placement of the selected concurrency models on the low - high writability spectrum. The \ac{TL} concurrency model is placed towards the low end of the spectrum. As mentioned in \bsref{sec:result_char_readability} the \ac{TL} concurrency model has a number of issues which affect its readability. Similarly these issues also affect its writability. Synchronization code may be fragmented across multiple code segments and deadlocks, among other issues, has to be avoided by the programmer. Furthermore the low level of expressiveness and low level of abstraction of the model negatively impact its writability.
+
+\ac{STM} is placed just above the middle of the spectrum. \ac{STM} removes the issue of deadlocks and allows the \ac{STM} system to handle how synchronization is achieved. \ac{STM} handles composition by allowing transactions to be nested but synchronization may however still be fragmented over multiple code segments. As mentioned previously \ac{STM} combines poorly with some existing language constructs, this negatively effects its writability.
+
+The actor model abstracts away the low level details which limits the writability of the \ac{TL} and \ac{STM} concurrency models. It does however introduce new constructs which has to be managed by the programmer. Actors have to be created and a fitting message passing structure has to be designed. As such the modeling of low level constructs is replaced with the modeling of more high level constructs. For programmers not familiar with the actor model this can be a barrier to writing concise implementations. In order to write efficient systems using the actor model, the programmer has to reason about issues such as message sizes and actor granularity. Furthermore implementations of the actor model has issues, such as mailbox overflow, which are not covered by the model itself.
 
 \begin{figure}[htbp]
 \centering
@@ -127,4 +137,7 @@ The actor model is placed on the high end of the spectrum as it allows the progr
 \section{\acl{TL}}
 \section{\acl{STM}}
 \section{The Actor Model}
+
+\kasper[inline]{Combine models instead of competing}
+\kasper[inline]{TL $>$ stm hvis der er meget IO}
 \worksheetend
