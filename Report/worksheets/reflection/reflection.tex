@@ -11,6 +11,9 @@ This chapter presents a reflection on a number of decisions made throughout the 
 \lone[i]{Reflect on the choice of using only Actor model and not CSP}
 \toby[i]{Måske også reflekterer over vores map-reduce valg af i forhold til implementationen - men synes ikke der er så meget at reflektere over}
 
+\section{Comparing Models}
+Choosing to compare concurrency models instead of specific implementations of the models has presented a number of issues. 
+
 \section{Performance Test}
 \lone[inline]{k-means is good for parallel, but sucks for concurrency. Realization point: When we realized, all implementations only need to sync when the mappers delivers to the reducers}
 The choice to employ the $k$-means clustering algorithm for testing performance proved to be somewhat problematic. Firstly the work done by the algorithm is considered parallel according to \bsref{def:concurrency}. Parallelism builds upon concurrency but the goals are somewhat different. Evaluating the run time of an inherently concurrent implementation can however be difficult, as the system does not have an overall task which time can be measured.
@@ -19,10 +22,14 @@ Designing test cases that emphasised the performance of the concurrency models p
 
 Employing an inherently concurrent problem such as the dining philosopher problem\cite[p. 673]{hoare1978communicating} or the santa clause problem\cite{trono1994new} could be an alternative to the $k$-means clustering algorithm. Throughput, such as the number of times philosophers gets to eat within a given time period, could have been measured as an alternative to run time.
 
-\section{Common Cluster Code}\toby{Måske anden titel? Implementation technique? anden?}
-The choice of using the same code base for cluster calculations across all concurrency model implementations was done in order to measure only the concurrency mechanisms of each model. This may pose the threat of making it difficult or impossible to spilt the $k$-means clustering algorithm up differently for each of the models. One split of the algorithm may fit better for a given model than the others. However in our case we did not experience a split that was not possible due to the common cluster code. 
+\section{Common Clustering Code}\toby{Måske anden titel? Implementation technique? anden?}
+The choice of using the same code base for the clustering calculations across all concurrency model implementations was done to provide a common ground for the implementations. Utilizing the same clustering code for each implementation ensures that the clustering takes an equal amount of time for all implementations. As such any variations in run time can be contributed to the concurrency models and not the clustering code. 
 
-Due to the common cluster code being developed simountainsly with the \ac{TL} implementation, it pose the threat of over-fitting the cluster code for the \ac{TL} concurrency model. That is, forcing the mindset of programming with \ac{TL} upon the other concurrency models through the cluster code. We are not of the impressions that we have done this, as we were able to model both the actor model and \ac{STM} implementation without any restrictions posed from \ac{TL}. However as the cluster code is written in Java, we were forced to use the datastructes from Java, such as the Java List, in the actor model and \ac{STM} implementations.
+%Using the same code may pose the threat of making it difficult or impossible to spilt the $k$-means clustering algorithm up differently for each of the models. One split of the algorithm may fit better for a given model than the others. 
+
+Due to the common cluster code being developed mountainously with the \ac{TL} implementation, it poses the threat of over-fitting the cluster code for the \ac{TL} concurrency model. That is, forcing the mindset of programming with \ac{TL} upon the other concurrency models through the cluster code. The code was however developed to fit the employed Map-Reduce strategy and not the actual \ac{TL} implementation. As such we are not of the impressions that we have over fitted the common code to any of the implementations, as we were able to model both the actor model and \ac{STM} implementation without any restrictions posed from \ac{TL}. However as the cluster code is written in Java, we were forced to use the data structures from Java, such as the Java List, in the actor model and \ac{STM} implementations.
+
+Additionally, during the project we changed the distance measure used for the $k$-means clustering algorithm because we wanted to have a less demanding distance measure. As a result of our common clustering code we were able to implement this distance measure a single time and have it take effect across all implementations quickly.
 
 
 \worksheetend
