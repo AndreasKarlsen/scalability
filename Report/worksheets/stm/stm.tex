@@ -219,7 +219,7 @@ Transactions in \ac{STM} require that aborted transactions do not cause effects.
 
 To handle this, precautions must be taken. There are different approaches to handle this issue. In \cite[p. 4]{harris2003language} all native methods raise a runtime exception. A native method is defined as a method using system calls. In Java context, that is when a method must leave the virtual environment of the \ac{JVM}. In \cite{harris2005exceptions} a proposal is given to make libraries using native methods implement a specific interface to enable cooperation with \ac{STM}. The idea is, that the libraries will buffer the effect, until their transaction is committed, where the \ac{STM} implementation will give a callback to the library.
 
-Another approach is, to enable the developer to mark a function, so the \ac{STM} is aware of its side effect. In Clojure it is possible to do this with the \bscode{#IO} macro. If a function is marked, and used in a transaction, a compiletime exception will be raised.
+Another approach is, to enable the developer to mark a function, so the \ac{STM} is aware of its side effect. In Clojure it is possible to do this with the \bscode{#io} macro. If a function is marked, and used in a transaction, a runtime exception will be raised.
 
 \subsection{Contention level}
 %What is contention

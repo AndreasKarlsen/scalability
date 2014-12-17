@@ -56,7 +56,7 @@ object MeanCalculator {
               count = count + 1
             }
           }
-          if (count > 0) sw.println(folder+"\\"+path + ": " + (milisecs / count))
+          if (count > 0) sw.println(folder+ File.separator +path + ": " + (milisecs / count))
         }
       }
     }
