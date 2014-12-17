@@ -12,7 +12,10 @@ This chapter presents a reflection on a number of decisions made throughout the 
 \toby[i]{Måske også reflekterer over vores map-reduce valg af i forhold til implementationen - men synes ikke der er så meget at reflektere over}
 
 \section{Comparing Models}
-Choosing to compare concurrency models instead of specific implementations of the models has presented a number of issues. 
+Choosing to compare concurrency models instead of specific implementations of the models has presented a number of issues. Implementations of the selected concurrency models vary in how they choose to implement the model. Some actor implementations do not support all semantic properties and \ac{STM} implementations vary greatly in their implementation strategies. At times it proved difficult to distinguish what should be included in the descriptions and evaluations. 
+
+The performance test is based on a single implementation of each concurrency model. We have attempted to select competitive implementations of the models that give a board view of their capabilities but in the end the performance test only compares the selected implementations. We do however believe that such a test can give a indication of what to expect from the models.
+\kasper[inline]{More!}
 
 \section{Performance Test}
 \lone[inline]{k-means is good for parallel, but sucks for concurrency. Realization point: When we realized, all implementations only need to sync when the mappers delivers to the reducers}
