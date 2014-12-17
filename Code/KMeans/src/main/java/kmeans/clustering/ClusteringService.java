@@ -38,13 +38,13 @@ public class ClusteringService {
 
     private static Cluster ClusteringInternal(Clustering clustering, Vector v){
         Cluster cluster = null;
-        double distance = -999999999999999.0;
+        double distance = 999999999999999.0;
         for (Cluster c : clustering.getClusters()){
-            //double manhattanDistance = v.manhattanDistanceTo(c.getMean());
-            double pearsons = v.pearsonCorrelationWith(c.getMean());
-            if (pearsons > distance){
+            double manhattanDistance = v.manhattanDistanceTo(c.getMean());
+            //double pearsons = v.pearsonCorrelationWith(c.getMean());
+            if (manhattanDistance < distance){
                 cluster = c;
-                distance = pearsons;
+                distance = manhattanDistance;
             }
         }
 
