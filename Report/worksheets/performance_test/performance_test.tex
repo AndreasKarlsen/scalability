@@ -354,4 +354,106 @@ The \bscode{Reducer} actor receives the result from \bscode{Mappers} on line 15,
 \label{table:test_results_iterations}
 \end{center}
 
+\begin{figure}[h]
+\centering
+%0 - aramente   1 - Às vezes   2 - Quase sempre   4 - Sempre
+\pgfplotstableread{
+  %TL    	%STM  	%Actor
+0 1			1.3		1.5
+1 1			1.3		1.5
+2 1			1.3		1.5
+3 1			1.3		1.5
+4 1			1.3		1.5
+}\dataset
+\begin{tikzpicture}
+\begin{axis}[ybar,
+        width=12cm,
+        height=8cm,
+        ymin=0,
+        ymax=2,        
+        ylabel={Value-normalized runtime},
+        xlabel={\# Mappers},
+        xtick=data,
+        xticklabels = {
+            \strut 1,
+            \strut 2,
+            \strut 3,
+            \strut 4,
+            \strut average
+            %Category 5,
+            %Category 6
+        },
+        %xticklabel style={yshift=-10ex},
+        major x tick style = {opacity=0},
+        minor x tick num = 1,
+        minor tick length=2ex,
+        every node near coord/.append style={
+                anchor=west,
+                rotate=90
+        },
+        legend entries={\ac{TL} ,\ac{STM} ,Actor },
+        legend columns=3,
+        legend style={draw=none,nodes={inner sep=3pt}},
+        ]
+\addplot[draw=black,fill=red, nodes near coords] table[x index=0,y index=1] \dataset; %ano de 2013-2014
+\addplot[draw=black,fill=blue, nodes near coords] table[x index=0,y index=2] \dataset; %ano de 2012-2013
+\addplot[draw=black,fill=green, nodes near coords] table[x index=0,y index=3] \dataset; %ano de 2011-2012
+\end{axis}
+\end{tikzpicture}
+\captionsetup{justification=centerlast, margin=10ex, labelfont=bf, textfont=it, format=plain, labelformat=default, labelsep=endash, font=small}
+\caption{value-normalized results for test 1}\label{fig:value_norm_test1}
+
+\end{figure}
+
+\begin{figure}[h]
+\centering
+%0 - aramente   1 - Às vezes   2 - Quase sempre   4 - Sempre
+\pgfplotstableread{
+  %TL    	%STM  	%Actor
+0 1			1.3		1.5
+1 1			1.3		1.5
+2 1			1.3		1.5
+3 1			1.3		1.5
+4 1			1.3		1.5
+}\dataset
+\begin{tikzpicture}
+\begin{axis}[ybar,
+        width=12cm,
+        height=8cm,
+        ymin=0,
+        ymax=2,        
+        ylabel={Value-normalized runtime},
+        xlabel={Iterations},
+        xtick=data,
+        xticklabels = {
+            \strut 20\,000,
+            \strut 50\,000,
+            \strut 80\,000,
+            \strut 100\,000,
+            \strut average
+            %Category 5,
+            %Category 6
+        },
+        %xticklabel style={yshift=-10ex},
+        major x tick style = {opacity=0},
+        minor x tick num = 1,
+        minor tick length=2ex,
+        every node near coord/.append style={
+                anchor=west,
+                rotate=90
+        },
+        legend entries={\ac{TL} ,\ac{STM} ,Actor },
+        legend columns=3,
+        legend style={draw=none,nodes={inner sep=3pt}},
+        ]
+\addplot[draw=black,fill=red, nodes near coords] table[x index=0,y index=1] \dataset; %ano de 2013-2014
+\addplot[draw=black,fill=blue, nodes near coords] table[x index=0,y index=2] \dataset; %ano de 2012-2013
+\addplot[draw=black,fill=green, nodes near coords] table[x index=0,y index=3] \dataset; %ano de 2011-2012
+\end{axis}
+\end{tikzpicture}
+\captionsetup{justification=centerlast, margin=10ex, labelfont=bf, textfont=it, format=plain, labelformat=default, labelsep=endash, font=small}
+\caption{value-normalized results for test 2}\label{fig:value_norm_test2}
+
+\end{figure}
+
 \worksheetend
