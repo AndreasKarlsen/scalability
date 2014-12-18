@@ -10,6 +10,7 @@ This chapter presents a reflection on a number of decisions made throughout the 
 %\lone[inline]{We using models to be more general about the concepts. But we use a specific implementations. There is a dilemma between not judging on the same implementations in concepts and performance, but also wanting to cover more than a specific implementation}
 \lone[i]{Reflect on the choice of using only Actor model and not CSP}
 \toby[i]{Måske også reflekterer over vores map-reduce valg af i forhold til implementationen - men synes ikke der er så meget at reflektere over}
+\kasper[inline]{Boxing af integers i Java implementation. int[] halverede tid sammenlignet med generic ArrayList Integer}
 
 \section{Comparing Models}
 Choosing to compare concurrency models instead of specific implementations of the models has presented a number of issues. Implementations of the selected concurrency models vary in how they choose to implement the model. Some actor implementations do not support all semantic properties and \ac{STM} implementations vary greatly in their implementation strategies. At times it proved difficult to distinguish what should be included in the descriptions and evaluations. 
