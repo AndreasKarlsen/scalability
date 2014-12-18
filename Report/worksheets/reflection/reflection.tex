@@ -25,6 +25,8 @@ Designing test cases that emphasised the performance of the concurrency models p
 
 Employing an inherently concurrent problem such as the dining philosopher problem\cite[p. 673]{hoare1978communicating} or the santa clause problem\cite{trono1994new} could be an alternative to the $k$-means clustering algorithm. Throughput, such as the number of times philosophers gets to eat within a given time period, could have been measured as an alternative to run time.
 
+Counting the CPU time spent in addition to real time spent could provide e a more accurate measure of the effort spent by each concurrency model. Especially considering that \ac{STM} may have to abort and retry transactions leading to additional additional CPU time spent.
+
 \section{Common Clustering Code}\toby{Måske anden titel? Implementation technique? anden?}
 The choice of using the same code base for the clustering calculations across all concurrency model implementations was done to provide a common ground for the implementations. Utilizing the same clustering code for each implementation ensures that the clustering takes an equal amount of time for all implementations. As such any variations in run time can be contributed to the concurrency models and not the clustering code. 
 

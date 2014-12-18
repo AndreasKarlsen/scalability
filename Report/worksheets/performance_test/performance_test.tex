@@ -446,14 +446,15 @@ The \bscode{Reducer} actor receives the result from \bscode{Mappers} on line 15,
         legend columns=3,
         legend style={draw=none,nodes={inner sep=3pt}},
         ]
-\addplot[draw=black,fill=red, nodes near coords] table[x index=0,y index=1] \dataset; %ano de 2013-2014
-\addplot[draw=black,fill=blue, nodes near coords] table[x index=0,y index=2] \dataset; %ano de 2012-2013
-\addplot[draw=black,fill=green, nodes near coords] table[x index=0,y index=3] \dataset; %ano de 2011-2012
+\addplot[draw=black,fill=red, nodes near coords] table[x index=0,y index=1] \dataset; %TL
+\addplot[draw=black,fill=blue, nodes near coords] table[x index=0,y index=2] \dataset; %STM
+\addplot[draw=black,fill=green, nodes near coords] table[x index=0,y index=3] \dataset; %Actor
 \end{axis}
 \end{tikzpicture}
 \captionsetup{justification=centerlast, margin=10ex, labelfont=bf, textfont=it, format=plain, labelformat=default, labelsep=endash, font=small}
 \caption{value-normalized results for test 2}\label{fig:value_norm_test2}
-
 \end{figure}
+
+
 
 \worksheetend
