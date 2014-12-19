@@ -22,11 +22,16 @@ The implementations follows a template similar to that of Map-Reduce\cite{dean20
 \caption{$k$-means MapReduce process}\label{fig:kmeans_mapreduce}
 \end{figure}
 
-Two tests, each with their own purpose, will be conducted. Both tests are  based on a data set of vectors, where each vector consists of 100 integer data points. In order to mitigate outlying results, each test is be run five times and the used result is the mean runtime. In the context of performance analysis, only the effort taken to cluster the data is of interest, as opposed to the resulting clustering. Due to this, randomly generated data is sufficient.
+Two tests, each with their own purpose, will be conducted. Both tests are  based on a data set of vectors, where each vector consists of 100 integer data points. The first test investigates how the selected concurrency models affect a task with a high degree of concurrent work but a low degree of synchronization while the second investigates how the selected affected a task with a low degree of concurrent work and a high degree of concurrency. In order to mitigate outlying results, each test is be run five times and the used result is the mean runtime. In the context of performance analysis, only the effort taken to cluster the data is of interest, as opposed to the resulting clustering. Due to this, randomly generated data is sufficient.
 
-The first test is based on a fixed size data set, while the number of mapper tasks will be scaled up. The goal is to determine how the selected concurrency models scale as more concurrent tasks are added. The test will be based on a data set of 10,000 vectors. Five clusters will be created, using a 1 to 10 mapper tasks. The algorithm will run for 100,000 iterations. The amount of mappers, have been chosen with consideration to the amount of physical and logical cores in hardware used for the test, described further in \bsref{subsec:hardware}. Our implementation uses one thread to coordinate and drive the calculations. Consequently, making 3 mapper tasks will utilise 4 cores concurrently.
+\subsection{Data Intensive Test}
 
-The second test will be based on a fixed number of concurrent tasks as well as a fixed size dataset, while the number of iterations will be scaled up.  Synchronization is applied whenever mappers hand over their work to the reducer. Scaling up the number of iterations will scale up the number of times synchronization code for each of the selected models is executed. As such this test seeks to investigate the impact each synchronization mechanism has on the performance of the clustering algorithm. It is our expectation that each model will have fairly close but different performance overheads. The test will employ a dataset of 10,000 vectors along with seven mapper tasks. The number of iterations will be scaled from one to 100,000 in intervals of 10,000. The amount of mappers was chosen to be seven, since it will enable all 8 logical cores to work concurrently.
+\subsection{Synchronization Intensive Test}
+The synchronization intensive test will consists of the two individual tests: test $C$ and test $D$. These test are created to investigate how the  concurrency models affect a concurrent computation with a high degree of synchronization.
+
+Test $C$ is based on a fixed size data set, while the number of mapper tasks will be scaled up. The goal is to determine how the selected concurrency models scale as more concurrent tasks are added. The test will be based on a data set of 10,000 vectors. Five clusters will be created, using a 1 to 10 mapper tasks. The algorithm will run for 100,000 iterations. The amount of mappers, have been chosen with consideration to the amount of physical and logical cores in hardware used for the test, described further in \bsref{subsec:hardware}. Our implementation uses one thread to coordinate and drive the calculations. Consequently, making 3 mapper tasks will utilise 4 cores concurrently.
+
+Test $C$ is be based on a fixed number of concurrent tasks as well as a fixed size dataset, while the number of iterations will be scaled up.  Synchronization is applied whenever mappers hand over their work to the reducer. Scaling up the number of iterations will scale up the number of times synchronization code for each of the selected models is executed. As such this test seeks to investigate the impact each of the selected concurrency model has on the performance of the clustering algorithm. It is our expectation that each model will have fairly close but different performance overheads. The test will employ a dataset of 10,000 vectors along with seven mapper tasks. The number of iterations will be scaled from 10,000 to 100,000 in intervals of 10,000. The amount of mappers was chosen to be seven, since it will enable all 8 logical cores to work concurrently.
 
 The parameters of the two tests are depicted in \bsref{tab:test_description}.
 
@@ -35,14 +40,14 @@ The parameters of the two tests are depicted in \bsref{tab:test_description}.
 \centering
 \begin{tabular}{c|cccc}
        & \# Vectors        & \# Mappers			 	& \# Clusters & \# Iterations \\ \hline
-Test 1 & 10,000            & 1-10        			& 5           & 100,000      \\
-Test 2 & 10,000			   & 7          			& 5           & 1-100,000
+Test $C$ & 10,000            & 1-10        			& 5           & 100,000      \\
+Test $D$ & 10,000			   & 7          			& 5           & 10,000-100,000
 \end{tabular}
 \end{table}
-\captionof{table}{Description of tests} \label{tab:test_description} 
+\captionof{table}{Test descriptions for synchronization intensive tests} \label{tab:test_description} 
 \end{center}
 
-\subsection{Distance Measure}
+\subsubsection{Distance Measure}
 A large part of the computations involved in the $k$-means algorithm, lies in calculating the distance between each of the data points and the cluster centroids. Different ways of calculating this distance exist. Simple, yet efficient, calculations such as Manhattan and Euclidean\cite[p. 41]{amatriain2011data} distances are fast to compute, where as the more complex similarity measures such as Pearson Correlation Coefficient and Cosine similarity\cite[p. 42]{amatriain2011data}\cite{breese1998empirical} are slower to compute but provide a more accurate result.
 
 The Manhattan distance will be used for the performance test as it represents on of the more simple computations. Having a simple calculation will limit the amount of work spent on computing the clusters. As such the work done by the concurrency models will have a greater impact on the results. The Manhattan distance is defined as\cite[p. 41]{amatriain2011data}:
@@ -220,6 +225,9 @@ The \bscode{Reducer} actor receives the result from \bscode{Mappers} on line 15,
 
 \section{Test Results}
 
+\subsection{Data Intensive Test}
+
+\subsection{Synchronization Intensive Test}
 \begin{tikzpicture}
 	\begin{axis}[
 		legend entries={\acs{TL},\acs{STM}, Actor},
