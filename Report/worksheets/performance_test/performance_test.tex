@@ -24,12 +24,35 @@ The implementations follows a template similar to that of Map-Reduce\cite{dean20
 
 Two tests, each with their own purpose, will be conducted. Both tests are  based on a data set of vectors, where each vector consists of 100 integer data points. The first test investigates how the selected concurrency models affect a task with a high degree of concurrent work but a low degree of synchronization while the second investigates how the selected affected a task with a low degree of concurrent work and a high degree of concurrency. In order to mitigate outlying results, each test is be run five times and the used result is the mean runtime. In the context of performance analysis, only the effort taken to cluster the data is of interest, as opposed to the resulting clustering. Due to this, randomly generated data is sufficient.
 
-\subsection{Data Intensive Test}
+\kasper[inline]{Description of how tests where created based on previous test run}
+
+\subsection{Work Intensive Test}
+The data intensive tests will consists of the two tests: test $A$ and test $B$. These tests are designed to investigate the impact of the selected concurrency model on workloads with a low degree of synchronization and a large amount of concurrent work. We expect that the concurrency models will  perform similarly.
+
+Test $A$ is based on a fixed size data set, while the number of mapper tasks will be scaled up. The goal is to determine how the selected concurrency models scale as more concurrent tasks are added. Five clusters are created, using 1 to 10 mapper tasks. The algorithm will run for 100 iterations. The amount of mappers, have been chosen with consideration to the amount of physical and logical cores in hardware used for the test, described further in \bsref{subsec:hardware}. Our implementation uses one thread to coordinate and drive the calculations as well as running the reducer. Consequently, making 3 mapper tasks will utilise 4 cores concurrently.
+
+Test $B$ is be based on a fixed number of concurrent tasks as well as a fixed number of iterations, while the size of the dataset will be scaled up. Scaling up the size of the dataset will increase the workload that is run concurrently. The goal of the test is to investigate how the selected concurrency model affects a task with a high concurrent workload. The test will employ a dataset of 1,000,000 to 5,000,000 vectors along with seven mapper tasks. The test will run for 100 iterations.
+
+
+\begin{center}
+\begin{table}[h]
+\centering
+\begin{tabular}{c|cccc}
+       & \# Vectors        & \# Mappers			 	& \# Clusters & \# Iterations \\ \hline
+Test $A$ & 2,000,000            & 1-10        			& 5           & 100      \\
+Test $B$ & 1,000,000-5,000,000  & 7          			& 5           & 100
+\end{tabular}
+\end{table}
+\captionof{table}{Test descriptions for work intensive tests} \label{tab:test_description_work_intensive} 
+\end{center}
+
+\kasper[inline]{Distance measure}
+
 
 \subsection{Synchronization Intensive Test}
-The synchronization intensive test will consists of the two individual tests: test $C$ and test $D$. These test are created to investigate how the  concurrency models affect a concurrent computation with a high degree of synchronization.
+The synchronization intensive test will consists of the two tests: test $C$ and test $D$. These tests are designed to investigate how the selected concurrency models affect a concurrent computation with a high degree of synchronization. 
 
-Test $C$ is based on a fixed size data set, while the number of mapper tasks will be scaled up. The goal is to determine how the selected concurrency models scale as more concurrent tasks are added. The test will be based on a data set of 10,000 vectors. Five clusters will be created, using a 1 to 10 mapper tasks. The algorithm will run for 100,000 iterations. The amount of mappers, have been chosen with consideration to the amount of physical and logical cores in hardware used for the test, described further in \bsref{subsec:hardware}. Our implementation uses one thread to coordinate and drive the calculations. Consequently, making 3 mapper tasks will utilise 4 cores concurrently.
+Test $C$ is based on a fixed size data set, while the number of mapper tasks will be scaled up.  The test will be based on a data set of 10,000 vectors. Five clusters are created, using 1 to 10 mapper tasks. The algorithm will run for 100,000 iterations. The amount of mappers, have been chosen with consideration to the amount of physical and logical cores in hardware used for the test, described further in \bsref{subsec:hardware}. Our implementation uses one thread to coordinate and drive the calculations. Consequently, making 3 mapper tasks will utilise 4 cores concurrently.
 
 Test $C$ is be based on a fixed number of concurrent tasks as well as a fixed size dataset, while the number of iterations will be scaled up.  Synchronization is applied whenever mappers hand over their work to the reducer. Scaling up the number of iterations will scale up the number of times synchronization code for each of the selected models is executed. As such this test seeks to investigate the impact each of the selected concurrency model has on the performance of the clustering algorithm. It is our expectation that each model will have fairly close but different performance overheads. The test will employ a dataset of 10,000 vectors along with seven mapper tasks. The number of iterations will be scaled from 10,000 to 100,000 in intervals of 10,000. The amount of mappers was chosen to be seven, since it will enable all 8 logical cores to work concurrently.
 
@@ -41,7 +64,7 @@ The parameters of the two tests are depicted in \bsref{tab:test_description}.
 \begin{tabular}{c|cccc}
        & \# Vectors        & \# Mappers			 	& \# Clusters & \# Iterations \\ \hline
 Test $C$ & 10,000            & 1-10        			& 5           & 100,000      \\
-Test $D$ & 10,000			   & 7          			& 5           & 10,000-100,000
+Test $D$ & 10,000			 & 7          			& 5           & 10,000-100,000
 \end{tabular}
 \end{table}
 \captionof{table}{Test descriptions for synchronization intensive tests} \label{tab:test_description} 
@@ -225,7 +248,8 @@ The \bscode{Reducer} actor receives the result from \bscode{Mappers} on line 15,
 
 \section{Test Results}
 
-\subsection{Data Intensive Test}
+\subsection{Work Intensive Test}
+\kasper[inline]{Akka passes by reference = faster, especially with fast data}
 
 \subsection{Synchronization Intensive Test}
 \begin{figure}[h]
@@ -482,9 +506,5 @@ Iterations & TL     & STM     & Actor     & TL      & STM      & Actor     \\ \h
 %\captionsetup{justification=centerlast, margin=10ex, labelfont=bf, textfont=it, format=plain, labelformat=default, labelsep=endash, font=small}
 \caption{Value-normalized results for test 2}\label{fig:value_norm_test2}
 \end{figure}
-
-
-
-
 
 \worksheetend
