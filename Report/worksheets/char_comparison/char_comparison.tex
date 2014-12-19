@@ -139,12 +139,14 @@ The actor model abstracts away the low level details that limits the writability
 %Fine grained locking is difficult but provides good performance
 %Requires experiensed programmers in order to produce good implementatons when employing fine grained locking
 %Widely support in many languages
+%Limited composablity
 \section{\acl{STM}}
 %parallisation of existing code (in the clean format)
-%Good alternative to locks, especially if transactions performance is not the top priority and programmers are familar with the shared memory concurrency and critical regions
+%Good alternative to locks, especially if performance is not the top priority and programmers are familar with the shared memory concurrency and critical regions
 %Currently suffers from not being well integrated in many of the languages popular in the industry 
 %Concept of transactions can be hard to understand for novices
 %Problems with IO and native method calls
+\kasper[inline]{Programming concurrency on the JVM. Side 186}
 \section{The Actor Model}
 %Distrubuted systems
 %Design of large systems (back ends)
@@ -154,6 +156,10 @@ The actor model abstracts away the low level details that limits the writability
 %Best for new implementations or reimplementation of existing systems
 %Functions well with pipeline processsing of input
 %Context swiching is cheap compared to the other models (thread ring)
+%Problems expressing work where actors are dependant on one another
+\kasper[inline]{Programming concurrency on the JVM. Side 268}
+
+\subsection{Closing Thoughts}
 \kasper[inline]{Combine models instead of competing}
 \kasper[inline]{TL $>$ stm hvis der er meget IO}
 \worksheetend
