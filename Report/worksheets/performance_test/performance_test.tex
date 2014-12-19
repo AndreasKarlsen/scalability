@@ -220,6 +220,9 @@ The \bscode{Reducer} actor receives the result from \bscode{Mappers} on line 15,
 
 \section{Test Results}
 
+\begin{figure}[h]
+\centering
+
 \begin{tikzpicture}
 	\begin{axis}[
 		legend entries={\acs{TL},\acs{STM}, Actor},
@@ -229,7 +232,6 @@ The \bscode{Reducer} actor receives the result from \bscode{Mappers} on line 15,
 		ylabel=Miliseconds,
 		xmin=0,
 		ymin=0, 
-		title=Test results for scaling number of mapper tasks,
 		label=fig:tr_scale_mappers]		
 	\addplot[color=red,mark=x] coordinates {
 		(1,498792)
@@ -269,6 +271,9 @@ The \bscode{Reducer} actor receives the result from \bscode{Mappers} on line 15,
 	};
 	\end{axis}
 \end{tikzpicture}
+%\captionsetup{justification=centerlast, margin=10ex, labelfont=bf, textfont=it, format=plain, labelformat=default, labelsep=endash, font=small}
+\caption{Test results for scaling number of mapper tasks}\label{fig:somethingsomething}
+\end{figure}
 
 \begin{center}
 \begin{table}[h]
@@ -287,11 +292,12 @@ Mapper Tasks & TL     & STM     & Actor     & TL      & STM      & Actor     \\ 
 9                   &     171477      &      188020      &    188653  &  1.00   & 1.10 &    1.10    \\
 10                 &     163490      &      182868      &    179347  &	 1.00   & 1.12 &    1.10    \\
 \end{tabular}
+\captionof{table}{Test results for scaling number of mapper tasks}\label{table:test_results_concurrent_tasks}
 \end{table}
-\label{table:test_results_concurrent_tasks}
 \end{center}
 
-
+\begin{figure}[h]
+\centering
 \begin{tikzpicture}
 	\begin{axis}[
 		legend entries={\acs{TL},\acs{STM}, Actor},
@@ -301,7 +307,6 @@ Mapper Tasks & TL     & STM     & Actor     & TL      & STM      & Actor     \\ 
 		ylabel=Miliseconds,
 		xmin=0,
 		ymin=0, 
-		title=Test results for scaling number of iterations,
 		label=fig:tr_scale_iterations]		
 	\addplot[color=red,mark=x] coordinates {
 %		(1,21)
@@ -344,7 +349,9 @@ Mapper Tasks & TL     & STM     & Actor     & TL      & STM      & Actor     \\ 
 	};
 	\end{axis}
 \end{tikzpicture}
-
+%\captionsetup{justification=centerlast, margin=10ex, labelfont=bf, textfont=it, format=plain, labelformat=default, labelsep=endash, font=small}
+\caption{Test results for scaling number of iterations}\label{fig:somereffff}
+\end{figure}
 
 \begin{center}
 \begin{table}[h]
@@ -364,8 +371,8 @@ Iterations & TL     & STM     & Actor     & TL      & STM      & Actor     \\ \h
 90000		&		137349		&      141548   	&		147275  & 1.00  & 1.03  &   1.07    \\
 100000	    &		152569		&      158746	    &		163118  & 1.00  & 1.04  &   1.07    \\
 \end{tabular}
+\captionof{table}{Test results for scaling number of iterations}\label{table:test_results_iterations}
 \end{table}
-\label{table:test_results_iterations}
 \end{center}
 
 \begin{figure}[h]
@@ -414,8 +421,8 @@ Iterations & TL     & STM     & Actor     & TL      & STM      & Actor     \\ \h
 \addplot[draw=black,fill=green, nodes near coords] table[x index=0,y index=3] \dataset; %ano de 2011-2012
 \end{axis}
 \end{tikzpicture}
-\captionsetup{justification=centerlast, margin=10ex, labelfont=bf, textfont=it, format=plain, labelformat=default, labelsep=endash, font=small}
-\caption{value-normalized results for test 1}\label{fig:value_norm_test1}
+%\captionsetup{justification=centerlast, margin=10ex, labelfont=bf, textfont=it, format=plain, labelformat=default, labelsep=endash, font=small}
+\caption{Value-normalized results for test one}\label{fig:value_norm_test1}
 
 \end{figure}
 
@@ -465,8 +472,8 @@ Iterations & TL     & STM     & Actor     & TL      & STM      & Actor     \\ \h
 \addplot[draw=black,fill=green, nodes near coords] table[x index=0,y index=3] \dataset; %Actor
 \end{axis}
 \end{tikzpicture}
-\captionsetup{justification=centerlast, margin=10ex, labelfont=bf, textfont=it, format=plain, labelformat=default, labelsep=endash, font=small}
-\caption{value-normalized results for test 2}\label{fig:value_norm_test2}
+%\captionsetup{justification=centerlast, margin=10ex, labelfont=bf, textfont=it, format=plain, labelformat=default, labelsep=endash, font=small}
+\caption{Value-normalized results for test 2}\label{fig:value_norm_test2}
 \end{figure}
 
 
