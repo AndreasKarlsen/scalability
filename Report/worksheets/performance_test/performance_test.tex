@@ -276,16 +276,16 @@ The \bscode{Reducer} actor receives the result from \bscode{Mappers} on line 15,
 \begin{tabular}{l|cll|cll}
              & \multicolumn{3}{c|}{Milliseconds} & \multicolumn{3}{c}{Normalized} \\
 Mapper Tasks & TL     & STM     & Actor     & TL      & STM      & Actor     \\ \hline
-1                   &     498792      &      510154      &    513734  &	 1,00   & 1,02 &    1,03    \\
-2                   &     263507      &      272869      &    268115  &  1,00   & 1,04 &    1,02    \\
-3                   &     186577      &      194757      &    191510  &  1,00   & 1,04 &    1,03    \\
-4                   &     159645      &      173548      &    161304  &  1,00   & 1,09 &    1,01    \\
-5                   &     171512      &      176791      &    173379  &  1,00   & 1,03 &    1,01    \\
-6                   &     154108      &      163118      &    161729  &  1,00   & 1,06 &    1,05    \\
-7                   &     152569      &      158746      &    163118  &  1,00   & 1,04 &    1,07    \\
-8                   &     154261      &      168380      &    162539  &  1,00   & 1,09 &    1,05    \\
-9                   &     171477      &      188020      &    188653  &  1,00   & 1,10 &    1,10    \\
-10                 &     163490      &      182868      &    179347  &	 1,00   & 1,12 &    1,10    \\
+1                   &     498792      &      510154      &    513734  &	 1.00   & 1.02 &    1.03    \\
+2                   &     263507      &      272869      &    268115  &  1.00   & 1.04 &    1.02    \\
+3                   &     186577      &      194757      &    191510  &  1.00   & 1.04 &    1.03    \\
+4                   &     159645      &      173548      &    161304  &  1.00   & 1.09 &    1.01    \\
+5                   &     171512      &      176791      &    173379  &  1.00   & 1.03 &    1.01    \\
+6                   &     154108      &      163118      &    161729  &  1.00   & 1.06 &    1.05    \\
+7                   &     152569      &      158746      &    163118  &  1.00   & 1.04 &    1.07    \\
+8                   &     154261      &      168380      &    162539  &  1.00   & 1.09 &    1.05    \\
+9                   &     171477      &      188020      &    188653  &  1.00   & 1.10 &    1.10    \\
+10                 &     163490      &      182868      &    179347  &	 1.00   & 1.12 &    1.10    \\
 \end{tabular}
 \end{table}
 \label{table:test_results_concurrent_tasks}
@@ -304,7 +304,7 @@ Mapper Tasks & TL     & STM     & Actor     & TL      & STM      & Actor     \\ 
 		title=Test results for scaling number of iterations,
 		label=fig:tr_scale_iterations]		
 	\addplot[color=red,mark=x] coordinates {
-		(1,21)
+%		(1,21)
 		(10000,15368)
 		(20000,30643)
 		(30000,45743)
@@ -317,7 +317,7 @@ Mapper Tasks & TL     & STM     & Actor     & TL      & STM      & Actor     \\ 
 		(100000,152569)
 	};
 	\addplot[color=blue,mark=x] coordinates {
-		(1,33)
+%		(1,33)
 		(10000,16909)
 		(20000,33148)
 		(30000,48981)
@@ -330,7 +330,7 @@ Mapper Tasks & TL     & STM     & Actor     & TL      & STM      & Actor     \\ 
 		(100000,158746)
 	};
 	\addplot[color=green,mark=x] coordinates {
-		(1,			27)
+%		(1,			27)
 		(10000,	16308)
 		(20000,	32427)
 		(30000,	48966)
@@ -352,17 +352,17 @@ Mapper Tasks & TL     & STM     & Actor     & TL      & STM      & Actor     \\ 
 \begin{tabular}{l|cll|cll}
              & \multicolumn{3}{c|}{Milliseconds} & \multicolumn{3}{c}{Normalized} \\
 Iterations & TL     & STM     & Actor     & TL      & STM      & Actor     \\ \hline
-1  			&		21			&      33			&		27      & 1,00  & 1,57  &   1,29    \\
-10000		&       15368		&      16909		&		16308   & 1,00  & 1,10  &   1,06    \\
-20000		&       30643		&      33148		&		32427   & 1,00  & 1,08  &   1,06    \\
-30000		&		45743		&      48981		&		48966   & 1,00  & 1,07  &   1,07    \\
-40000		&		61097		&      63800		&		64514   & 1,00  & 1,04  &   1,06    \\
-50000		&		76983		&      78855    	&		81393   & 1,00  & 1,02  &   1,06    \\
-60000		&       93241		&      93930		&		98206   & 1,00  & 1,01  &   1,05    \\
-70000		&       108792		&      110237   	&		114076  & 1,00  & 1,01  &   1,05    \\
-80000		&		122150		&      126545	    &		131388  & 1,00  & 1,04  &   1,08    \\
-90000		&		137349		&      141548   	&		147275  & 1,00  & 1,03  &   1,07    \\
-100000	    &		152569		&      158746	    &		163118  & 1,00  & 1,04  &   1,07    \\
+%1  			&		21			&      33			&		27      & 1.00  & 1.57  &   1.29    \\
+10000		&       15368		&      16909		&		16308   & 1.00  & 1.10  &   1.06    \\
+20000		&       30643		&      33148		&		32427   & 1.00  & 1.08  &   1.06    \\
+30000		&		45743		&      48981		&		48966   & 1.00  & 1.07  &   1.07    \\
+40000		&		61097		&      63800		&		64514   & 1.00  & 1.04  &   1.06    \\
+50000		&		76983		&      78855    	&		81393   & 1.00  & 1.02  &   1.06    \\
+60000		&       93241		&      93930		&		98206   & 1.00  & 1.01  &   1.05    \\
+70000		&       108792		&      110237   	&		114076  & 1.00  & 1.01  &   1.05    \\
+80000		&		122150		&      126545	    &		131388  & 1.00  & 1.04  &   1.08    \\
+90000		&		137349		&      141548   	&		147275  & 1.00  & 1.03  &   1.07    \\
+100000	    &		152569		&      158746	    &		163118  & 1.00  & 1.04  &   1.07    \\
 \end{tabular}
 \end{table}
 \label{table:test_results_iterations}
@@ -373,20 +373,20 @@ Iterations & TL     & STM     & Actor     & TL      & STM      & Actor     \\ \h
 %0 - aramente   1 - Às vezes   2 - Quase sempre   4 - Sempre
 \pgfplotstableread{
   %TL    	%STM  	%Actor
-0 1			1.3		1.5
-1 1			1.3		1.5
-2 1			1.3		1.5
-3 1			1.3		1.5
-4 1			1.3		1.5
+0	1		1.02		1.03
+1	1		1.04		1.02
+2	1		1.04		1.03
+3	1		1.09		1.01
+4	1		1.06		1.05
 }\dataset
 \begin{tikzpicture}
 \begin{axis}[ybar,
         width=12cm,
         height=8cm,
-        ymin=0,
-        ymax=2,        
+        ymin=0.8,
+        ymax=1.2,        
         ylabel={Value-normalized runtime},
-        xlabel={\# Mappers},
+        xlabel={Mappers},
         xtick=data,
         xticklabels = {
             \strut 1,
@@ -424,18 +424,18 @@ Iterations & TL     & STM     & Actor     & TL      & STM      & Actor     \\ \h
 %0 - aramente   1 - Às vezes   2 - Quase sempre   4 - Sempre
 \pgfplotstableread{
   %TL    	%STM  	%Actor
-0 1			1.3		1.5
-1 1			1.3		1.5
-2 1			1.3		1.5
-3 1			1.3		1.5
-4 1			1.3		1.5
+0 1			1.08			1.06
+1 1			1.02			1.06
+2 1			1.04			1.08
+3 1			1.04			1.07
+4 1			1.04			1.06
 }\dataset
 \begin{tikzpicture}
 \begin{axis}[ybar,
         width=12cm,
         height=8cm,
-        ymin=0,
-        ymax=2,        
+        ymin=0.8,
+        ymax=1.2,        
         ylabel={Value-normalized runtime},
         xlabel={Iterations},
         xtick=data,
@@ -468,6 +468,8 @@ Iterations & TL     & STM     & Actor     & TL      & STM      & Actor     \\ \h
 \captionsetup{justification=centerlast, margin=10ex, labelfont=bf, textfont=it, format=plain, labelformat=default, labelsep=endash, font=small}
 \caption{value-normalized results for test 2}\label{fig:value_norm_test2}
 \end{figure}
+
+
 
 
 
