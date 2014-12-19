@@ -220,6 +220,27 @@ The \bscode{Reducer} actor receives the result from \bscode{Mappers} on line 15,
 
 \section{Test Results}
 
+\begin{center}
+\begin{table}[h]
+\centering
+\begin{tabular}{l|cll|cll}
+             & \multicolumn{3}{c|}{Milliseconds} & \multicolumn{3}{c}{Normalized} \\
+Mapper Tasks & TL     & STM     & Actor     & TL      & STM      & Actor     \\ \hline
+1                   &     498792      &      510154      &    513734  &	 1.00   & 1.02 &    1.03    \\
+2                   &     263507      &      272869      &    268115  &  1.00   & 1.04 &    1.02    \\
+3                   &     186577      &      194757      &    191510  &  1.00   & 1.04 &    1.03    \\
+4                   &     159645      &      173548      &    161304  &  1.00   & 1.09 &    1.01    \\
+5                   &     171512      &      176791      &    173379  &  1.00   & 1.03 &    1.01    \\
+6                   &     154108      &      163118      &    161729  &  1.00   & 1.06 &    1.05    \\
+7                   &     152569      &      158746      &    163118  &  1.00   & 1.04 &    1.07    \\
+8                   &     154261      &      168380      &    162539  &  1.00   & 1.09 &    1.05    \\
+9                   &     171477      &      188020      &    188653  &  1.00   & 1.10 &    1.10    \\
+10                 &     163490      &      182868      &    179347  &	 1.00   & 1.12 &    1.10    \\
+\end{tabular}
+\captionof{table}{Test results for scaling number of mapper tasks}\label{table:test_results_concurrent_tasks}
+\end{table}
+\end{center}
+
 \begin{figure}[h]
 \centering
 
@@ -272,7 +293,57 @@ The \bscode{Reducer} actor receives the result from \bscode{Mappers} on line 15,
 	\end{axis}
 \end{tikzpicture}
 %\captionsetup{justification=centerlast, margin=10ex, labelfont=bf, textfont=it, format=plain, labelformat=default, labelsep=endash, font=small}
-\caption{Test results for scaling number of mapper tasks}\label{fig:somethingsomething}
+\caption{Visual representation of results for scaling number of mapper tasks}\label{fig:test_results_concurrent_tasks}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+%0 - aramente   1 - Às vezes   2 - Quase sempre   4 - Sempre
+\pgfplotstableread{
+  %TL    	%STM  	%Actor
+0	1		1.02		1.03
+1	1		1.04		1.02
+2	1		1.04		1.03
+3	1		1.09		1.01
+4	1		1.06		1.05
+}\dataset
+\begin{tikzpicture}
+\begin{axis}[ybar,
+        width=12cm,
+        height=8cm,
+        ymin=0.8,
+        ymax=1.2,        
+        ylabel={Value-normalized runtime},
+        xlabel={Mappers},
+        xtick=data,
+        xticklabels = {
+            \strut 1,
+            \strut 2,
+            \strut 3,
+            \strut 4,
+            \strut average
+            %Category 5,
+            %Category 6
+        },
+        %xticklabel style={yshift=-10ex},
+        major x tick style = {opacity=0},
+        minor x tick num = 1,
+        minor tick length=2ex,
+        every node near coord/.append style={
+                anchor=west,
+                rotate=90
+        },
+        legend entries={\ac{TL} ,\ac{STM} ,Actor },
+        legend columns=3,
+        legend style={draw=none,nodes={inner sep=3pt}},
+        ]
+\addplot[draw=black,fill=red, nodes near coords] table[x index=0,y index=1] \dataset; %ano de 2013-2014
+\addplot[draw=black,fill=blue, nodes near coords] table[x index=0,y index=2] \dataset; %ano de 2012-2013
+\addplot[draw=black,fill=green, nodes near coords] table[x index=0,y index=3] \dataset; %ano de 2011-2012
+\end{axis}
+\end{tikzpicture}
+%\captionsetup{justification=centerlast, margin=10ex, labelfont=bf, textfont=it, format=plain, labelformat=default, labelsep=endash, font=small}
+\caption{Value-normalized results for scaling number of mapper tasks}\label{fig:value_norm_test1}
 \end{figure}
 
 \begin{center}
@@ -280,19 +351,20 @@ The \bscode{Reducer} actor receives the result from \bscode{Mappers} on line 15,
 \centering
 \begin{tabular}{l|cll|cll}
              & \multicolumn{3}{c|}{Milliseconds} & \multicolumn{3}{c}{Normalized} \\
-Mapper Tasks & TL     & STM     & Actor     & TL      & STM      & Actor     \\ \hline
-1                   &     498792      &      510154      &    513734  &	 1.00   & 1.02 &    1.03    \\
-2                   &     263507      &      272869      &    268115  &  1.00   & 1.04 &    1.02    \\
-3                   &     186577      &      194757      &    191510  &  1.00   & 1.04 &    1.03    \\
-4                   &     159645      &      173548      &    161304  &  1.00   & 1.09 &    1.01    \\
-5                   &     171512      &      176791      &    173379  &  1.00   & 1.03 &    1.01    \\
-6                   &     154108      &      163118      &    161729  &  1.00   & 1.06 &    1.05    \\
-7                   &     152569      &      158746      &    163118  &  1.00   & 1.04 &    1.07    \\
-8                   &     154261      &      168380      &    162539  &  1.00   & 1.09 &    1.05    \\
-9                   &     171477      &      188020      &    188653  &  1.00   & 1.10 &    1.10    \\
-10                 &     163490      &      182868      &    179347  &	 1.00   & 1.12 &    1.10    \\
+Iterations & TL     & STM     & Actor     & TL      & STM      & Actor     \\ \hline
+%1  			&		21			&      33			&		27      & 1.00  & 1.57  &   1.29    \\
+10000		&       15368		&      16909		&		16308   & 1.00  & 1.10  &   1.06    \\
+20000		&       30643		&      33148		&		32427   & 1.00  & 1.08  &   1.06    \\
+30000		&		45743		&      48981		&		48966   & 1.00  & 1.07  &   1.07    \\
+40000		&		61097		&      63800		&		64514   & 1.00  & 1.04  &   1.06    \\
+50000		&		76983		&      78855    	&		81393   & 1.00  & 1.02  &   1.06    \\
+60000		&       93241		&      93930		&		98206   & 1.00  & 1.01  &   1.05    \\
+70000		&       108792		&      110237   	&		114076  & 1.00  & 1.01  &   1.05    \\
+80000		&		122150		&      126545	    &		131388  & 1.00  & 1.04  &   1.08    \\
+90000		&		137349		&      141548   	&		147275  & 1.00  & 1.03  &   1.07    \\
+100000	    &		152569		&      158746	    &		163118  & 1.00  & 1.04  &   1.07    \\
 \end{tabular}
-\captionof{table}{Test results for scaling number of mapper tasks}\label{table:test_results_concurrent_tasks}
+\captionof{table}{Test results for scaling number of iterations}\label{table:test_results_iterations}
 \end{table}
 \end{center}
 
@@ -350,80 +422,7 @@ Mapper Tasks & TL     & STM     & Actor     & TL      & STM      & Actor     \\ 
 	\end{axis}
 \end{tikzpicture}
 %\captionsetup{justification=centerlast, margin=10ex, labelfont=bf, textfont=it, format=plain, labelformat=default, labelsep=endash, font=small}
-\caption{Test results for scaling number of iterations}\label{fig:somereffff}
-\end{figure}
-
-\begin{center}
-\begin{table}[h]
-\centering
-\begin{tabular}{l|cll|cll}
-             & \multicolumn{3}{c|}{Milliseconds} & \multicolumn{3}{c}{Normalized} \\
-Iterations & TL     & STM     & Actor     & TL      & STM      & Actor     \\ \hline
-%1  			&		21			&      33			&		27      & 1.00  & 1.57  &   1.29    \\
-10000		&       15368		&      16909		&		16308   & 1.00  & 1.10  &   1.06    \\
-20000		&       30643		&      33148		&		32427   & 1.00  & 1.08  &   1.06    \\
-30000		&		45743		&      48981		&		48966   & 1.00  & 1.07  &   1.07    \\
-40000		&		61097		&      63800		&		64514   & 1.00  & 1.04  &   1.06    \\
-50000		&		76983		&      78855    	&		81393   & 1.00  & 1.02  &   1.06    \\
-60000		&       93241		&      93930		&		98206   & 1.00  & 1.01  &   1.05    \\
-70000		&       108792		&      110237   	&		114076  & 1.00  & 1.01  &   1.05    \\
-80000		&		122150		&      126545	    &		131388  & 1.00  & 1.04  &   1.08    \\
-90000		&		137349		&      141548   	&		147275  & 1.00  & 1.03  &   1.07    \\
-100000	    &		152569		&      158746	    &		163118  & 1.00  & 1.04  &   1.07    \\
-\end{tabular}
-\captionof{table}{Test results for scaling number of iterations}\label{table:test_results_iterations}
-\end{table}
-\end{center}
-
-\begin{figure}[h]
-\centering
-%0 - aramente   1 - Às vezes   2 - Quase sempre   4 - Sempre
-\pgfplotstableread{
-  %TL    	%STM  	%Actor
-0	1		1.02		1.03
-1	1		1.04		1.02
-2	1		1.04		1.03
-3	1		1.09		1.01
-4	1		1.06		1.05
-}\dataset
-\begin{tikzpicture}
-\begin{axis}[ybar,
-        width=12cm,
-        height=8cm,
-        ymin=0.8,
-        ymax=1.2,        
-        ylabel={Value-normalized runtime},
-        xlabel={Mappers},
-        xtick=data,
-        xticklabels = {
-            \strut 1,
-            \strut 2,
-            \strut 3,
-            \strut 4,
-            \strut average
-            %Category 5,
-            %Category 6
-        },
-        %xticklabel style={yshift=-10ex},
-        major x tick style = {opacity=0},
-        minor x tick num = 1,
-        minor tick length=2ex,
-        every node near coord/.append style={
-                anchor=west,
-                rotate=90
-        },
-        legend entries={\ac{TL} ,\ac{STM} ,Actor },
-        legend columns=3,
-        legend style={draw=none,nodes={inner sep=3pt}},
-        ]
-\addplot[draw=black,fill=red, nodes near coords] table[x index=0,y index=1] \dataset; %ano de 2013-2014
-\addplot[draw=black,fill=blue, nodes near coords] table[x index=0,y index=2] \dataset; %ano de 2012-2013
-\addplot[draw=black,fill=green, nodes near coords] table[x index=0,y index=3] \dataset; %ano de 2011-2012
-\end{axis}
-\end{tikzpicture}
-%\captionsetup{justification=centerlast, margin=10ex, labelfont=bf, textfont=it, format=plain, labelformat=default, labelsep=endash, font=small}
-\caption{Value-normalized results for test one}\label{fig:value_norm_test1}
-
+\caption{Visual representation of results for scaling number of iterations}\label{fig:test_results_iterations}
 \end{figure}
 
 \begin{figure}[h]
@@ -473,11 +472,7 @@ Iterations & TL     & STM     & Actor     & TL      & STM      & Actor     \\ \h
 \end{axis}
 \end{tikzpicture}
 %\captionsetup{justification=centerlast, margin=10ex, labelfont=bf, textfont=it, format=plain, labelformat=default, labelsep=endash, font=small}
-\caption{Value-normalized results for test 2}\label{fig:value_norm_test2}
+\caption{Value-normalized results for scaling number of iterations}\label{fig:value_norm_test2}
 \end{figure}
-
-
-
-
 
 \worksheetend
