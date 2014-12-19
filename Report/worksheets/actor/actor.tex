@@ -320,7 +320,7 @@ The readability of the actor model is shown on \bsref{fig:actor_readability} whe
 
 %more: 
 % you clearly see what state varaibles an actor will ensure synchronization for in the way the model dictates isolated state
-\subsubsection{Level of abstraction}\label{sec:actor_level_of_abstraction}
+\subsubsection{Level of Abstraction}\label{sec:actor_level_of_abstraction}
 The actor model lets the programmer focus on high-level concurrency abstractions and hides the complexities that can easily lead to errors, in order to simplify concurrent programming. Synchronization is accomplished implicitly as a result of actor mailboxes and atomic processing of messages. Threads are still used under the hood to run the actors, with different implementation strategies as discussed in \bsref{ssec:abstraction_over_threads}.
 
 These high level abstractions enable the programmer to model and think about concurrent problems conceptually in terms of actors and their interaction, without having to write the program. However, the conceptual actor model does not provide any abstractions for coordination between actors to prune non-determinism. This affects the level of abstraction negatively, but most actor implementations typically have some useful coordination patterns, such as the request-reply pattern, which reduces the impact.
