@@ -25,6 +25,32 @@ The implementations follows a template similar to that of Map-Reduce\cite{dean20
 Two tests, each with their own purpose, will be conducted. Both tests are  based on a data set of vectors, where each vector consists of 100 integer data points. The first test investigates how the selected concurrency models affect a task with a high degree of concurrent work but a low degree of synchronization while the second investigates how the selected affected a task with a low degree of concurrent work and a high degree of concurrency. In order to mitigate outlying results, each test is be run five times and the used result is the mean runtime. In the context of performance analysis, only the effort taken to cluster the data is of interest, as opposed to the resulting clustering. Due to this, randomly generated data is sufficient.
 
 \subsection{Data Intensive Test}
+The parameters of the two tests are depicted in \bsref{tab:test_description}.
+
+\begin{center}
+\begin{table}[h]
+\centering
+\begin{tabular}{c|cccc}
+       & \# Vectors        & \# Mappers			 	& \# Clusters & \# Iterations \\ \hline
+Test $A$ & 10,000            & 1-10        			& 5           & 100.000      \\
+Test $B$ & 1.000.000-10.000.000			   & 7          			& 5           & 100.000
+\end{tabular}
+\end{table}
+\captionof{table}{Test descriptions for synchronization intensive tests} \label{tab:test_description} 
+\end{center}
+
+\subsubsection{Distance Measure}
+\kasper[inline]{Remember to draw in the choice of distance measure in reflection}
+The \ac{PCC} will be used for the performance test, as it represents one of the most complex computations. Having a complex distance calculation will increase the workload which will be run concurrently, increasing the focus on the concurrency aspect of the performance test. We are aware that choosing a complex calculation, pushes the results towards favoring concurrent execution over sequential execution. The \ac{PCC} is 
+defined as:
+
+\begin{equation}\label{pearsonverbose}
+\frac{cov(a,i)}{\sigma_a \times \sigma_i} = \frac{\sum_j(v_{a,j}-\bar{v}_a)(v_{i,j}-\bar{v}_i)}{\sqrt{{\sum_j}(v_{a,j}-\bar{v}_a)^2 \sum_j(v_{i,j}-\bar{v}_i)^2}}
+\end{equation}
+
+where $cov(a,i)$ is the covariance between the two vectors $a$ and $i$ and $\sigma_a \times \sigma_i$ is the product of the vectors standard deviations. 
+%
+
 
 \subsection{Synchronization Intensive Test}
 The synchronization intensive test will consists of the two individual tests: test $C$ and test $D$. These test are created to investigate how the  concurrency models affect a concurrent computation with a high degree of synchronization.
@@ -40,8 +66,8 @@ The parameters of the two tests are depicted in \bsref{tab:test_description}.
 \centering
 \begin{tabular}{c|cccc}
        & \# Vectors        & \# Mappers			 	& \# Clusters & \# Iterations \\ \hline
-Test $C$ & 10,000            & 1-10        			& 5           & 100,000      \\
-Test $D$ & 10,000			   & 7          			& 5           & 10,000-100,000
+Test $C$ & 10.000            & 1-10        			& 5           & 100.000      \\
+Test $D$ & 10.000			   & 7          			& 5           & 10.000-100.000
 \end{tabular}
 \end{table}
 \captionof{table}{Test descriptions for synchronization intensive tests} \label{tab:test_description} 
@@ -227,27 +253,70 @@ The \bscode{Reducer} actor receives the result from \bscode{Mappers} on line 15,
 
 \subsection{Data Intensive Test}
 
-\subsection{Synchronization Intensive Test}
-\begin{center}
 \begin{table}[h]
 \centering
 \begin{tabular}{l|cll|cll}
              & \multicolumn{3}{c|}{Milliseconds} & \multicolumn{3}{c}{Normalized} \\
 Mapper Tasks & TL     & STM     & Actor     & TL      & STM      & Actor     \\ \hline
-1                   &     498792      &      510154      &    513734  &	 1.00   & 1.02 &    1.03    \\
-2                   &     263507      &      272869      &    268115  &  1.00   & 1.04 &    1.02    \\
-3                   &     186577      &      194757      &    191510  &  1.00   & 1.04 &    1.03    \\
-4                   &     159645      &      173548      &    161304  &  1.00   & 1.09 &    1.01    \\
-5                   &     171512      &      176791      &    173379  &  1.00   & 1.03 &    1.01    \\
-6                   &     154108      &      163118      &    161729  &  1.00   & 1.06 &    1.05    \\
-7                   &     152569      &      158746      &    163118  &  1.00   & 1.04 &    1.07    \\
-8                   &     154261      &      168380      &    162539  &  1.00   & 1.09 &    1.05    \\
-9                   &     171477      &      188020      &    188653  &  1.00   & 1.10 &    1.10    \\
-10                 &     163490      &      182868      &    179347  &	 1.00   & 1.12 &    1.10    \\
+1                   &     57294      &      57388      &    57343  &  1.00   & 1.00 &    1.00    \\
+2                   &     29625      &      29749      &    29660  &  1.00   & 1.00 &    1.00    \\
+3                   &     24969      &      25068      &    24970  &  1.00   & 1.00 &    1.00    \\
+4                   &     19290      &      19319      &    19378  &  1.00   & 1.00 &    1.00    \\
+5                   &     17823      &      17890      &    17897  &  1.00   & 1.00 &    1.00    \\
+6                   &     15611      &      15506      &    15512  &  1.01   & 1.00 &    1.00    \\
+7                   &     13930      &      13919      &    13773  &  1.01   & 1.01 &    1.00    \\
+8                   &     12637      &      12599      &    12617  &  1.00   & 1.00 &    1.00    \\
 \end{tabular}
 \captionof{table}{Test results for scaling number of mapper tasks}\label{table:test_results_concurrent_tasks}
 \end{table}
-\end{center}
+\label{table:test_results_concurrent_tasks}
+
+\begin{figure}[h]
+\begin{tikzpicture}
+	\begin{axis}[
+		legend entries={\acs{TL},\acs{STM}, Actor},
+		legend pos=north east,
+		grid = both,
+		xlabel=Mapper tasks,
+		ylabel=Miliseconds,
+		xmin=0,
+		ymin=0, 
+		title=Test results for scaling number of mapper tasks,
+		label=fig:tr_scale_mappers]		
+	\addplot[color=red,mark=x] coordinates {
+		(1,57294)
+		(2,29625)
+		(3,24969)
+		(4,19290)
+		(5,17823)
+		(6,15611)
+		(7,13930)
+		(8,12637)
+	};
+	\addplot[color=blue,mark=x] coordinates {
+		(1,57388)
+		(2,29749)
+		(3,25068)
+		(4,19319)
+		(5,17890)
+		(6,15506)
+		(7,13919)
+		(8,12599)
+	};
+	\addplot[color=green,mark=x] coordinates {
+		(1,57343)
+		(2,29660)
+		(3,24970)
+		(4,19378)
+		(5,17897)
+		(6,15512)
+		(7,13773)
+		(8,12617)
+	};
+	\end{axis}
+\end{tikzpicture}
+\caption{Visual representation of results for scaling number of mapper tasks}\label{fig:test_results_concurrent_tasks}
+\end{figure}
 
 \begin{figure}[h]
 \centering
