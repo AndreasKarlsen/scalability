@@ -378,7 +378,7 @@ As described in \bsref{subsec:threads_shared_memory}, the \ac{TL} concurrency mo
 \begin{figure}[htbp]
 \centering
  \includegraphics[width=0.9\textwidth]{\rootpath/worksheets/threads_and_locks/figures/tl_char_implicit_explicit} 
- \caption{\ac{TL} on the Implicit - Explicit concurrency spectrum}
+ \caption{\ac{TL} on the implicit - explicit concurrency spectrum}
 \label{fig:char_implicit_explicit}
 \end{figure}
 
@@ -388,7 +388,7 @@ As described in \bsref{subsec:threads_shared_memory}, the \ac{TL} concurrency mo
 \begin{figure}[htbp]
 \centering
  \includegraphics[width=0.9\textwidth]{\rootpath/worksheets/threads_and_locks/figures/tl_char_fault_expressive} 
- \caption{\ac{TL} on the Fault Restrictive - Expressive spectrum}
+ \caption{\ac{TL} on the fault restrictive - expressive spectrum}
 \label{fig:char_fault_expressive}
 \end{figure}
 
@@ -398,7 +398,7 @@ As described in \bsref{sec:locks_me}, the \ac{TL} concurrency model uses locks t
 \begin{figure}[htbp]
 \centering
  \includegraphics[width=0.9\textwidth]{\rootpath/worksheets/threads_and_locks/figures/tl_char_pessimistic_optemistic} 
- \caption{\ac{TL} on the Pessimistic - Optimistic spectrum}
+ \caption{\ac{TL} on the pessimistic - optimistic spectrum}
 \label{fig:char_pes_opti}
 \end{figure}
 
@@ -406,7 +406,7 @@ As described in \bsref{sec:locks_me}, the \ac{TL} concurrency model uses locks t
 As mentioned in \bsref{sec:readability} and \bsref{sec:writablity}, the evaluation of readability and writablity will be based upon the evaluation of the sub characteristics, on which they are based. As two of these, simplicity and orthogonality, are common for both readability and writability, an evaluation of these is presented first. After this, an evaluation of the readability properties of the \ac{TL} concurrency model is presented, followed by the evaluation of \ac{TL} concurrency models level of abstraction and expressivity. Finally an evaluation of the writability of the \ac{TL} concurrency model is presented.
 
 %that of simplicity and orthogonality as well as a number of other considerations. Simplicity and orthogonality is described in the following sections followed by a final evaluation of readability.
-\subsubsection{Simplicity}\label{subsec:tl_simplicity_read}
+\subsubsection{Low or High Simplicity}\label{subsec:tl_simplicity_read}
 As described in \bsref{subsec:tl_lock_hard} and \bsref{subsec:tl_composability} the \ac{TL} concurrency model has a number of issues which contribute negatively to its simplicity. When taking multiple locks, taking them in incorrect order might result in a deadlock. Locking is however, as described in \bsref{subsec:tl_lock_hard}, a global property and the correct order might not be directly discernible by the reader, from within the local context. As such it is no simple task for the reader to reason about the order of locking.
 
 \bsref{subsec:tl_composability} describes how the \ac{TL} model is not composable. Implementing the observer pattern in a thread safe manner was shown to entail a number of issues. The potential for concurrency related programmer errors in similar implementations is high and identifying these errors can potentially be a non trivial task.
@@ -422,7 +422,7 @@ Based on the issues mentioned here, as well as the sheer number of concurrency r
 \label{fig:char_read_simplicity}
 \end{figure}
 
-\subsubsection{Orthogonality}\label{sec:tl_orthogonality}
+\subsubsection{Low or High Orthogonality}\label{sec:tl_orthogonality}
 The \ac{TL} concurrency model consists of only a few constructs. Threads are started in order to introduce concurrency and synchronization is achieved using some form of locking. These basic constructs can be combined in a large number of ways, in order to produce concurrent programs. As such the \ac{TL} concurrency model seems to be orthogonal as it consists of a small number of constructs, which can be combined in a large number of ways. Each of the constructs does however have its own distinct purpose, which means that only certain combinations of the constructs are useful. In fact some erroneous combinations can lead to serious issues such as deadlocks. We say that the \ac{TL} concurrency model is towards the high orthogonality end of the low - high orthogonal spectrum. This was chosen based on the number of constructs and combinations of these. The fact that some combinations can lead to program errors which are hard to detect has however kept the \ac{TL} concurrency model from being considered truly orthogonal. The placement of the \ac{TL} concurrency model on the low - high orthogonal spectrum is depicted in \bsref{fig:char_tl_orthogonality}.
 
 \begin{figure}[htbp]
@@ -432,7 +432,7 @@ The \ac{TL} concurrency model consists of only a few constructs. Threads are sta
 \label{fig:char_tl_orthogonality}
 \end{figure}
 
-\subsubsection{Readability evaluation}
+\subsubsection{Low or High Readability}
 \label{subsec:tl_char_readability}
 As described in \bsref{subsec:tl_simplicity_read} the simplicity of the \ac{TL} model as residing in the low end of the low - high simplicity spectrum. In \bsref{sec:tl_orthogonality} say that the orthogonality resides slightly towards the high end of the low - high orthogonality spectrum. These results directly influence the readability of the \ac{TL} concurrency model.
 
@@ -447,7 +447,7 @@ Considering this as well as the evaluation of simplicity and orthogonality we sa
 \label{fig:char_tl_readability}
 \end{figure}
 
-\subsubsection{Level of abstraction}\label{sec:tl_level_of_abstraction}
+\subsubsection{Low or High Level of abstraction}\label{sec:tl_level_of_abstraction}
 The \ac{TL} concurrency model is tightly coupled with the underlying hardware architecture. Threads are part of the process model used in the \ac{OS} and the \ac{TL} concurrency model directly uses threads in order to introduce concurrency. Synchronization happens via shared memory which is also part of the process model. The locking is done via supporting hardware instructions such as Test-and-set or Compare-and-swap\cite[p. 1990]{scott2011sync}. Many languages now include more high level abstractions, such as Java's ExecutorService\footnote{\url{http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/ExecutorService.html}}, which hide the underlying threads from the programmer. However, generally such abstractions still use threads underneath. Because the abstractions which the \ac{TL} concurrency model offers is so tightly coupled with the hardware and \ac{OS}, we say that the \ac{TL} concurrency model has a low level of abstraction. The placement of the \ac{TL} concurrency model on the low - high level of abstraction spectrum is depicted in \bsref{fig:char_tl_readability}.
 
 \begin{figure}[htbp]
@@ -457,7 +457,7 @@ The \ac{TL} concurrency model is tightly coupled with the underlying hardware ar
 \label{fig:char_tl_level_of_abstraction}
 \end{figure}
 
-\subsubsection{Expressivity}\label{sec:tl_expressivity}
+\subsubsection{Low or High Expressivity}\label{sec:tl_expressivity}
 The expressivity of the \ac{TL} concurrency model is tightly coupled with its level of abstraction. As the constructs that \ac{TL} offers are so close to the hardware primitives, the expressivity of the \ac{TL} concurrency model suffers.
 
 Using the \ac{TL} concurrency model, concurrency is expressed by starting threads and locking access to critical regions. Starting a thread to introduce concurrency is a low level operation, directly related to the process model discussed in \bsref{sec:processes_threads}.
@@ -473,7 +473,7 @@ Based on these considerations, we say that the \ac{TL} concurrency model has low
 \label{fig:char_tl_expressivity}
 \end{figure}
 
-\subsubsection{Writability evaluation}
+\subsubsection{Low or High Writability}
 Writing correct \ac{TL} based concurrent implementations is generally considered to be hard\cite[p. 56]{sutter2005software}. As discussed in \bsref{sec:tl_level_of_abstraction}, the \ac{TL} concurrency model has a low level of abstraction where the programmer has to deal with a number of low level details. As a result the programmer is in control of these details but is also forced to manage them limiting the writability of the model.
 
 As discussed in \bsref{sec:tl_expressivity} the \ac{TL} concurrency model has low expressivity, which in turn limits the writablity of the model. If it is cumbersome to correctly express concurrency, writing a concurrent implementation naturally becomes more cumbersome.
