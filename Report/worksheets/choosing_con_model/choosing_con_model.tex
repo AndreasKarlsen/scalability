@@ -1,11 +1,21 @@
 \makeatletter \@ifundefined{rootpath}{\input{../../setup/preamble.tex}}\makeatother
 \worksheetstart{Choosing Concurrency Model}{1}{April 24, 2013}{Kasper}{../../}
-This chapter presents a recommendation for choosing the right concurrency model for a given problem. A single concurrency model is not a perfect solution for all problems, there are strengths and weaknesses for each model.\andreas{Siger hvem? Det gør vi, da vi har undersøgt det} The programmer must identify and choose the model or models with the most strengths and least weaknesses. In each of the following sections we will provide some guidelines for when a particular concurrency model is best applied.
+This chapter presents a recommendation for choosing the right concurrency model for a given problem. A single concurrency model is not a perfect solution for all problems, there are strengths and weaknesses for each model.\andreas{Siger hvem? Det gør vi, da vi har undersøgt det}\toby{Det gør JVM sykroniserings manden også} The programmer must identify and choose the model or models with the most strengths and least weaknesses. In each of the following sections we will provide some guidelines for when a particular concurrency model is best applied.
 
 \label{chap:choosing_con_model}
 
 
 \section{\acl{TL}}\label{sec:choose_TL}
+The \ac{TL} concurrency model has been employed for concurrent implementations for many years and is a widely supported technique for concurrent programming. While the \ac{TL} concurrency model does provide good performance it has a number of issues with its usability. Examining its characteristics reveals a low level of abstraction, low simplicity, low readability and low writability. The number of concurrency related issues the programmer has to reason about when employing the model is a great contributor to these low characteristic scores.
+
+The programmer must be adept in avoiding these issues in order to produce correct concurrent implementations. Failing to do so can lead to serious issues such as race conditions and deadlocks. In the context of fine grained locking, avoiding these issues becomes even harder. However, if the programmer has sufficient expertise in the area, fine grained locking can be employed to bolster performance.
+
+While locking has been employed for many years to produce concurrent implementations its issues limits its practicality. Alternatives, attempting to deal with these issues, have started to gain traction. Potentially spurred on by the need for concurrency due to the changes in hardware, as described in \bsref{chap:intro}. The \ac{TL} concurrency models however still offers good performance for correct implementations. Furthermore the programmer is free to tune the performance via the selected lock granularity, provided the programmer has sufficient expertise to do so. If only simply synchronization is needed locking may be sufficient. Especially if the programmer has existing expertise in the area of lock based synchronization.
+
+\kasper[inline]{Composability}
+\kasper[inline]{Only TL available $=>$ vælg tl}
+\toby[i]{Remember to look at other characteristics from study in concurrency, one being: implicit and explicit}
+
 %If performance is critical
 %Has a number of well known issues which require great effort to avoid
 %Fine grained locking is difficult but provides good performance
@@ -20,7 +30,11 @@ This chapter presents a recommendation for choosing the right concurrency model 
 %Problems with IO and native method calls
 \kasper[inline]{Programming concurrency on the JVM. Side 186}
 \section{The Actor Model}\label{sec:choose_Actor}
-%Distrubuted systems
+The actor model offers a simple concurrency model as it lets the programmer focus on the high level abstractions and hides the low-level details of threads and synchronization.
+
+%which lets the programmer focus on creating application logic
+
+%Distrubuted systems - nice fit
 %Design of large systems (back ends)
 %Allows desgin of systems on a more high level
 %Problems moving from sequeltial to actor implementation
@@ -28,9 +42,14 @@ This chapter presents a recommendation for choosing the right concurrency model 
 %Best for new implementations or reimplementation of existing systems
 %Functions well with pipeline processsing of input
 %Context swiching is cheap compared to the other models (thread ring)
+ 	% light weight actors (maybe refer til actor framework comparison article)
 %Problems expressing work where actors are dependant on one another
-\kasper[inline]{Programming concurrency on the JVM. Side 268}
+%readability and writability impact on the model
+	%high simplicity and orthogonality
+	%high level of abstraction and expressivity
+%performance results impact on the model
 
+%Hewitt's team wanted a model that would not only simplify building such concurrent systems, but would also let them reason about concurrent programs in general
 \subsection{Closing Thoughts}
 \kasper[inline]{Combine models instead of competing}
 \kasper[inline]{TL $>$ stm hvis der er meget IO}
