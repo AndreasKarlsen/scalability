@@ -14,7 +14,7 @@ function test {
     do
     if (( $j % 1000000 == 0 ))
     then
-      java -jar $1.jar $j 7 100000
+      java -jar $1.jar $j 7 100
     fi
     done
   done
