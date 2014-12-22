@@ -6,6 +6,15 @@ This chapter presents a recommendation for choosing the right concurrency model 
 
 
 \section{\acl{TL}}\label{sec:choose_TL}
+The \ac{TL} concurrency model has been employed for concurrent implementations for many years and is a widely supported technique for concurrent programming. While the \ac{TL} concurrency model does provide good performance it has a number of issues with its usability. Examining its characteristics reveals a low level of abstraction, low simplicity, low readability and low writability. The number of concurrency related issues the programmer has to reason about when employing the model is a great contributor to these low characteristic scores.
+
+The programmer must be adept in avoiding these issues in order to produce correct concurrent implementations. Failing to do so can lead to serious issues such as race conditions and deadlocks. In the context of fine grained locking avoid these issues becomes even harder. However, if the programmer has sufficient expertise in the area, fine grained locking can be employed to bolster performance.
+
+While locking has been employed for many years to produce concurrent implementations its issues limits its practicality. Alternatives, attempting to deal with these issues, have started to gain traction. Potentially spurred on by the need for concurrency due to the changes in hardware described in \bsref{chap:intro}. The \ac{TL} concurrency models however still offers good performance for correct implementations. Furthermore the programmer is free to tune the performance via the selected lock granularity, provided the programmer has sufficient expertise to do so. If only simply synchronization is needed locking may be sufficient. Especially if the programmer has existing expertise in the area.
+
+\kasper[inline]{Composability}
+\kasper[inline]{Only TL available $=>$ vælg tl}
+
 %If performance is critical
 %Has a number of well known issues which require great effort to avoid
 %Fine grained locking is difficult but provides good performance
