@@ -43,8 +43,8 @@ Test $B$ is be based on a fixed number of concurrent tasks as well as a fixed nu
 \centering
 \begin{tabular}{c|cccc}
        & \# Vectors        & \# Mappers			 	& \# Clusters & \# Iterations \\ \hline
-Test $A$ & 2.000.000            & 1-10        			& 5           & 100      \\
-Test $B$ & 1.000.000-5.000.000  & 7          			& 5           & 100
+Test $A$ & 2,000,000            & 1-10        			& 5           & 100      \\
+Test $B$ & 1,000,000-5,000,000  & 7          			& 5           & 100
 \end{tabular}
 \end{table}
 \captionof{table}{Test descriptions for work intensive tests} \label{tab:test_description_work_intensive} 
@@ -77,8 +77,8 @@ The parameters of the two tests are depicted in \bsref{tab:test_description}.
 \centering
 \begin{tabular}{c|cccc}
        & \# Vectors        & \# Mappers			 	& \# Clusters & \# Iterations \\ \hline
-Test $C$ & 10.000            & 1-10        			& 5           & 100.000      \\
-Test $D$ & 10.000			 & 7          			& 5           & 10.000-100.000
+Test $C$ & 10,000            & 1-10        			& 5           & 100,000      \\
+Test $D$ & 10,000			 & 7          			& 5           & 10,000-100,000
 \end{tabular}
 \end{table}
 \captionof{table}{Test descriptions for synchronization intensive tests} \label{tab:test_description} 
@@ -106,7 +106,8 @@ The tests will be performed on a high-grade consumer PC, specifically a Macbook 
 
 The most noticeable specification of the test setup is the amount of cores on the \ac{CPU}. There are 8 logical cores, where 4 of them are physical. The amount of cores will enable us to test the scalability of the different implementations. In some research\cite{harris2003language}, the scalability of different implementations varied after surpassing 35 cores. It could be interesting to employ our test in such a setting.
 
-\andreas{Maybe put in the jvm parameters}
+The test will be done with the Wi-Fi turned off and all applications closed but the test application. This is done to eliminate other programs hogging resources during the test run. The machine will be plugged into a power outlet the entire time to enable maximum clocking of the \ac{CPU}.
+
 \section{Test Implementations}
 This section presents a small overview of the implementations used in the performance test. As described in \bsref{sec:intro_scope}, one implementation has been made for each of the selected concurrency models, and all of the chosen languages run on the \ac{JVM}. The \ac{TL} based implementation is done in Java, the \ac{STM} based implementation in Clojure and the actor based implementation in Scala. The calculations needed to cluster vectors is implemented in Java and reused throughout all implementations. This ensures that the computations themselves do not impact the results. Each implementation simply creates its own skeleton for driving the clustering process using its corresponding concurrency model, and employs the common clustering implementation to handle the clustering details. 
 
@@ -253,6 +254,124 @@ The \bscode{Reducer} actor receives the result from \bscode{Mappers} on line 15,
 \subsection{Work Intensive Tests}
 \kasper[inline]{Akka passes by reference = faster, especially with fast data}
 
+\begin{center}
+\begin{table}[h]
+\centering
+\begin{tabular}{l|cll|cll}
+             & \multicolumn{3}{c|}{Milliseconds} & \multicolumn{3}{c}{Normalized} \\
+Vectors & TL     & STM     & Actor     & TL      & STM      & Actor     \\ \hline
+1.000.000                   &     68572       &      68806       &    68541  &	 1,00   & 1,00 &    1,00    \\
+2.000.000                   &     137677      &      138041      &    137249  &  1,00   & 1,01 &    1,00    \\
+3.000.000                   &     206000      &      206559      &    205472  &  1,00   & 1,01 &    1,00    \\
+4.000.000                   &     274622      &      275882      &    273920  &  1,00   & 1,01 &    1,00    \\
+5.000.000                   &     344108      &      344939      &    343521  &  1,00   & 1,00 &    1,00    \\
+6.000.000                   &     456160      &      467615      &    453272  &  1,01   & 1,03 &    1,00    \\
+7.000.000                   &     658594      &      658302      &    625962  &  1,05   & 1,05 &    1,00    \\
+\end{tabular}
+\captionof{table}{Test $B$ results. Scaling the amount of vectors}\label{table:test_results_concurrent_tasks}
+\end{table}
+\end{center}
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[scale=1.2]
+	\begin{axis}[
+		legend entries={\acs{TL},\acs{STM}, Actor},
+		legend pos=north west,
+		grid = both,
+		xlabel=Vectors,
+		ylabel=Miliseconds,
+		xmin=0,
+		ymin=0, 
+		label=fig:tr_scale_iterations]		
+	\addplot[color=red,mark=x] coordinates {
+%		(1,21)
+		(100000,68572)
+		(200000,137677)
+		(300000,206000)
+		(400000,274622)
+		(500000,344108)
+		(600000,456160)
+		(700000,658594)
+	};
+	\addplot[color=blue,mark=x] coordinates {
+%		(1,33)
+		(100000,68806)
+		(200000,138041)
+		(300000,206559)
+		(400000,275882)
+		(500000,344939)
+		(600000,467615)
+		(700000,658302)
+	};
+	\addplot[color=green,mark=x] coordinates {
+%		(1,			27)
+		(100000,68541)
+		(200000,137249)
+		(300000,205472)
+		(400000,273920)
+		(500000,343521)
+		(600000,453272)
+		(700000,625962)
+	};
+	\end{axis}
+\end{tikzpicture}
+%\captionsetup{justification=centerlast, margin=10ex, labelfont=bf, textfont=it, format=plain, labelformat=default, labelsep=endash, font=small}
+\caption{Test $B$. Visual representation of results for scaling number of vectors}\label{fig:test_results_iterations}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+%0 - aramente   1 - Às vezes   2 - Quase sempre   4 - Sempre
+\pgfplotstableread{
+  %TL    	%STM  	%Actor
+0 1.00	1.01	1.00
+1 1.00	1.01	1.00
+2 1.01	1.03	1.00
+3 1.05	1.05	1.00
+4 1.01	1.02	1.00
+}\dataset
+\begin{tikzpicture}
+\begin{axis}[ybar,
+%        width=12cm,
+		width=\textwidth,
+        height=8cm,
+        ymin=0.8,
+        ymax=1.2,        
+        ylabel={Value-normalized runtime},
+        xlabel={Iterations},
+        xtick=data,
+        xticklabels = {
+            \strut 2\,000\,000,
+            \strut 4\,000\,000,
+            \strut 6\,000\,000,
+            \strut 7\,000\,000,
+            \strut average
+            %Category 5,
+            %Category 6
+        },
+        %xticklabel style={yshift=-10ex},
+        major x tick style = {opacity=0},
+        minor x tick num = 1,
+        minor tick length=2ex,
+        every node near coord/.append style={
+                anchor=west,
+                rotate=90
+        },
+        legend entries={\ac{TL} ,\ac{STM} ,Actor },
+        legend columns=3,
+        legend style={draw=none,nodes={inner sep=3pt}},
+        ]
+\addplot[draw=black,fill=red, nodes near coords] table[x index=0,y index=1] \dataset; %TL
+\addplot[draw=black,fill=blue, nodes near coords] table[x index=0,y index=2] \dataset; %STM
+\addplot[draw=black,fill=green, nodes near coords] table[x index=0,y index=3] \dataset; %Actor
+\end{axis}
+\end{tikzpicture}
+%\captionsetup{justification=centerlast, margin=10ex, labelfont=bf, textfont=it, format=plain, labelformat=default, labelsep=endash, font=small}
+\caption{Test $B$. Value-normalized results for scaling number of vectors}\label{fig:value_norm_test2}
+\end{figure}
+
+
 \subsection{Synchronization Intensive Tests}
 \begin{center}
 \begin{table}[h]
@@ -271,13 +390,13 @@ Mapper Tasks & TL     & STM     & Actor     & TL      & STM      & Actor     \\ 
 9                   &     171477      &      188020      &    188653  &  1.00   & 1.10 &    1.10    \\
 10                 &     163490      &      182868      &    179347  &	 1.00   & 1.12 &    1.10    \\
 \end{tabular}
-\captionof{table}{Test results for scaling number of mapper tasks}\label{table:test_results_concurrent_tasks}
+\captionof{table}{Test $C$ results. Scaling number of mapper tasks}\label{table:test_results_concurrent_tasks}
 \end{table}
 \end{center}
 
 \begin{figure}[h]
 \centering
-\begin{tikzpicture}
+\begin{tikzpicture}[scale=1.2]
 	\begin{axis}[
 		legend entries={\acs{TL},\acs{STM}, Actor},
 		legend pos=north east,
@@ -326,7 +445,7 @@ Mapper Tasks & TL     & STM     & Actor     & TL      & STM      & Actor     \\ 
 	\end{axis}
 \end{tikzpicture}
 %\captionsetup{justification=centerlast, margin=10ex, labelfont=bf, textfont=it, format=plain, labelformat=default, labelsep=endash, font=small}
-\caption{Visual representation of results for scaling number of mapper tasks}\label{fig:test_results_concurrent_tasks}
+\caption{Test $C$ results. Visual representation of results for scaling number of mapper tasks}\label{fig:test_results_concurrent_tasks}
 \end{figure}
 
 \begin{figure}[h]
@@ -342,8 +461,8 @@ Mapper Tasks & TL     & STM     & Actor     & TL      & STM      & Actor     \\ 
 }\dataset
 \begin{tikzpicture}
 \begin{axis}[ybar,
-        width=12cm,
-        height=8cm,
+		height=8cm,
+		width=\textwidth,
         ymin=0.8,
         ymax=1.2,        
         ylabel={Value-normalized runtime},
@@ -376,7 +495,7 @@ Mapper Tasks & TL     & STM     & Actor     & TL      & STM      & Actor     \\ 
 \end{axis}
 \end{tikzpicture}
 %\captionsetup{justification=centerlast, margin=10ex, labelfont=bf, textfont=it, format=plain, labelformat=default, labelsep=endash, font=small}
-\caption{Value-normalized results for scaling number of mapper tasks}\label{fig:value_norm_test1}
+\caption{Test $C$ results. Value-normalized results for scaling number of mapper tasks}\label{fig:value_norm_test1}
 \end{figure}
 
 \begin{center}
@@ -397,7 +516,7 @@ Iterations & TL     & STM     & Actor     & TL      & STM      & Actor     \\ \h
 90000		&		137349		&      141548   	&		147275  & 1.00  & 1.03  &   1.07    \\
 100000	    &		152569		&      158746	    &		163118  & 1.00  & 1.04  &   1.07    \\
 \end{tabular}
-\captionof{table}{Test results for scaling number of iterations}\label{table:test_results_iterations}
+\captionof{table}{Test $D$ results. Scaling number of iterations}\label{table:test_results_iterations}
 \end{table}
 \end{center}
 
@@ -455,7 +574,7 @@ Iterations & TL     & STM     & Actor     & TL      & STM      & Actor     \\ \h
 	\end{axis}
 \end{tikzpicture}
 %\captionsetup{justification=centerlast, margin=10ex, labelfont=bf, textfont=it, format=plain, labelformat=default, labelsep=endash, font=small}
-\caption{Visual representation of results for scaling number of iterations}\label{fig:test_results_iterations}
+\caption{Test $D$. Visual representation of results for scaling number of iterations}\label{fig:test_results_iterations}
 \end{figure}
 
 \begin{figure}[h]
@@ -471,7 +590,7 @@ Iterations & TL     & STM     & Actor     & TL      & STM      & Actor     \\ \h
 }\dataset
 \begin{tikzpicture}
 \begin{axis}[ybar,
-        width=12cm,
+		width=\textwidth,
         height=8cm,
         ymin=0.8,
         ymax=1.2,        
@@ -505,7 +624,7 @@ Iterations & TL     & STM     & Actor     & TL      & STM      & Actor     \\ \h
 \end{axis}
 \end{tikzpicture}
 %\captionsetup{justification=centerlast, margin=10ex, labelfont=bf, textfont=it, format=plain, labelformat=default, labelsep=endash, font=small}
-\caption{Value-normalized results for scaling number of iterations}\label{fig:value_norm_test2}
+\caption{Test $D$. Value-normalized results for scaling number of iterations}\label{fig:value_norm_test2}
 \end{figure}
 
 \worksheetend
