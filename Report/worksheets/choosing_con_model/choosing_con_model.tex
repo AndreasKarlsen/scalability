@@ -1,6 +1,6 @@
 \makeatletter \@ifundefined{rootpath}{\input{../../setup/preamble.tex}}\makeatother
 \worksheetstart{Choosing Concurrency Model}{1}{April 24, 2013}{Kasper}{../../}
-This chapter presents a recommendation for choosing the right concurrency model for a given problem. A single concurrency model is not a perfect solution for all problems, there are strengths and weaknesses for each model.\andreas{Siger hvem? Det gør vi, da vi har undersøgt det} The programmer must identify and choose the model or models with the most strengths and least weaknesses. In each of the following sections we will provide some guidelines for when a particular concurrency model is best applied.
+This chapter presents a recommendation for choosing the right concurrency model for a given problem. A single concurrency model is not a perfect solution for all problems, there are strengths and weaknesses for each model.\andreas{Siger hvem? Det gør vi, da vi har undersøgt det}\toby{Det gør JVM sykroniserings manden også} The programmer must identify and choose the model or models with the most strengths and least weaknesses. In each of the following sections we will provide some guidelines for when a particular concurrency model is best applied.
 
 \label{chap:choosing_con_model}
 
@@ -20,7 +20,11 @@ This chapter presents a recommendation for choosing the right concurrency model 
 %Problems with IO and native method calls
 \kasper[inline]{Programming concurrency on the JVM. Side 186}
 \section{The Actor Model}\label{sec:choose_Actor}
-%Distrubuted systems
+The actor model offers a simple concurrency model as it hides the low-level details of threads and synchronization and instead lets the programmer focus on the high level abstractions of actors and messages.
+
+%which lets the programmer focus on creating application logic
+
+%Distrubuted systems - nice fit
 %Design of large systems (back ends)
 %Allows desgin of systems on a more high level
 %Problems moving from sequeltial to actor implementation
@@ -28,9 +32,14 @@ This chapter presents a recommendation for choosing the right concurrency model 
 %Best for new implementations or reimplementation of existing systems
 %Functions well with pipeline processsing of input
 %Context swiching is cheap compared to the other models (thread ring)
+ 	% light weight actors (maybe refer til actor framework comparison article)
 %Problems expressing work where actors are dependant on one another
-\kasper[inline]{Programming concurrency on the JVM. Side 268}
+%readability and writability impact on the model
+	%high simplicity and orthogonality
+	%high level of abstraction and expressivity
+%performance results impact on the model
 
+%Hewitt's team wanted a model that would not only simplify building such concurrent systems, but would also let them reason about concurrent programs in general
 \subsection{Closing Thoughts}
 \kasper[inline]{Combine models instead of competing}
 \kasper[inline]{TL $>$ stm hvis der er meget IO}
