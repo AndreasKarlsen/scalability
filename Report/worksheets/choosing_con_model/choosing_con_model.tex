@@ -23,6 +23,17 @@ While locking has been employed for many years to produce concurrent implementat
 %Widely support in many languages
 %Limited composablity
 \section{\acl{STM}}\label{sec:choose_STM}
+\ac{STM} has been an active area of research for almost 20 years\cite{shavit1997software}. It has been included in existing languages trough both libraries\cite{rossbach2010transactional} and language changes\cite{harris2003language}, as well as included directly in newer languages such as Clojure. \ac{STM} eliminates the issue of deadlocks and scores around the middle or just above the middle in level of abstraction, simplicity, readability and writability. While \ac{STM} still require the programmer to explicitly apply synchronization to critical regions it manages to shift some of the workload away from the programmer. Memory transactions state that synchronization should be applied, but not how. The \ac{STM} system handles how synchronization is applied.
+
+While memory transactions can be hard for novice programmers to understand \ac{STM} offers a number of usability advantages compared to \ac{STM}. The elimination of deadlocks makes \ac{STM} creating correct concurrent implementations simpler and composition trough nesting of transactions allows \ac{STM} based code segments to be combined without issues. 
+
+With \ac{STM} converting a sequential implementation to a thread safe one can be as simple as applying the atomic block to the needed code segments. The programmer needs not reason about deadlock and the details of synchronization are handled by the programmer. In more complex cases the algorithm may need to be split up to support concurrent work. 
+
+The availability of mature \ac{STM} implementations does however impact when the model can be applied. Some library based \ac{STM} implementations, such as \cite{ramadan2009committing} and \cite{herlihy2006flexible} require the use of \ac{STM} related types in order to track reads and writes. Language based implementations generally do no require such workarounds. The use of such types is undesirable as it may permeate parts of the source code and is far from the simplicity promised by the atomic block. Many programmers working in the industry will have requirements to which programming languages they employ. If these languages do not encompass a sufficiently simple \ac{STM} implementation, or maybe non at all, choosing another concurrency model may be desirable. If the problem at hand is simple, \ac{TL} is similar enough to \ac{STM} that the programmer may be able to employ that successfully instead.
+
+As mentioned in \bsref{subsec:stm_irreversible_actions} STM has problems handling irreversible actions such as \ac{IO} and calls to native code. If the problem at hand encompasses a high degree of such operations then another concurrency may be preferred. If only a few of such operations are needed then another concurrency model can be employed for these code segments, while \ac{STM} can handle the remaining synchronization.
+
+
 %parallisation of existing code (in the clean format)
 %Good alternative to locks, especially if performance is not the top priority and programmers are familar with the shared memory concurrency and critical regions
 %Currently suffers from not being well integrated in many of the languages popular in the industry 
