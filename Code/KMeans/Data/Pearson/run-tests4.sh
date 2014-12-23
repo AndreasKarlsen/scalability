@@ -10,12 +10,9 @@ actor="ACTOR.jar"
 function test {
   for i in {1..5}
   do
-    for j in {1000000..10000000}
+    for j in {1..10}
     do
-    if (( $j % 1000000 == 0 ))
-    then
-      java -Xmx8g -Xms8g -jar $1.jar $j 7 100
-    fi
+      java -Xmx8g -Xms8g -jar $1.jar 2000000 $j 100
     done
   done
 }
@@ -23,5 +20,3 @@ function test {
 test stm
 test tl
 test actor
-	
-10.000.000
