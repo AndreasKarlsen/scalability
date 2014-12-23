@@ -23,6 +23,17 @@ While locking has been employed for many years to produce concurrent implementat
 %Widely support in many languages
 %Limited composablity
 \section{\acl{STM}}\label{sec:choose_STM}
+\ac{STM} has been an active area of research for almost 20 years\cite{shavit1997software}. It has been included in existing languages trough both libraries\cite{rossbach2010transactional} and language changes\cite{harris2003language}, as well as included directly in newer languages such as Clojure. \ac{STM} eliminates the issue of deadlocks and scores around the middle or just above the middle in level of abstraction, simplicity, readability and writability. While \ac{STM} still require the programmer to explicitly apply synchronization to critical regions it manages to shift some of the workload away from the programmer. Memory transactions state that synchronization should be applied, but not how. The \ac{STM} system handles how synchronization is applied.
+
+While memory transactions can be hard for novice programmers to understand \ac{STM} offers a number of usability advantages compared to \ac{STM}. The elimination of deadlocks makes \ac{STM} creating correct concurrent implementations simpler and composition trough nesting of transactions allows \ac{STM} based code segments to be combined without issues. 
+
+With \ac{STM} converting a sequential implementation to a thread safe one can be as simple as applying the atomic block to the needed code segments. The programmer needs not reason about deadlock and the details of synchronization are handled by the programmer. In more complex cases the algorithm may need to be split up to support concurrent work. 
+
+The availability of mature \ac{STM} implementations does however impact when the model can be applied. Some library based \ac{STM} implementations, such as \cite{ramadan2009committing} and \cite{herlihy2006flexible} require the use of \ac{STM} related types in order to track reads and writes. Language based implementations generally do no require such workarounds. The use of such types is undesirable as it may permeate parts of the source code and is far from the simplicity promised by the atomic block. Many programmers working in the industry will have requirements to which programming languages they employ. If these languages do not encompass a sufficiently simple \ac{STM} implementation, or maybe non at all, choosing another concurrency model may be desirable. If the problem at hand is simple, \ac{TL} is similar enough to \ac{STM} that the programmer may be able to employ that successfully instead.
+
+As mentioned in \bsref{subsec:stm_irreversible_actions} STM has problems handling irreversible actions such as \ac{IO} and calls to native code. If the problem at hand encompasses a high degree of such operations then another concurrency may be preferred. If only a few of such operations are needed then another concurrency model can be employed for these code segments, while \ac{STM} can handle the remaining synchronization.
+
+
 %parallisation of existing code (in the clean format)
 %Good alternative to locks, especially if performance is not the top priority and programmers are familar with the shared memory concurrency and critical regions
 %Currently suffers from not being well integrated in many of the languages popular in the industry 
@@ -30,7 +41,21 @@ While locking has been employed for many years to produce concurrent implementat
 %Problems with IO and native method calls
 \kasper[inline]{Programming concurrency on the JVM. Side 186}
 \section{The Actor Model}\label{sec:choose_Actor}
-The actor model offers a simple concurrency model as it lets the programmer focus on the high level abstractions and hides the low-level details of threads and synchronization.
+The actor model offers a simple concurrency model as it lets the programmer focus on high level abstractions and hides the details of synchronization and low-level threads. Furthermore, adherence to the semantic properties of the actor model gives even fewer details that the programmer has to worry about e.g. with location transparency, the programmer does only need to know the unique name of an actor and not the physical location. However the programmer must be observant what properties the actor implementation he uses fulfils, as if it does not fulfils all, he has to manage the difficulties these properties ensures himself. Additionally, the actor model is very suitable for distributed programming, as a result of location transparency, that it avoids shared state and that it advocates asynchronous message passing.
+
+In relation to our characteristics the actor model employs an explicit, fault restrictive and pessimistic model. Furthermore it employs high simplicity, high orthogonality, slightly towards high readability, high level of abstraction, high expressivity and towards high writability. It is primarily the low level constructs and details that the actor model abstracts away, that results in these high characteristics. However, to abstract away these details the model is less expressive and optimistic, by not being able to use low-level threads and be able to choose which state variables to restrict access to, resulting in a restrictive and pessimistic model.
+
+However, programming with the actor model requires a different mindset as there is no shared state, which may be an initial difficulty for the programmer. Furthermore, it is still possible to produce deadlocks if one or more actors wait on one another for messages. Therefore it may not be suitable to use the actor model for an application that requires frequent interaction between actors where they have to wait on messages from one another. Additionally, there are some problems specific for actor programs, such as overflow of an actors mailbox. 
+
+
+
+%light weight actors
+
+%one request at a time - problem (det er lidt snakket om i forhold til characteristics)
+
+%semantic properties: atomic processing of messages, fairness, encapsulation and location transparency.
+
+% Actors can be tested in isolation 
 
 %which lets the programmer focus on creating application logic
 
