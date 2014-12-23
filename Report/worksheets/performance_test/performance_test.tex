@@ -46,7 +46,7 @@ The most noticeable specification of the test setup is the amount of cores on th
 The test will be done with the Wi-Fi turned off and all applications closed but the test application. This is done to eliminate other programs hogging resources during the test run. The machine will be plugged into a power outlet the entire time to enable maximum clocking of the \ac{CPU}.
 
 \subsection{Work Intensive Tests}
-The work intensive tests consists of the two tests: test $A$ and test $B$. The parameters for the tests are shown in \bsref{tab:test_description_work_intensive}. These tests are designed to investigate the impact of the selected concurrency models on workload with a low degree of synchronization and a large amount of concurrent work.
+The work intensive tests consist of the two tests: test $A$ and test $B$. The parameters for the tests are shown in \bsref{tab:test_description_work_intensive}. These tests are designed to investigate the impact of the selected concurrency models on workload with a low degree of synchronization and a large amount of concurrent work.
 
 Test $A$ is based on a fixed size data set, while the number of mapper tasks will be scaled up. The goal is to determine how the selected concurrency models scale as more concurrent tasks are added. Five clusters are created, using 1 to 10 mapper tasks. The algorithm will run for 100 iterations, as that will give an execution time that is possible to finish in reasonable time\andreas{Can i write a night?}. The amount of mappers, has been chosen with consideration to the amount of physical and logical cores in hardware used for the test, described further in \bsref{subsec:hardware}. Our implementations uses one thread to coordinate and drive the calculations, as well as running the reducer. Consequently, making 3 mapper tasks will utilize 4 cores concurrently. The only thing that differs in the implementations is the concurrency mechanisms and ss the number of mappers increase, the contention on the synchronization point increases. Therefore, we expect that the performance of the concurrency models will vary as the amount of mappers increase. Although the differences might be small, since the synchronization time is small compared to the amount of concurrent work. 
 
@@ -105,26 +105,151 @@ man(v_a,v_i)=\sum_{j=1}^{n}\lvert v_{a,j}-v_{i,j}\rvert
 \end{equation}
 
 where $man(v_a,v_i)$ is the Manhattan distance between the two vectors $v_a$ and $v_i$ and $n$ is the length of these vectors. $v_{a,j}$ and $v_{i,j}$ are the $j$'th item of the vectors $v_a$ and $v_i$ respectively.
-
-
+%
 \section{Test Results}
-This section will present and analyse the results of the performance test. The tests were conducted as described in \bsref{sec:test_approach}. The purpose of the analysis is verify the expectations we had, and establish knowledge that can be used to compare the concurrency models with each other.
+This section will present and analyse the result of the performance tests. The tests were conducted as described in \bsref{sec:test_approach}. The purpose of the analysis is verify the expectations we had, and establish knowledge that can be used to compare the concurrency models with each other.
+\andreas[inline]{Talk about properties of the different models that could affect the result? Fine grained control of locking. STM is automatic resolving, actor is copy by value}
 
 \subsection{Work Intensive Tests}
 \kasper[inline]{Akka passes by reference = faster, especially with fast data}
+The goal of test $A$ was to determine how the concurrency models is affected with an increased amount of concurrent work. This was done by having 2,000,000 vectors as data, scaling 1 - 10 mappers, running 100 iterations, and a computational demanding distance measure. The results in table \bsref{table:test_results_a} show little to no difference between the models when the scaling the mappers. This is visualised in \bsref{fig:value_norm_testa}. As expected, an increased difference is seen as the amount of mappers are scaled. From 8 to 10 mappers there is some difference between the models, although it is small, the actor model is slower than the other models. This difference is visualised in \bsref{fig:test_results_a_iterations}. Conclusively, the models scale almost identically to the amount of concurrency. The average shown in \bsref{fig:test_results_a_iterations} also confirm this.
+%
+\begin{center}
+\begin{table}[h]
+\centering
+\begin{tabular}{l|cll|cll}
+             & \multicolumn{3}{c|}{Milliseconds} & \multicolumn{3}{c}{Normalized} \\
+Mappers & TL     & STM     & Actor     & TL      & STM      & Actor     \\ \hline
+1   &   569016	  &      570666      &    569449	&  1,00   & 1,00 &    1,00    \\
+2   &   292167      &      292164      &    292131  &  1,00   & 1,00 &    1,00    \\
+3   &   245074      &      245541      &    244911  &  1,00   & 1,00 &    1,00    \\
+4   &   193194      &      192827      &    193198  &  1,00   & 1,00 &    1,00    \\
+5   &   173611      &      173347      &    172562  &  1,01   & 1,00 &    1,00    \\
+6   &   152898      &      152783      &    152597  &  1,00   & 1,00 &    1,00    \\
+7   &   137845      &      137265      &    137859  &  1,00   & 1,00 &    1,00    \\
+8   &   124775      &      124575      &    126722  &  1,00   & 1,00 &    1,02    \\
+9   &   122880      &      122736      &    128297  &  1,00   & 1,00 &    1,05    \\
+10 &   124332      &      123822      &    129408  &  1,00   & 1,00 &    1,05    \\
+\end{tabular}
+\captionof{table}{Test $A$ results. Scaling the amount of mappers}\label{table:test_results_a}
+\end{table}
+\end{center}
+%
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[scale=1.2]
+	\begin{axis}[
+		legend entries={\acs{TL},\acs{STM}, Actor},
+		legend pos=north east,
+		grid = both,
+		xlabel=Mappers,
+		ylabel=Milliseconds,
+		xmin=0,
+		ymin=0, 
+		label=fig:tr_scale_Mappers]		
+	\addplot[color=red,mark=x] coordinates {
+%		(1,21)
+        (1, 569016)
+        (2, 292167)
+        (3, 245074)
+        (4, 193194)
+        (5, 173611)
+        (6, 152898)
+        (7, 137845)
+        (8, 124775)
+        (9, 122880)
+        (10,124332)
+	};
+	\addplot[color=blue,mark=x] coordinates {
+%		(1,33)
+        (1, 570666)
+        (2, 292164)
+        (3, 245541)
+        (4, 192827)
+        (5, 173347)
+        (6, 152783)
+        (7, 137265)
+        (8, 124575)
+        (9, 122736)
+        (10,123822)
+	};
+	\addplot[color=green,mark=x] coordinates {
+%		(1,			27)
+        (1, 569449)
+        (2, 292131)
+        (3, 244911)
+        (4, 193198)
+        (5, 172562)
+        (6, 152597)
+        (7, 137859)
+        (8, 126722)
+        (9, 128297)
+        (10,129408)
+	};
+	\end{axis}
+\end{tikzpicture}
+%\captionsetup{justification=centerlast, margin=10ex, labelfont=bf, textfont=it, format=plain, labelformat=default, labelsep=endash, font=small}
+\caption{Test $A$. Visual representation of results for scaling number of mappers}\label{fig:test_results_a_iterations}
+\end{figure}
+%
+\begin{figure}[h]
+\centering
+%0 - aramente   1 - Às vezes   2 - Quase sempre   4 - Sempre
+\pgfplotstableread{
+  %TL    	%STM  	%Actor
+0 1.00  1.00 1.00
+1 1.00  1.00 1.00
+2 1.00	1.00 1.02
+3 1.00	1.00 1.05
+4 1.00	1.00 1.01
 
-%Test A
-Goal: Determine how the concurrency models scale with more concurrent work\\
-Expectations: minor difference, bigger difference as more mappers come.\\
-
+}\dataset
+\begin{tikzpicture}
+\begin{axis}[ybar,
+%        width=12cm,
+		width=\textwidth,
+        height=8cm,
+        ymin=0.8,
+        ymax=1.2,        
+        ylabel={Value-normalized execution time},
+        xlabel={Mappers},
+        xtick=data,
+        xticklabels = {
+            \strut 2,
+            \strut 4,
+            \strut 8,
+            \strut 10,
+            \strut average
+            %Category 5,
+            %Category 6
+        },
+        %xticklabel style={yshift=-10ex},
+        major x tick style = {opacity=0},
+        minor x tick num = 1,
+        minor tick length=2ex,
+        every node near coord/.append style={
+                anchor=west,
+                rotate=90
+        },
+        legend entries={\ac{TL} ,\ac{STM} ,Actor },
+        legend columns=3,
+        legend style={draw=none,nodes={inner sep=3pt}},
+        ]
+\addplot[draw=black,fill=red, nodes near coords] table[x index=0,y index=1] \dataset; %TL
+\addplot[draw=black,fill=blue, nodes near coords] table[x index=0,y index=2] \dataset; %STM
+\addplot[draw=black,fill=green, nodes near coords] table[x index=0,y index=3] \dataset; %Actor
+\end{axis}
+\end{tikzpicture}
+%\captionsetup{justification=centerlast, margin=10ex, labelfont=bf, textfont=it, format=plain, labelformat=default, labelsep=endash, font=small}
+\caption{Test $A$. Value-normalized results for scaling number of mappers}\label{fig:value_norm_testa}
+\end{figure}
 %Test B
-Goal: Determine how the concurrency models scale with added workload \\
-Expectations: Decrease in difference as the vector size increases.\\
-
-The goal of test $B$ was to determine how the concurrency models scaled with added workload. The results in table \bsref{table:test_results_b} shows the performance of all three concurrency models is almost equal when scaling the vectors. This is contrary to our initial expectation, as we thought the difference would decrease as the vector size increased.\andreas{Any ideas why?} \bsref{fig:value_norm_testb} visualise the differences of the value-normalized execution time.\andreas{Unexplainable increase in difference in 6 and 7 vectors} The average confirms that overall there is little to no difference between the concurrency models when scaling the vectors.
-
-Overall we can conclude, that the impact of increased workload is neglectable, unless performance is vital.
-
+%Goal: Determine how the concurrency models scale with added workload \\
+%Expectations: Decrease in difference as the vector size increases.\\
+%
+The goal of test $B$ was to determine how the concurrency models scaled with added workload. This was done by scaling the data amount with 1,000,000 to 5,000,000 vectors, having 7 mappers, 100 iterations, and a computational demanding distance measure. The results in table \bsref{table:test_results_b} shows the performance of all three concurrency models is almost equal when scaling the vectors. This is contrary to our initial expectation, as we thought the difference would decrease as the vector size increased.\andreas{Any ideas why?} \bsref{fig:value_norm_testb} visualise the differences of the value-normalized execution time.\andreas{Unexplainable increase in difference in 6 and 7 vectors} The average confirms that overall there is little to no difference between the concurrency models when scaling the vectors.
+%
+\FloatBarrier
 \begin{center}
 \begin{table}[h]
 \centering
@@ -151,7 +276,7 @@ Vectors & TL     & STM     & Actor     & TL      & STM      & Actor     \\ \hlin
 		legend pos=north west,
 		grid = both,
 		xlabel=Vectors,
-		ylabel=Miliseconds,
+		ylabel=Milliseconds,
 		xmin=0,
 		ymin=0, 
 		label=fig:tr_scale_iterations]		
@@ -190,7 +315,7 @@ Vectors & TL     & STM     & Actor     & TL      & STM      & Actor     \\ \hlin
 %\captionsetup{justification=centerlast, margin=10ex, labelfont=bf, textfont=it, format=plain, labelformat=default, labelsep=endash, font=small}
 \caption{Test $B$. Visual representation of results for scaling number of vectors}\label{fig:test_results_b_iterations}
 \end{figure}
-
+%
 \begin{figure}[h]
 \centering
 %0 - aramente   1 - Às vezes   2 - Quase sempre   4 - Sempre
@@ -241,20 +366,18 @@ Vectors & TL     & STM     & Actor     & TL      & STM      & Actor     \\ \hlin
 %\captionsetup{justification=centerlast, margin=10ex, labelfont=bf, textfont=it, format=plain, labelformat=default, labelsep=endash, font=small}
 \caption{Test $B$. Value-normalized results for scaling number of vectors}\label{fig:value_norm_testb}
 \end{figure}
-
-
+%
+Overall we can conclude, that the performances of the concurrency models under high workload does not differ much. Neither when scaling the workload or concurrency. The difference is neglectable, unless performance is vital. If that is the case, \ac{TL} and \ac{STM} is marginally preferable in highly concurrent tasks, and the actor model in tasks with large data amounts.
+%
+\FloatBarrier
 \subsection{Synchronization Intensive Tests}
-
-
 %TEST C
-Goal: Test the impact of scaling the concurrent work in a synchronization intensive test
-Expectation: Decreased execution time up to 7 mappers, biggest decreases after 3 mappers.
-
-%TEST D
-Goal: Scaling the amount of synchronization, enables us to see how more synchronization impacts the execution time
-Expectation: More difference between the different concurrency models as we scale iterations
+%Goal: Test the impact of scaling the concurrent work in a synchronization intensive test\\
+%Expectation: Decreased execution time up to 7 mappers, biggest decreases after 3 mappers.\\
+%
+The goal of test $C$ was to see the impact of scaling the concurrent work in a synchronization intensive task. This was done by scaling 1 - 10 mappers, a data size of 10,000 vectors, 100,000 iterations, and a computational simple distance measure. The results displayed in \bsref{table:test_results_concurrent_tasksc} show that when the amount of synchronization increases, the differences between the concurrency models show. \bsref{fig:test_results_concurrent_tasks_c} visualises this tendency, and shows that the overall execution time follows the same development. As expected, it shows a huge decrease between 1 and 3 mappers, and a continued decrease until 7 mappers. \ac{TL} is fastest in all the cases, and in the fastest case with 7 mappers, \ac{STM} and the actor model is 4\% and 7\% slower respectively. In the task with most synchronization with 10 mappers, \ac{STM} and the actor model was 12\% and 10\% slower respectively. The difference in performance between the models is increasing as the amount of synchronization is scaled up. \bsref{fig:value_norm_testc} visualises this, and shows that in the average case, \ac{TL} is the fastest, and \ac{STM} and the actor model is 6\% and 5\% slower relatively.
 \andreas{Put these goals up under the test definition}
-
+%
 \begin{center}
 \begin{table}[h]
 \centering
@@ -272,10 +395,10 @@ Mapper Tasks & TL     & STM     & Actor     & TL      & STM      & Actor     \\ 
 9                   &     171477      &      188020      &    188653  &  1.00   & 1.10 &    1.10    \\
 10                 &     163490      &      182868      &    179347  &	 1.00   & 1.12 &    1.10    \\
 \end{tabular}
-\captionof{table}{Test $C$ results. Scaling number of mapper tasks}\label{table:test_results_concurrent_tasks}
+\captionof{table}{Test $C$ results. Scaling number of mapper tasks}\label{table:test_results_concurrent_tasksc}
 \end{table}
 \end{center}
-
+%
 \begin{figure}[h]
 \centering
 \begin{tikzpicture}[scale=1.2]
@@ -284,7 +407,7 @@ Mapper Tasks & TL     & STM     & Actor     & TL      & STM      & Actor     \\ 
 		legend pos=north east,
 		grid = both,
 		xlabel=Mapper tasks,
-		ylabel=Miliseconds,
+		ylabel=Milliseconds,
 		xmin=0,
 		ymin=0, 
 		label=fig:tr_scale_mappers]		
@@ -327,7 +450,7 @@ Mapper Tasks & TL     & STM     & Actor     & TL      & STM      & Actor     \\ 
 	\end{axis}
 \end{tikzpicture}
 %\captionsetup{justification=centerlast, margin=10ex, labelfont=bf, textfont=it, format=plain, labelformat=default, labelsep=endash, font=small}
-\caption{Test $C$ results. Visual representation of results for scaling number of mapper tasks}\label{fig:test_results_concurrent_tasks}
+\caption{Test $C$ results. Visual representation of results for scaling number of mapper tasks}\label{fig:test_results_concurrent_tasks_c}
 \end{figure}
 
 \begin{figure}[h]
@@ -379,7 +502,13 @@ Mapper Tasks & TL     & STM     & Actor     & TL      & STM      & Actor     \\ 
 %\captionsetup{justification=centerlast, margin=10ex, labelfont=bf, textfont=it, format=plain, labelformat=default, labelsep=endash, font=small}
 \caption{Test $C$ results. Value-normalized results for scaling number of mapper tasks}\label{fig:value_norm_testc}
 \end{figure}
-
+%TEST D
+%Goal: Scaling the amount of synchronization, enables us to see how more synchronization impacts the execution time\\
+%Expectation: More difference between the different concurrency models as we scale iterations\\
+%
+The goal of test $D$ was to see the effect of the synchronization mechanisms. This was done by scaling the iterations from 10,000 to 100,000, having a data size of 10,000 vectors, 7 mappers, and a computational simple distance measure. \bsref{table:test_results_iterations_d} shows the result, where the differences between the models is varying, this is visualised in \bsref{fig:test_results_iterations_d}. In all cases, \ac{TL} is the fastest, and the actor model is between 5-8\% slower. \ac{STM} is between 1-10\% slower than \ac{TL}\andreas{Any good idea to explain the big variance?}. Overall, \ac{TL} is the fastest, followed by \ac{STM} and then the actor model. This is visualised in \bsref{fig:value_norm_testd}. The expectation of an increased difference between the concurrency models did happen, however the different models performs differently under different amount of iterations. This is surprising, but could be explained as statistical uncertainty\andreas{Andre gode forklaringer?}.
+%
+\FloatBarrier
 \begin{center}
 \begin{table}[h]
 \centering
@@ -398,19 +527,19 @@ Iterations & TL     & STM     & Actor     & TL      & STM      & Actor     \\ \h
 90000		&		137349		&      141548   	&		147275  & 1.00  & 1.03  &   1.07    \\
 100000	    &		152569		&      158746	    &		163118  & 1.00  & 1.04  &   1.07    \\
 \end{tabular}
-\captionof{table}{Test $D$ results. Scaling number of iterations}\label{table:test_results_iterations}
+\captionof{table}{Test $D$ results. Scaling number of iterations}\label{table:test_results_iterations_d}
 \end{table}
 \end{center}
-
+%
 \begin{figure}[h]
 \centering
-\begin{tikzpicture}
+\begin{tikzpicture}[scale=1.2]
 	\begin{axis}[
 		legend entries={\acs{TL},\acs{STM}, Actor},
 		legend pos=north west,
 		grid = both,
 		xlabel=Iterations,
-		ylabel=Miliseconds,
+		ylabel=Milliseconds,
 		xmin=0,
 		ymin=0, 
 		label=fig:tr_scale_iterations]		
@@ -456,9 +585,9 @@ Iterations & TL     & STM     & Actor     & TL      & STM      & Actor     \\ \h
 	\end{axis}
 \end{tikzpicture}
 %\captionsetup{justification=centerlast, margin=10ex, labelfont=bf, textfont=it, format=plain, labelformat=default, labelsep=endash, font=small}
-\caption{Test $D$. Visual representation of results for scaling number of iterations}\label{fig:test_results_iterations}
+\caption{Test $D$. Visual representation of results for scaling number of iterations}\label{fig:test_results_iterations_d}
 \end{figure}
-
+%
 \begin{figure}[h]
 \centering
 %0 - aramente   1 - Às vezes   2 - Quase sempre   4 - Sempre
@@ -508,13 +637,15 @@ Iterations & TL     & STM     & Actor     & TL      & STM      & Actor     \\ \h
 %\captionsetup{justification=centerlast, margin=10ex, labelfont=bf, textfont=it, format=plain, labelformat=default, labelsep=endash, font=small}
 \caption{Test $D$. Value-normalized results for scaling number of iterations}\label{fig:value_norm_testd}
 \end{figure}
-
+%
+Overall we can conclude, that the performances of the concurrency models under synchronization intensive workload does vary. When scaling the concurrency, the \ac{TL} is performing best, with a margin to actor and \ac{STM} which is close. However, even though \ac{TL} is the fastest, the difference in the worst case is only 12\%, and in average 5\% to 6\%. When scaling the iterations, \ac{TL} was in average marginally faster, althought it is neglectable unless performance is vital.
+%
 \section{Test Implementations}
 This section presents a small overview of the implementations used in the performance test. As described in \bsref{sec:intro_scope}, one implementation has been made for each of the selected concurrency models, and all of the chosen languages run on the \ac{JVM}. The \ac{TL} based implementation is done in Java, the \ac{STM} based implementation in Clojure and the actor based implementation in Scala. The calculations needed to cluster vectors is implemented in Java and reused throughout all implementations. This ensures that the computations themselves do not impact the results. Each implementation simply creates its own skeleton for driving the clustering process using its corresponding concurrency model, and employs the common clustering implementation to handle the clustering details. 
 
 In order to provide a fair comparison between the implementations execution time, the amount of work they do must be equivalent. As the implementations share the same code base for cluster calculations, it is only the concurrency mechanism and driving skeleton which impacts the results. To verify this, we have made a static set of vectors, which we can run across all the implementations, and compare the result of the final means. Running over this test data all implementations produce the the same clustering. While this is not a formal verification, is does provide a positive indication that the same work is performed across the implementations.\toby{Se hvad Lone sagde til den originale sætning der var her og om det her er bedre.}
 \andreas[inline]{The source code is available at the enclosed DVD together with instructions for running it}
-
+%
 \subsection{\ac{TL} Implementation}
 Java has been chosen for the \ac{TL} based implementation because of its well documented support for the concurrency model and its widespread use. The \ac{TL} implementation maps the reducer and mappers directly to their own thread by providing an implementation of the \bscode{Runnable} interface. A producer consumer setup, controlled by a semaphore, is employed. The mappers cluster the subset of data which they receive and pass the result to the reducer by adding it to a queue. Finally the reducer is signalled via the semaphore.\andreas{Who is the producer/consumer?} The reducer aggregate the results as they become available from the mappers  and prepares for the next iteration by calculating the new cluster means. The \bscode{run} method of the \bscode{Mapper} class is shown in \bsref{lst:tl_implementation}. On line 3 the mapper uses the common clustering service to cluster the data it received according to the supplied means. The resulting clustering is added to a queue shared with the reducer and all other mappers on line 6. Access to the queue is synchronized by using a lock, preventing other mappers, as well as the reducer from accessing the queue while the mapper adds the result. Finally the mapper signals the reducer using the semaphore on line 8. All non local variables, such as the data and queue, are supplied in the \bscode{Mapper} classes constructor.
 
