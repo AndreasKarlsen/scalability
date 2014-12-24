@@ -106,6 +106,147 @@ man(v_a,v_i)=\sum_{j=1}^{n}\lvert v_{a,j}-v_{i,j}\rvert
 
 where $man(v_a,v_i)$ is the Manhattan distance between the two vectors $v_a$ and $v_i$ and $n$ is the length of these vectors. $v_{a,j}$ and $v_{i,j}$ are the $j$'th item of the vectors $v_a$ and $v_i$ respectively.
 %
+
+\section{Test Implementations}
+This section presents a small overview of the implementations used in the performance test. As described in \bsref{sec:intro_scope}, one implementation has been made for each of the selected concurrency models, and all of the chosen languages run on the \ac{JVM}. The \ac{TL} based implementation is done in Java, the \ac{STM} based implementation in Clojure and the actor based implementation in Scala. The calculations needed to cluster vectors is implemented in Java and reused throughout all implementations. This ensures that the computations themselves do not impact the results. Each implementation simply creates its own skeleton for driving the clustering process using its corresponding concurrency model, and employs the common clustering implementation to handle the clustering details. 
+
+In order to provide a fair comparison between the implementations execution time, the amount of work they do must be equivalent. As the implementations share the same code base for cluster calculations, it is only the concurrency mechanism and driving skeleton which impacts the results. To verify this, we have made a static set of vectors, which we can run across all the implementations, and compare the result of the final means. Running over this test data all implementations produce the the same clustering. While this is not a formal verification, is does provide a positive indication that the same work is performed across the implementations.\toby{Se hvad Lone sagde til den originale sætning der var her og om det her er bedre.}
+\andreas[inline]{The source code is available at the enclosed DVD together with instructions for running it}
+%
+\subsection{\ac{TL} Implementation}
+Java has been chosen for the \ac{TL} based implementation because of its well documented support for the concurrency model and its widespread use. The \ac{TL} implementation maps the reducer and mappers directly to their own thread by providing an implementation of the \bscode{Runnable} interface. A producer consumer setup, controlled by a semaphore, is employed. The mappers cluster the subset of data which they receive and pass the result to the reducer by adding it to a queue. Finally the reducer is signalled via the semaphore.\andreas{Who is the producer/consumer?} The reducer aggregate the results as they become available from the mappers  and prepares for the next iteration by calculating the new cluster means. The \bscode{run} method of the \bscode{Mapper} class is shown in \bsref{lst:tl_implementation}. On line 3 the mapper uses the common clustering service to cluster the data it received according to the supplied means. The resulting clustering is added to a queue shared with the reducer and all other mappers on line 6. Access to the queue is synchronized by using a lock, preventing other mappers, as well as the reducer from accessing the queue while the mapper adds the result. Finally the mapper signals the reducer using the semaphore on line 8. All non local variables, such as the data and queue, are supplied in the \bscode{Mapper} classes constructor.
+
+\begin{lstlisting}[float,label=lst:tl_implementation,
+  caption={\ac{TL} Implementation},
+  language=Java,  
+  showspaces=false,
+  showtabs=false,
+  breaklines=true,
+  showstringspaces=false,
+  breakatwhitespace=true,
+  commentstyle=\color{greencomments},
+  keywordstyle=\color{bluekeywords},
+  stringstyle=\color{redstrings}]  % Start your code-block
+
+    @Override
+    public void run() {
+        Clustering clustering = ClusteringService.ClusterKMeansMSIncremental(data, means);
+        //Hand off data
+        lock.lock();
+        queue.add(clustering);
+        lock.unlock();
+        semaphore.release(1);
+    }  
+\end{lstlisting}
+
+\subsection{\ac{STM} Implementation}
+As our preliminary investigation showed in \bsref{sec:prelim_stm}, a number of programming languages and libraries to support \ac{STM} have emerged. To our knowledge, Clojure is the only official language running on the \ac{JVM} that natively support \ac{STM}. The native support enables compiler and runtime optimisations, which potentially is a big performance factor. Due to these reasons, Clojure has been chosen as the language for the \ac{STM} implementation.
+
+\toby[i]{Måske nævn også at der ikke er noget shared state generelt - kun kun med specielle constructs i sproget der bruges i transations. Så en udvikler kan ikke pille i state udenom, som man kan i andre sprog - se evt. side 301 i JVM mastering syncrhonization bogen. Revidering: Der bliver snakket om dette længere nede, måske bare nævn det som en grund til valg af sprog og refer ned?}
+
+\subsubsection{Clojures \acs{STM} Design}
+In \bsref{subsec:stm:variations_in_design} we discussed the impact of \ac{STM} design variations. In the following section, we will briefly describe the \ac{STM} design in Clojure.
+
+The isolation level of transactions in Clojure is strong. Clojure employs a special type for references named \bscode{ref}\footnote{\url{http://clojuredocs.org/clojure.core/ref}}. It is only possible to modify this reference  inside transactions. Due to this, Clojure does not have to account for modifications of references happening outside of transactions, and can secure strong isolation without any performance penalty. This is a property made possible due to transactions being built into the language. 
+
+It is the programmers responsibility not to do any irreversible actions, such as \ac{IO}, in a transaction. Clojure supplies a macro, \bscode{!io}, which raises a runtime exception if a marked function is called in a transaction. If an exception is raised inside a transaction, the transaction is aborted and the exception is propagated out of the transaction\footnote{\url{http://clojuredocs.org/clojure.core/dosync}}. As discussed in \bsref{subsec:stm:side_effects}, this does not change the way the programmer should handle exceptions compared to sequential code. 
+
+It is however not possible to wrap a transactional block around an existing implementation, to secure it runs correct concurrently. This is due to the special \bscode{ref} construct in Clojure, that must be used to enable atomicity in a transaction. The composability of \ac{STM} and the other language constructs in Clojure is limited by design. It is only possible to modify the aforementioned special types in a transaction. Other types in Clojure cannot leverage transactions to synchronize, but this is part of the design, as they are immutable. 
+
+It is possible to nest transactions in Clojure, however the inner transaction will first commit when the outer transaction does.
+
+Conditional synchronization is not directly supported in Clojure, as the \bscode{dosync} function does not take any conditional variables and the language does not have a \bscode{retry} construct. As such conditional synchronization must be achieved by other means, such as busy waiting.
+
+Reads in Clojure are invisible\cite{nielsen2010benchmarking}, which means that when a transaction reads, it does not communicate its operations to other transactions. Instead metadata is used to validate each transaction. To manage contention, Clojure uses a strategy called Priority\cite{nielsen2010benchmarking}. This strategy allows older transactions, in respect to alive time, to run in favour of younger transactions. Research\cite{nielsen2010benchmarking} has shown that in most cases this is a competitive strategy compared to other contention strategies. 
+
+\subsubsection{Clojure Implementation}
+\begin{lstlisting}[float,label=lst:stm_implementation,
+  caption={\ac{STM} Implementation},
+  language=clojure,  
+  showspaces=false,
+  showtabs=false,
+  breaklines=true,
+  showstringspaces=false,
+  breakatwhitespace=true,
+  commentstyle=\color{greencomments},
+  keywordstyle=\color{bluekeywords},
+  stringstyle=\color{redstrings}]  % Start your code-block
+  
+  (def clusters (ref '()))
+    
+  (defn mapper [data means clusters]
+    (let [cluster (clustering data means)]
+      (dosync
+        (commute clusters conj cluster)))
+    clusters)
+\end{lstlisting}
+
+The central point of the implementation, is shown at line 1 in \bsref{lst:stm_implementation}. It shows a reference to at list, named \bscode{clusters}. When calculating the centroids, a vector containing the initial values, is split up into the amount of mappers defined. The mappers work on each of their slice, and add their result to the \bscode{clusters} list. The reducer then reduces the list, by merging the results and calculating the centroids.
+
+Line 3 in \bsref{lst:stm_implementation} shows the definition of the mapper function. Each mapper is executed in a \bscode{future}\footnote{\url{http://clojuredocs.org/clojure.core/future}}, which is a concurrency unit, that yields a non-blocking result. The future can be queried for the result, on which it will block until the result is available. On line 4 is the actual calculation which is bound to a value named \bscode{cluster}. The \bscode{cluster} value is then added into the list of \bscode{clusters} on line 6, by using the \bscode{commute}\footnote{\url{http://clojuredocs.org/clojure.core/commute}} function. \bscode{commute} is a special function in Clojure, that can be used to update references inside transactions, when the update is commutative. That is, the order the list is updated in, does not matter. For non-commutative operations, \bscode{alter}\footnote{\url{http://clojuredocs.org/clojure.core/alter}} can be used, albeit it is not as fast as \bscode{commute}.\andreas{Need cite! Noget med, at alter genlæser ved read, gør commute ikke}\toby{Yes ville være lækkert :)} All this happens inside the \bscode{dosync} transaction block, that ensures synchronisation in concurrent operations. The reducer must wait until all the mappers have updated the list with their result.\toby{Why?} This is enforced by dereferencing the futures, that the mappers are executed in, which will force synchronisation, so the reducer receives all the intermediate clustering results.
+
+\subsection{Actor Implementation}
+The Scala language has been selected for the actor based implementation, as it has good support for actors in the form of the Akka actor framework. Akka is a well-known and popular actor implementation\toby{kan cite "efficient testing artikeln" om at det er en popular actor implementation hvis det er} used by companies such as Cisco, Ebay, Amazon and Blizzard.\footnote{\url{http://akka.io/}} Akka has even replaced the Scala Actors as the default actor framework for Scala applications\footnote{Changes in Ver. 2.10.0: \url{http://www.scala-lang.org/download/changelog.html}}.
+
+\subsubsection{Akka Adherence to Semantic Properties}\toby{Evt. hav det efter implementation bliver forklaret hvis det passer bedre}
+The Akka framework uses light-weight actors which means that several actors may share a single thread\cite[p. 13]{akkaDoc}, as discussed in \bsref{ssec:abstraction_over_threads}. 
+In relation to the semantic properties of the actor model, mentioned in \bsref{ssec:actor_s_properties}, Akka adheres to the property of atomic processing of messages and location transparency. Location transparency is ensured by using actor references, that are created by specifying a name together with an actor type\cite[p. 24]{akkaDoc}. 
+
+However, the properties of fairness and encapsulation are not adhered to, in order to improve performance. Akka employs an at-most-once message delivery semantics which means that a message is either delivered zero or one times, as that has the lowest implementation overhead\cite[p. 27]{akkaDoc}. This violates the fairness property which assumes that all messages are eventually delivered. However, it is possible to enforce stricter reliability in Akka, but at the cost of local-only deployment\cite[p. 29]{akkaDoc}. Akka does also not adhere to the encapsulation property, as it implements message passing by sending message contents by reference which enables the possibility of shared mutable state, as discussed in \bsnameref{sssec:safe_msg_passing}. However this only applies to local actors, when messages are sent to remote actors the message contents are copied instead. Additionally, these are the default serialization settings and Akka enables the programmer to specify different serialization techniques\cite[p. 219]{akkaDoc}.
+
+As Akka does not adhere to all the semantic properties of the actor model, it introduce risks that the conceptual actor model avoids by design, e.g. deadlocks. To alleviate these issues Akka has some actor best practices, that the programmer should adhere to. E.g. do not pass mutable objects between actors\cite[p. 12]{akkaDoc}. It is a trade-off between programmer concerns and implementation performance.
+
+%MERE:
+%Akka facilitates fault toleracne, persistence and automatic load balancing.
+	% se side 1-2 i Akka scala documentation
+	% og se efficient testing artikeln s. 12 (under actors)
+
+%Quote fra efficient testing artikeln:
+%Note that exploiting the benefits of the actor model for programming does not require a language that enforces strict actor semantics; it is sufficient to have a library providing asynchronous messaging between concurrent objects, and to adhere to coding conventions for avoiding shared state.
+\subsubsection{Akka Implementation}
+A central \bscode{Master} actor is responsible for driving the clustering process. It handles distribution of data to the mappers and running the clustering process for the required number of iterations. \bsref{lst:actor_implementation} shows the \bscode{Mapper} and \bscode{Reducer} actors of the implementation. On line 3-7 the behaviour method scope is defined for the \bscode{Mapper} actor. There is only a single behaviour method defined for this actor, which is for a \bscode{MapWork} message on line 4. Such a message contains the data that should be clustered, the cluster centroids and a reference to the \bscode{Reducer} actor, sent from the \bscode{Master} actor. On line 5 the \bscode{Mapper} clusters its data segment using the common clustering service, followed on line 6 by sending the result as a \bscode{MapperResult} message to the \bscode{Reducer}.
+
+On line 10-24 the \bscode{Reducer} actor is defined. First on line 11-12 some isolated state variables are defined, followed by the behaviour method scope on line 14-24.
+The \bscode{Reducer} actor receives the result from \bscode{Mappers} on line 15, where the \bscode{Reducer} merges the received intermediate result with the previously received results. On line 19-22, if the current message is the last message then the \bscode{Reducer} calculates the means for the new clusters and sends the \bscode{ReducerResult} message to the master actor.
+
+\begin{lstlisting}[float,label=lst:actor_implementation,
+  caption={Actor Implementation},
+  language=Scala,  
+  showspaces=false,
+  showtabs=false,
+  breaklines=true,
+  showstringspaces=false,
+  breakatwhitespace=true,
+  commentstyle=\color{greencomments},
+  keywordstyle=\color{bluekeywords},
+  stringstyle=\color{redstrings}]  % Start your code-block
+
+  class Mapper extends Actor {
+
+    def receive = {
+      case MapWork(data: List[Vector], means: List[Vector], reducer: ActorRef) =>
+        val clustering: Clustering = ClusteringService.ClusterKMeansMSIncremental(data, means)
+        reducer ! MapperResult(clustering)
+    }
+  }
+
+  class Reducer(nrActors: Int, nrClusters: Int) extends Actor {
+    var consumedMessages: Int = 0
+    var clustering: Clustering = new Clustering(nrClusters)
+
+    def receive = {
+      case MapperResult(c: Clustering) =>
+        clustering.mergeWith(c);
+        consumedMessages += 1
+
+        if (nrActors == consumedMessages) {
+            clustering.calcMeansUsingMeanSum();
+            context.parent ! ReducerResult(clustering)
+        }
+    }
+  }  
+\end{lstlisting}
+
 \section{Test Results}
 This section will present and analyse the result of the performance tests. The tests were conducted as described in \bsref{sec:test_approach}. The purpose of the analysis is verify the expectations we had, and establish knowledge that can be used to compare the concurrency models with each other.
 \andreas[inline]{Talk about properties of the different models that could affect the result? Fine grained control of locking. STM is automatic resolving, actor is copy by value}
@@ -247,7 +388,7 @@ Mappers & TL     & STM     & Actor     & TL      & STM      & Actor     \\ \hlin
 %Goal: Determine how the concurrency models scale with added workload \\
 %Expectations: Decrease in difference as the vector size increases.\\
 %
-The goal of test $B$ was to determine how the concurrency models scaled with added workload. This was done by scaling the data amount with 1,000,000 to 5,000,000 vectors, having 7 mappers, 100 iterations, and a computational demanding distance measure. The results in table \bsref{table:test_results_b} shows the performance of all three concurrency models is almost equal when scaling the vectors. This is contrary to our initial expectation, as we thought the difference would decrease as the vector size increased.\andreas{Any ideas why?} \bsref{fig:value_norm_testb} visualise the differences of the value-normalized execution time.\andreas{Unexplainable increase in difference in 6 and 7 vectors} The average confirms that overall there is little to no difference between the concurrency models when scaling the vectors.
+The goal of test $B$ was to determine how the concurrency models scaled with added workload. This was done by scaling the data amount with 1,000,000 to 5,000,000 vectors, having 7 mappers, 100 iterations, and a computational demanding distance measure. The results in table \bsref{table:test_results_b} shows the performance of all three concurrency models is almost equal when scaling the vectors. This is contrary to our initial expectation, as we thought the difference would decrease as the vector size increased.\andreas{Any ideas why?} \bsref{fig:value_norm_testb} visualise the differences of the value-normalized execution time.\andreas{Unexplainable increase in difference in 6 and 7 vectors} The average confirms that overall there is little to no difference between the concurrency models when scaling the vectors. The actor model does however pull slightly ahead towards the end. The fact that Akka passes messages by reference instead of by value is a  contributing factor to this results, as a deep copy of large data structures is avoided. 
 %
 \FloatBarrier
 \begin{center}
@@ -367,7 +508,7 @@ Vectors & TL     & STM     & Actor     & TL      & STM      & Actor     \\ \hlin
 \caption{Test $B$. Value-normalized results for scaling number of vectors}\label{fig:value_norm_testb}
 \end{figure}
 %
-Overall we can conclude, that the performances of the concurrency models under high workload does not differ much. Neither when scaling the workload or concurrency. The difference is negligible, unless performance is vital. If that is the case, \ac{TL} and \ac{STM} is marginally preferable in highly concurrent tasks, and the actor model in tasks with large data amounts.
+Overall we can conclude, that the performances of the concurrency models under high workload does not differ much. Neither when scaling the workload or concurrency. The difference is negligible, unless performance is vital. If that is the case, \ac{TL} and \ac{STM} is marginally preferable in highly concurrent tasks.%, and the actor model in tasks with large data amounts.
 %
 \FloatBarrier
 \subsection{Synchronization Intensive Tests}
@@ -640,144 +781,6 @@ Iterations & TL     & STM     & Actor     & TL      & STM      & Actor     \\ \h
 %
 Overall we can conclude, that the performances of the concurrency models under synchronization intensive workload does vary. When scaling the concurrency, the \ac{TL} performs the best, followed by the actor model and \ac{STM}. However, even though \ac{TL} is the fastest, the difference in the worst case is only 12\%, and in average 5\% to 6\%. When scaling the iterations, \ac{TL} was on average marginally faster, although the difference is negligible unless performance is vital.
 %
-\section{Test Implementations}
-This section presents a small overview of the implementations used in the performance test. As described in \bsref{sec:intro_scope}, one implementation has been made for each of the selected concurrency models, and all of the chosen languages run on the \ac{JVM}. The \ac{TL} based implementation is done in Java, the \ac{STM} based implementation in Clojure and the actor based implementation in Scala. The calculations needed to cluster vectors is implemented in Java and reused throughout all implementations. This ensures that the computations themselves do not impact the results. Each implementation simply creates its own skeleton for driving the clustering process using its corresponding concurrency model, and employs the common clustering implementation to handle the clustering details. 
 
-In order to provide a fair comparison between the implementations execution time, the amount of work they do must be equivalent. As the implementations share the same code base for cluster calculations, it is only the concurrency mechanism and driving skeleton which impacts the results. To verify this, we have made a static set of vectors, which we can run across all the implementations, and compare the result of the final means. Running over this test data all implementations produce the the same clustering. While this is not a formal verification, is does provide a positive indication that the same work is performed across the implementations.\toby{Se hvad Lone sagde til den originale sætning der var her og om det her er bedre.}
-\andreas[inline]{The source code is available at the enclosed DVD together with instructions for running it}
-%
-\subsection{\ac{TL} Implementation}
-Java has been chosen for the \ac{TL} based implementation because of its well documented support for the concurrency model and its widespread use. The \ac{TL} implementation maps the reducer and mappers directly to their own thread by providing an implementation of the \bscode{Runnable} interface. A producer consumer setup, controlled by a semaphore, is employed. The mappers cluster the subset of data which they receive and pass the result to the reducer by adding it to a queue. Finally the reducer is signalled via the semaphore.\andreas{Who is the producer/consumer?} The reducer aggregate the results as they become available from the mappers  and prepares for the next iteration by calculating the new cluster means. The \bscode{run} method of the \bscode{Mapper} class is shown in \bsref{lst:tl_implementation}. On line 3 the mapper uses the common clustering service to cluster the data it received according to the supplied means. The resulting clustering is added to a queue shared with the reducer and all other mappers on line 6. Access to the queue is synchronized by using a lock, preventing other mappers, as well as the reducer from accessing the queue while the mapper adds the result. Finally the mapper signals the reducer using the semaphore on line 8. All non local variables, such as the data and queue, are supplied in the \bscode{Mapper} classes constructor.
-
-\begin{lstlisting}[float,label=lst:tl_implementation,
-  caption={\ac{TL} Implementation},
-  language=Java,  
-  showspaces=false,
-  showtabs=false,
-  breaklines=true,
-  showstringspaces=false,
-  breakatwhitespace=true,
-  commentstyle=\color{greencomments},
-  keywordstyle=\color{bluekeywords},
-  stringstyle=\color{redstrings}]  % Start your code-block
-
-    @Override
-    public void run() {
-        Clustering clustering = ClusteringService.ClusterKMeansMSIncremental(data, means);
-        //Hand off data
-        lock.lock();
-        queue.add(clustering);
-        lock.unlock();
-        semaphore.release(1);
-    }  
-\end{lstlisting}
-
-\subsection{\ac{STM} Implementation}
-As our preliminary investigation showed in \bsref{sec:prelim_stm}, a number of programming languages and libraries to support \ac{STM} have emerged. To our knowledge, Clojure is the only official language running on the \ac{JVM} that natively support \ac{STM}. The native support enables compiler and runtime optimisations, which potentially is a big performance factor. Due to these reasons, Clojure has been chosen as the language for the \ac{STM} implementation.
-
-\toby[i]{Måske nævn også at der ikke er noget shared state generelt - kun kun med specielle constructs i sproget der bruges i transations. Så en udvikler kan ikke pille i state udenom, som man kan i andre sprog - se evt. side 301 i JVM mastering syncrhonization bogen. Revidering: Der bliver snakket om dette længere nede, måske bare nævn det som en grund til valg af sprog og refer ned?}
-
-\subsubsection{Clojures \acs{STM} Design}
-In \bsref{subsec:stm:variations_in_design} we discussed the impact of \ac{STM} design variations. In the following section, we will briefly describe the \ac{STM} design in Clojure.
-
-The isolation level of transactions in Clojure is strong. Clojure employs a special type for references named \bscode{ref}\footnote{\url{http://clojuredocs.org/clojure.core/ref}}. It is only possible to modify this reference  inside transactions. Due to this, Clojure does not have to account for modifications of references happening outside of transactions, and can secure strong isolation without any performance penalty. This is a property made possible due to transactions being built into the language. 
-
-It is the programmers responsibility not to do any irreversible actions, such as \ac{IO}, in a transaction. Clojure supplies a macro, \bscode{!io}, which raises a runtime exception if a marked function is called in a transaction. If an exception is raised inside a transaction, the transaction is aborted and the exception is propagated out of the transaction\footnote{\url{http://clojuredocs.org/clojure.core/dosync}}. As discussed in \bsref{subsec:stm:side_effects}, this does not change the way the programmer should handle exceptions compared to sequential code. 
-
-It is however not possible to wrap a transactional block around an existing implementation, to secure it runs correct concurrently. This is due to the special \bscode{ref} construct in Clojure, that must be used to enable atomicity in a transaction. The composability of \ac{STM} and the other language constructs in Clojure is limited by design. It is only possible to modify the aforementioned special types in a transaction. Other types in Clojure cannot leverage transactions to synchronize, but this is part of the design, as they are immutable. 
-
-It is possible to nest transactions in Clojure, however the inner transaction will first commit when the outer transaction does.
-
-Conditional synchronization is not directly supported in Clojure, as the \bscode{dosync} function does not take any conditional variables and the language does not have a \bscode{retry} construct. As such conditional synchronization must be achieved by other means, such as busy waiting.
-
-Reads in Clojure are invisible\cite{nielsen2010benchmarking}, which means that when a transaction reads, it does not communicate its operations to other transactions. Instead metadata is used to validate each transaction. To manage contention, Clojure uses a strategy called Priority\cite{nielsen2010benchmarking}. This strategy allows older transactions, in respect to alive time, to run in favour of younger transactions. Research\cite{nielsen2010benchmarking} has shown that in most cases this is a competitive strategy compared to other contention strategies. 
-
-\subsubsection{Clojure Implementation}
-\begin{lstlisting}[float,label=lst:stm_implementation,
-  caption={\ac{STM} Implementation},
-  language=clojure,  
-  showspaces=false,
-  showtabs=false,
-  breaklines=true,
-  showstringspaces=false,
-  breakatwhitespace=true,
-  commentstyle=\color{greencomments},
-  keywordstyle=\color{bluekeywords},
-  stringstyle=\color{redstrings}]  % Start your code-block
-  
-  (def clusters (ref '()))
-    
-  (defn mapper [data means clusters]
-    (let [cluster (clustering data means)]
-      (dosync
-        (commute clusters conj cluster)))
-    clusters)
-\end{lstlisting}
-
-The central point of the implementation, is shown at line 1 in \bsref{lst:stm_implementation}. It shows a reference to at list, named \bscode{clusters}. When calculating the centroids, a vector containing the initial values, is split up into the amount of mappers defined. The mappers work on each of their slice, and add their result to the \bscode{clusters} list. The reducer then reduces the list, by merging the results and calculating the centroids.
-
-Line 3 in \bsref{lst:stm_implementation} shows the definition of the mapper function. Each mapper is executed in a \bscode{future}\footnote{\url{http://clojuredocs.org/clojure.core/future}}, which is a concurrency unit, that yields a non-blocking result. The future can be queried for the result, on which it will block until the result is available. On line 4 is the actual calculation which is bound to a value named \bscode{cluster}. The \bscode{cluster} value is then added into the list of \bscode{clusters} on line 6, by using the \bscode{commute}\footnote{\url{http://clojuredocs.org/clojure.core/commute}} function. \bscode{commute} is a special function in Clojure, that can be used to update references inside transactions, when the update is commutative. That is, the order the list is updated in, does not matter. For non-commutative operations, \bscode{alter}\footnote{\url{http://clojuredocs.org/clojure.core/alter}} can be used, albeit it is not as fast as \bscode{commute}.\andreas{Need cite! Noget med, at alter genlæser ved read, gør commute ikke}\toby{Yes ville være lækkert :)} All this happens inside the \bscode{dosync} transaction block, that ensures synchronisation in concurrent operations. The reducer must wait until all the mappers have updated the list with their result.\toby{Why?} This is enforced by dereferencing the futures, that the mappers are executed in, which will force synchronisation, so the reducer receives all the intermediate clustering results.
-
-\subsection{Actor Implementation}
-The Scala language has been selected for the actor based implementation, as it has good support for actors in the form of the Akka actor framework. Akka is a well-known and popular actor implementation\toby{kan cite "efficient testing artikeln" om at det er en popular actor implementation hvis det er} used by companies such as Cisco, Ebay, Amazon and Blizzard.\footnote{\url{http://akka.io/}} Akka has even replaced the Scala Actors as the default actor framework for Scala applications\footnote{Changes in Ver. 2.10.0: \url{http://www.scala-lang.org/download/changelog.html}}.
-
-\subsubsection{Akka Adherence to Semantic Properties}\toby{Evt. hav det efter implementation bliver forklaret hvis det passer bedre}
-The Akka framework uses light-weight actors which means that several actors may share a single thread\cite[p. 13]{akkaDoc}, as discussed in \bsref{ssec:abstraction_over_threads}. 
-In relation to the semantic properties of the actor model, mentioned in \bsref{ssec:actor_s_properties}, Akka adheres to the property of atomic processing of messages and location transparency. Location transparency is ensured by using actor references, that are created by specifying a name together with an actor type\cite[p. 24]{akkaDoc}. 
-
-However, the properties of fairness and encapsulation are not adhered to, in order to improve performance. Akka employs an at-most-once message delivery semantics which means that a message is either delivered zero or one times, as that has the lowest implementation overhead\cite[p. 27]{akkaDoc}. This violates the fairness property which assumes that all messages are eventually delivered. However, it is possible to enforce stricter reliability in Akka, but at the cost of local-only deployment\cite[p. 29]{akkaDoc}. Akka does also not adhere to the encapsulation property, as it implements message passing by sending message contents by reference which enables the possibility of shared mutable state, as discussed in \bsnameref{sssec:safe_msg_passing}. However this only applies to local actors, when messages are sent to remote actors the message contents are copied instead. Additionally, these are the default serialization settings and Akka enables the programmer to specify different serialization techniques\cite[p. 219]{akkaDoc}.
-
-As Akka does not adhere to all the semantic properties of the actor model, it introduce risks that the conceptual actor model avoids by design, e.g. deadlocks. To alleviate these issues Akka has some actor best practices, that the programmer should adhere to. E.g. do not pass mutable objects between actors\cite[p. 12]{akkaDoc}. It is a trade-off between programmer concerns and implementation performance.
-
-%MERE:
-%Akka facilitates fault toleracne, persistence and automatic load balancing.
-	% se side 1-2 i Akka scala documentation
-	% og se efficient testing artikeln s. 12 (under actors)
-
-%Quote fra efficient testing artikeln:
-%Note that exploiting the benefits of the actor model for programming does not require a language that enforces strict actor semantics; it is sufficient to have a library providing asynchronous messaging between concurrent objects, and to adhere to coding conventions for avoiding shared state.
-\subsubsection{Akka Implementation}
-A central \bscode{Master} actor is responsible for driving the clustering process. It handles distribution of data to the mappers and running the clustering process for the required number of iterations. \bsref{lst:actor_implementation} shows the \bscode{Mapper} and \bscode{Reducer} actors of the implementation. On line 3-7 the behaviour method scope is defined for the \bscode{Mapper} actor. There is only a single behaviour method defined for this actor, which is for a \bscode{MapWork} message on line 4. Such a message contains the data that should be clustered, the cluster centroids and a reference to the \bscode{Reducer} actor, sent from the \bscode{Master} actor. On line 5 the \bscode{Mapper} clusters its data segment using the common clustering service, followed on line 6 by sending the result as a \bscode{MapperResult} message to the \bscode{Reducer}.
-
-On line 10-24 the \bscode{Reducer} actor is defined. First on line 11-12 some isolated state variables are defined, followed by the behaviour method scope on line 14-24.
-The \bscode{Reducer} actor receives the result from \bscode{Mappers} on line 15, where the \bscode{Reducer} merges the received intermediate result with the previously received results. On line 19-22, if the current message is the last message then the \bscode{Reducer} calculates the means for the new clusters and sends the \bscode{ReducerResult} message to the master actor.
-
-\begin{lstlisting}[float,label=lst:actor_implementation,
-  caption={Actor Implementation},
-  language=Scala,  
-  showspaces=false,
-  showtabs=false,
-  breaklines=true,
-  showstringspaces=false,
-  breakatwhitespace=true,
-  commentstyle=\color{greencomments},
-  keywordstyle=\color{bluekeywords},
-  stringstyle=\color{redstrings}]  % Start your code-block
-
-  class Mapper extends Actor {
-
-    def receive = {
-      case MapWork(data: List[Vector], means: List[Vector], reducer: ActorRef) =>
-        val clustering: Clustering = ClusteringService.ClusterKMeansMSIncremental(data, means)
-        reducer ! MapperResult(clustering)
-    }
-  }
-
-  class Reducer(nrActors: Int, nrClusters: Int) extends Actor {
-    var consumedMessages: Int = 0
-    var clustering: Clustering = new Clustering(nrClusters)
-
-    def receive = {
-      case MapperResult(c: Clustering) =>
-        clustering.mergeWith(c);
-        consumedMessages += 1
-
-        if (nrActors == consumedMessages) {
-            clustering.calcMeansUsingMeanSum();
-            context.parent ! ReducerResult(clustering)
-        }
-    }
-  }  
-\end{lstlisting}
 
 \worksheetend
