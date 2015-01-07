@@ -3,9 +3,8 @@
 %
 In order to investigate the performance aspect of the selected concurrency models, a performance test will be conducted.  This chapter describes the test process along with the implementations and results. 
 \label{chap:performance}
-\section{Definition of Performance Test Approach}
+\section{Definition of Performance Test}
 \label{sec:test_approach}
-\andreas{Måske bare Test Approach?}
 The $k$-means clustering algorithm has been selected as the basis for the comparison as it is computationally demanding and easily partitioned into concurrent tasks\cite[p. 128]{epstein2011towards}. The $k$-means algorithm has been employed by others to measure scalability performance\cite{epstein2011towards}\cite{tardieu2014x10}.
 
 $k$-means aims at clustering $n$ data points, into $k \leq n$ clusters\cite[p. 451]{dataminingconceptsandtechniques}\cite[p. 128]{epstein2011towards}. Each cluster $k$ is initially assigned a random centroid representing the mean of the cluster. For each of the data points, a distance to the centroid of each of the $k$ clusters is calculated. The data point is then assigned to the cluster to which it is closest. After every data point has been assigned, new centroids are calculated, based on the data points assigned to the clusters. The process is then repeated, using the newly calculated cluster centroids as the basis for the distance calculations. The algorithm terminates when the cluster centroids stop changing or when user defined number of iterations has been completed\cite[p. 128]{epstein2011towards}. The algorithm is exemplified in \bsref{fig:kmeans}. Centroids are represented by triangles and data points by circles.
@@ -72,16 +71,16 @@ For the work intensive tests the \ac{PCC} will be used, as it represents one of 
 \frac{cov(a,i)}{\sigma_a \times \sigma_i} = \frac{\sum_j(v_{a,j}-\bar{v}_a)(v_{i,j}-\bar{v}_i)}{\sqrt{{\sum_j}(v_{a,j}-\bar{v}_a)^2 \sum_j(v_{i,j}-\bar{v}_i)^2}}
 \end{equation}
 
-where $cov(a,i)$ is the covariance between the two vectors $a$ and $i$ and $\sigma_a \times \sigma_i$ is the product of the vectors standard deviations.
+where $cov(a,i)$ is the covariance between the two vectors $a$ and $i$ and $\sigma_a \times \sigma_i$ is the product of the vectors standard deviations. 
+
+
 
 \subsection{Synchronization Intensive Tests}
 The synchronization intensive test will consist of the two tests: test $C$ and test $D$. The parameters for the tests are shown in \bsref{tab:test_description}. These tests are designed to investigate how the selected concurrency models affect a concurrent computation with a high degree of synchronization. 
 
-Test $C$ is based on a fixed size data set, while the number of mapper tasks will be scaled up.  The test will be based on a data set of 10.000 vectors. Five clusters are created, using 1 to 10 mapper tasks. The algorithm will run for 100.000 iterations. As with the previous tests, the amount of mappers have been chosen based on the underlying hardware. We expect a decreasing run time while scaling up to 7 mappers, as that will equal into 8 cores running concurrently. However, the biggest decrease should be seen up to 3 mappers, as the physical cores are known to perform vastly better than hyperthreaded cores\andreas{Need reference}. After 7 mappers, we expect the run time to be slower, as coordination between the threads causes overhead in the computation.
+Test $C$ is based on a fixed size data set, while the number of mapper tasks will be scaled up.  The test will be based on a data set of 10.000 vectors. Five clusters are created, using 1 to 10 mapper tasks. The algorithm will run for 100.000 iterations. As with the previous tests, the amount of mappers have been chosen based on the underlying hardware. We expect a decreasing run time while scaling up to 7 mappers, as that will utilize all 8 cores concurrently. However, the biggest decrease should be seen up to 3 mappers, as the physical cores are known to perform vastly better than hyperthreaded cores\cite{marr2002hyper}. After 7 mappers, we expect the run time to be slower, as coordination between the threads causes overhead in the computation.
 
-Test $D$ is based on a fixed number of concurrent tasks as well as a fixed size dataset, while the number of iterations will be scaled up. Synchronization is applied whenever mappers delegate their work to the reducer. Scaling up the number of iterations will increase the number of times synchronization is executed for each of the selected models. As such this test seeks to investigate the impact each of the selected concurrency model has on the performance of the clustering algorithm\andreas{Fortæller den sætning noget?}. It is our expectation that each model will have fairly close performance overhead\andreas{Synchronization overhead?}, but due to different reasons. 
-\andreas[inline]{It is our expectation that the different synchronization overhead will be clear in this test, and an increasing difference will be seen as the number of iterations increase and thereby the amount of synchronization.}
-The test will employ a dataset of 10,000 vectors along with seven mapper tasks. The number of iterations will be scaled from 10,000 to 100,000 in intervals of 10,000. The amount of mappers was chosen to be 7, since it will enable all 8 logical cores to work concurrently.
+Test $D$ is based on a fixed number of concurrent tasks as well as a fixed size dataset, while the number of iterations will be scaled up. Synchronization is applied whenever mappers delegate their work to the reducer. Scaling up the number of iterations will increase the number of times synchronization is executed for each of the selected models. It is our expectation that an greater difference will be revealed, as the number of iterations increase and thereby the amount of synchronization overhead. The test will employ a dataset of 10,000 vectors along with seven mapper tasks. The number of iterations will be scaled from 10,000 to 100,000 in intervals of 10,000. 7 mappers is chosen, since it will enable all 8 logical cores to work concurrently.
 
 The parameters of the two tests are depicted in \bsref{tab:test_description}.
 
@@ -98,13 +97,15 @@ Test $D$ & 10,000			 & 7          			& 5           & 10,000-100,000
 \end{center}
 
 \subsubsection{Distance Measure}
-The Manhattan distance will be used for the synchronization intensive tests as it represents a simple distance calculation. Having a simple calculation will limit the amount of work spent on computing the clusters. As such the work done by the concurrency models will have a greater impact on the results. The Manhattan distance is defined as\cite[p. 41]{amatriain2011data}:
+The manhattan distance will be used for the synchronization intensive tests as it represents a simple distance calculation. Having a simple calculation will limit the amount of work spent on computing the clusters. As such the work done by the concurrency models will have a greater impact on the results. The Manhattan distance is defined as\cite[p. 41]{amatriain2011data}:
  
 \begin{equation}\label{eq:mandistance}
 man(v_a,v_i)=\sum_{j=1}^{n}\lvert v_{a,j}-v_{i,j}\rvert
 \end{equation}
 
-where $man(v_a,v_i)$ is the Manhattan distance between the two vectors $v_a$ and $v_i$ and $n$ is the length of these vectors. $v_{a,j}$ and $v_{i,j}$ are the $j$'th item of the vectors $v_a$ and $v_i$ respectively.
+where $man(v_a,v_i)$ is the Manhattan distance between the two vectors $v_a$ and $v_i$ and $n$ is the length of these vectors. $v_{a,j}$ and $v_{i,j}$ are the $j$'th item of the vectors $v_a$ and $v_i$ respectively. It calculates the sum of the differences between the two vectors, $v_{a}$ and $v_{i}$ on a given item, $j$.
+
+
 %
 
 \section{Test Implementations}
@@ -248,12 +249,12 @@ The \bscode{Reducer} actor receives the result from \bscode{Mappers} on line 15,
 \end{lstlisting}
 
 \section{Test Results}
-This section will present and analyse the result of the performance tests. The tests were conducted as described in \bsref{sec:test_approach}. The purpose of the analysis is verify the expectations we had, and establish knowledge that can be used to compare the concurrency models with each other.
+This section will present and analyse the results of the performance tests. The tests were conducted as described in \bsref{sec:test_approach}. The purpose of the analysis is to verify our expectations, and establish knowledge that can be used to compare the concurrency models with each other.
 \andreas[inline]{Talk about properties of the different models that could affect the result? Fine grained control of locking. STM is automatic resolving, actor is copy by value}
 
 \subsection{Work Intensive Tests}
 \kasper[inline]{Akka passes by reference = faster, especially with fast data}
-The goal of test $A$ was to determine how the concurrency models is affected with an increased amount of concurrent work. This was done by having 2,000,000 vectors as data, scaling 1 - 10 mappers, running 100 iterations, and a computational demanding distance measure. The results in table \bsref{table:test_results_a} show little to no difference between the models when the scaling the mappers. This is visualised in \bsref{fig:value_norm_testa}. As expected, an increased difference is seen as the amount of mappers are scaled. From 8 to 10 mappers there is some difference between the models, although it is small, the actor model is slower than the other models. This difference is visualised in \bsref{fig:test_results_a_iterations}. Conclusively, the models scale almost identically to the amount of concurrency. The average shown in \bsref{fig:test_results_a_iterations} also confirm this.
+The goal of test $A$ was to determine how the concurrency models are affected with an increased amount of concurrent work. This was done by having 2,000,000 vectors as data, scaling 1 - 10 mappers, running 100 iterations, and a computational demanding distance measure. The results in \bsref{table:test_results_a} show little to no difference between the models when scaling the mappers. This is visualised in \bsref{fig:tr_scale_mappers_a}. As expected, a greater difference is seen as the amount of mappers are scaled. From 8 to 10 mappers there is some difference between the models. The actor model is slower than the other models, although the difference is small. This difference is visualised in \bsref{fig:test_results_a_iterations}. Conclusively, the models scale almost identically to the amount of concurrency. The average shown in \bsref{fig:value_norm_testa} also confirm this.
 %
 \begin{center}
 \begin{table}[h]
@@ -287,7 +288,7 @@ Mappers & TL     & STM     & Actor     & TL      & STM      & Actor     \\ \hlin
 		ylabel=Milliseconds,
 		xmin=0,
 		ymin=0, 
-		label=fig:tr_scale_Mappers]		
+		label=fig:tr_scale_mappers_a]		
 	\addplot[color=red,mark=x] coordinates {
 %		(1,21)
         (1, 569016)
@@ -388,7 +389,7 @@ Mappers & TL     & STM     & Actor     & TL      & STM      & Actor     \\ \hlin
 %Goal: Determine how the concurrency models scale with added workload \\
 %Expectations: Decrease in difference as the vector size increases.\\
 %
-The goal of test $B$ was to determine how the concurrency models scaled with added workload. This was done by scaling the data amount with 1,000,000 to 5,000,000 vectors, having 7 mappers, 100 iterations, and a computational demanding distance measure. The results in table \bsref{table:test_results_b} shows the performance of all three concurrency models is almost equal when scaling the vectors. This is contrary to our initial expectation, as we thought the difference would decrease as the vector size increased.\andreas{Any ideas why?} \bsref{fig:value_norm_testb} visualise the differences of the value-normalized execution time.\andreas{Unexplainable increase in difference in 6 and 7 vectors} The average confirms that overall there is little to no difference between the concurrency models when scaling the vectors. The actor model does however pull slightly ahead towards the end. The fact that Akka passes messages by reference instead of by value is a  contributing factor to this results, as a deep copy of large data structures is avoided. 
+The goal of test $B$ was to determine how the concurrency models scaled with added workload. This was done by scaling the data amount with 1,000,000 to 5,000,000 vectors, having 7 mappers, 100 iterations, and a computational demanding distance measure. The results in table \bsref{table:test_results_b} show that performance of all three concurrency models is almost equal when scaling the vectors. This is visualised in \bsref{fig:test_results_b_iterations}. This is contrary to our initial expectation since the increased vector size, increases the workload done in parallel, and the time used in parallel would increase, without increasing the time used for synchronisation.\andreas{Any ideas why?} \bsref{fig:value_norm_testb} visualises the differences of the value-normalized execution time.\andreas{Unexplainable increase in difference in 6 and 7 vectors} The average confirms that overall there is little to no difference between the concurrency models when scaling the vectors. The actor model does however pull slightly ahead towards the end. The fact that Akka passes messages by reference instead of by value is a contributing factor to this results, as a deep copy of large data structures is avoided. 
 %
 \FloatBarrier
 \begin{center}
@@ -508,7 +509,7 @@ Vectors & TL     & STM     & Actor     & TL      & STM      & Actor     \\ \hlin
 \caption{Test $B$. Value-normalized results for scaling number of vectors}\label{fig:value_norm_testb}
 \end{figure}
 %
-Overall we can conclude, that the performances of the concurrency models under high workload does not differ much. Neither when scaling the workload or concurrency. The difference is negligible, unless performance is vital. If that is the case, \ac{TL} and \ac{STM} is marginally preferable in highly concurrent tasks.%, and the actor model in tasks with large data amounts.
+Overall we can conclude, that the performance of the concurrency models under high workload does not differ much, neither when scaling the workload or concurrency. The difference is negligible, unless performance is vital. If that is the case, \ac{TL} and \ac{STM} are marginally preferable in highly concurrent tasks.%, and the actor model in tasks with large data amounts.
 %
 \FloatBarrier
 \subsection{Synchronization Intensive Tests}
@@ -516,7 +517,7 @@ Overall we can conclude, that the performances of the concurrency models under h
 %Goal: Test the impact of scaling the concurrent work in a synchronization intensive test\\
 %Expectation: Decreased execution time up to 7 mappers, biggest decreases after 3 mappers.\\
 %
-The goal of test $C$ was to see the impact of scaling the concurrent work in a synchronization intensive task. This was done by scaling from 1 to 10 mappers, a data size of 10,000 vectors, 100,000 iterations, and a computational simple distance measure. The results displayed in \bsref{table:test_results_concurrent_tasksc} show that when the amount of synchronization increases, the differences between the concurrency models become more apparent. \bsref{fig:test_results_concurrent_tasks_c} visualises this tendency, and shows that the overall execution time follows the same development. As expected, it shows a huge decrease between 1 and 3 mappers, and a continued decrease until 7 mappers. \ac{TL} is fastest in all the cases, and in the fastest case with 7 mappers, \ac{STM} and the actor model is 4\% and 7\% slower respectively. In the task with most synchronization with 10 mappers, \ac{STM} and the actor model was 12\% and 10\% slower respectively. The difference in performance between the models increases as the amount of synchronization is scaled up. \bsref{fig:value_norm_testc} visualises this, and shows that in the average case, \ac{TL} is the fastest, and \ac{STM} and the actor model is 6\% and 5\% slower relatively.
+The goal of test $C$ was to see the impact of scaling the concurrent work in a synchronization intensive task. This was done by scaling from 1 to 10 mappers, a data size of 10,000 vectors, 100,000 iterations, and a computational simple distance measure. The results displayed in \bsref{table:test_results_concurrent_tasksc} show that when the amount of synchronization increases, the differences between the concurrency models become more apparent. \bsref{fig:test_results_concurrent_tasks_c} visualises this tendency, and shows that the overall execution time follows the same tendency. As expected, it shows a huge decrease between 1 and 3 mappers, and a continued decrease until 7 mappers. \ac{TL} is fastest in all the cases, and in the fastest case with 7 mappers, \ac{STM} and the actor model is 4\% and 7\% slower respectively. In the task with most synchronization with 10 mappers, \ac{STM} and the actor model was 12\% and 10\% slower respectively. The difference in performance between the models increases as the amount of synchronization is scaled up. \bsref{fig:value_norm_testc} visualises this, and shows that in the average case, \ac{TL} is the fastest, and \ac{STM} and the actor model is 6\% and 5\% slower relatively.
 \andreas{Put these goals up under the test definition}
 %
 \begin{center}
@@ -647,7 +648,7 @@ Mapper Tasks & TL     & STM     & Actor     & TL      & STM      & Actor     \\ 
 %Goal: Scaling the amount of synchronization, enables us to see how more synchronization impacts the execution time\\
 %Expectation: More difference between the different concurrency models as we scale iterations\\
 %
-The goal of test $D$ was to see the effect of the synchronization mechanisms. This was done by scaling the iterations from 10,000 to 100,000, having a data size of 10,000 vectors, 7 mappers, and a computational simple distance measure. \bsref{table:test_results_iterations_d} shows the result, where the differences between the models is varying, this is visualised in \bsref{fig:test_results_iterations_d}. In all cases, \ac{TL} is the fastest, and the actor model is between 5-8\% slower. \ac{STM} is between 1-10\% slower than \ac{TL}\andreas{Any good idea to explain the big variance?}. Overall, \ac{TL} is the fastest, followed by \ac{STM} and then the actor model. This is visualised in \bsref{fig:value_norm_testd}.% The expectation of an increased difference between the concurrency models did happen, however the different models performs differently under different amount of iterations. This is surprising, but could be explained as statistical uncertainty\andreas{Andre gode forklaringer?}.
+The goal of test $D$ was to see the effect of the synchronization mechanisms. This was done by scaling the iterations from 10,000 to 100,000, having a data size of 10,000 vectors, 7 mappers, and a computational simple distance measure. \bsref{table:test_results_iterations_d} shows the result, where the differences between the models is varying, this is visualised in \bsref{fig:test_results_iterations_d}. In all cases, \ac{TL} is the fastest, and the actor model is  5\% in the best case, and 8\% slower in the worst. Compared to \ac{TL}, \ac{STM} is 1\% slower in the best case, and 10\% slower in the worst case.\andreas{Any good idea to explain the big variance?}. Overall, \ac{TL} is the fastest, followed by \ac{STM} and then the actor model. This is visualised in \bsref{fig:value_norm_testd}.% The expectation of an increased difference between the concurrency models did happen, however the different models performs differently under different amount of iterations. This is surprising, but could be explained as statistical uncertainty\andreas{Andre gode forklaringer?}.
 %
 \FloatBarrier
 \begin{center}
@@ -779,7 +780,7 @@ Iterations & TL     & STM     & Actor     & TL      & STM      & Actor     \\ \h
 \caption{Test $D$. Value-normalized results for scaling number of iterations}\label{fig:value_norm_testd}
 \end{figure}
 %
-Overall we can conclude, that the performances of the concurrency models under synchronization intensive workload does vary. When scaling the concurrency, the \ac{TL} performs the best, followed by the actor model and \ac{STM}. However, even though \ac{TL} is the fastest, the difference in the worst case is only 12\%, and in average 5\% to 6\%. When scaling the iterations, \ac{TL} was on average marginally faster, although the difference is negligible unless performance is vital.
+Overall we can conclude, that the performance of the concurrency models under synchronization intensive workload does vary. When scaling concurrency, the \ac{TL} performs the best, followed by the actor model and \ac{STM}. However, even though \ac{TL} is the fastest, the difference in the worst case is only 12\%, and in average 5\% to 6\%. When scaling the iterations, \ac{TL} was on average marginally faster, although the difference is negligible unless performance is vital.
 %
 
 
