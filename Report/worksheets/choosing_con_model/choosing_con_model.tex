@@ -1,6 +1,6 @@
 \makeatletter \@ifundefined{rootpath}{\input{../../setup/preamble.tex}}\makeatother
 \worksheetstart{Choosing Concurrency Model}{1}{April 24, 2013}{Kasper}{../../}
-This chapter presents a recommendation for choosing the right concurrency model for a given problem. A single concurrency model is not a perfect solution for all problems, there are strengths and weaknesses for each model.\andreas{Siger hvem? Det gør vi, da vi har undersøgt det}\toby{Det gør JVM sykroniserings manden også} The programmer must identify and choose the model or models with the most strengths and least weaknesses. In each of the following sections we will provide some guidelines for when a particular concurrency model is best applied.
+This chapter presents a recommendation for choosing the right concurrency model for a given problem. A single concurrency model is not a perfect solution for all problems, there are strengths and weaknesses for each model.\andreas{Siger hvem? Det gør vi, da vi har undersøgt det}\toby{Det gør JVM sykroniserings manden også} The programmer must identify and choose the model or models with the most strengths and least weaknesses. In each of the following sections we will provide some guidelines for when a particular concurrency model is best applied and lastly provide some closing thoughts.
 
 \label{chap:choosing_con_model}
 
@@ -52,9 +52,7 @@ Programming with the actor model requires a different mindset as there is no sha
 
 All state variables being isolated as well as actors only handling a single message at a time, has the implication that multiple entities cannot read a state variable at the same time, which can result in lower concurrency. So if an application has frequent reads on some data structure, it may be beneficial to choose another model. Mixing the actor model with other languages constructs can help circumvent this limitation.% Although this should only be used for immutable variables as it will otherwise make race conditions possible. %også muligt at en actor implementation har en abstraction for det
 
-The actor model offers a high level perspective on modelling concurrent implementations. The flow of such computations is however different from that of most programming languages. As such combining the actor model with elements of such languages can prove troublesome, especially if a sequential implementation already exists and is to be converted into a actor based implementation.\kasper{Mit bud op noget omkring actors og eksisterede kode.}
-
-\toby[i]{Måske noget med at actor ikke fungere godt med eksisterende kode, som i andre snakkede om. Jeg kan dog ikke selv finde nogen ummidelbar begrundelse. Man kan jo godt kalde eksisterende kode inde fra actors. Og hvis det er i forhold til at der bruges tråde i den eksisterende kode, så er det vel lige så stort et problem med STM  der kalder eksisterende TL kode? Men jeg er meget åben overfor gode forklaringer af hvorfor det skulle være tilfældet at actor modellen er det :)}
+The actor model offers a high level perspective on modelling concurrent implementations. The flow of such computations is however different from that of most programming languages. As such combining the actor model with elements of such languages can prove troublesome, especially if a sequential implementation already exists and is to be converted into an actor based implementation.\kasper{Mit bud op noget omkring actors og eksisterede kode.}
 
 %%%%EXTRA (Tror jeg har det meste med, men har ladet comments stå)
 
@@ -81,14 +79,14 @@ The actor model offers a high level perspective on modelling concurrent implemen
 %performance results impact on the model
 
 %Hewitt's team wanted a model that would not only simplify building such concurrent systems, but would also let them reason about concurrent programs in general
-\subsection{Closing Thoughts}
+\section{Closing Thoughts}
 Each of the selected concurrency models offers its own set of advantages. \ac{TL} can be fine tuned and is widely supported, \ac{STM} removes the issues of deadlock by employing memory transactions and the actor model offers a high level of abstraction as well as being applicable in a distributed setting. When choosing a concurrency model for a given implementation task one must consider how the task at hand fits each of concurrency models strengths, and weaknesses.
 
 As shown in the performance tests of \bsref{chap:performance} the chosen implementations of the selected concurrency models show little difference in performance during low synchronization scenarios. As the amount of synchronization increases the difference becomes slightly more prominent, giving the \ac{TL} concurrency model a slight lead in performance. However, if performance is not the key factor for a given implementation, the selection of concurrency model should be based on other characteristics than performance. As the difference in performance is so minimal, choosing a concurrency model which fits well with the problem based on charateristics such as readability and writability could be much more beneficial than basing the decision solely on performance. Of cause factors such as the knowledge of the development team and availability of the selected concurrency model still needs to be factored into the decision.
 
-The \ac{STM} concurrency model is similar to the \ac{TL} concurrency model in that they both employ shared memory for communication and apply synchronization to critical regions. As such, if a programmer has existing knowledge the area of \ac{TL} concurrency, parts of that knowledge should be transferable to the area of \ac{STM} concurrency.
+The \ac{STM} concurrency model is similar to the \ac{TL} concurrency model in that they both employ shared memory for communication and apply synchronization to critical regions. As such, if a programmer has existing knowledge in the area of \ac{TL} concurrency, parts of that knowledge should be transferable to the area of \ac{STM} concurrency.
 
-The actor model offers a more high level perspective on modelling concurrent implementations. By abstracting away many of the low level details the programmer can put additional effort into correctly expressing the concurrent implementation. Additionally the high level of abstraction allows the actor model to hide the distribution of actors, allowing uniform communication between both local and distributed actors.
+The actor model offers a more high level perspective on modelling concurrent implementations. By abstracting away many of the low level details the programmer can put additional effort into correctly expressing the concurrent implementation. Furthermore the programmer does not have to worry about race conditions as they are avoided by the design of the model. Additionally the high level of abstraction allows the actor model to hide the distribution of actors, allowing uniform communication between both local and distributed actors. 
 
 
 
