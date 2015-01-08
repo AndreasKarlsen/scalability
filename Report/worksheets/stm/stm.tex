@@ -493,7 +493,7 @@ Considering these observations as well as the evaluation of simplicity and ortho
 \label{fig:char_stm_readability}
 \end{figure}
 
-\subsubsection{Low or High Level of abstraction}\label{sec:stm_level_of_abstraction}
+\subsubsection{Low or High Level of Abstraction}\label{sec:stm_level_of_abstraction}
 \ac{STM} uses the thread model directly to support concurrency. Threads are started in order to introduce concurrency and communication is achieved via shared memory. These concepts are directly related to the \acp{OS} process/thread model described in \bsref{sec:processes_threads}.
 
 Synchronization is accomplished using the concept of memory transactions. As described in \bsref{sec:stm_stm} and \bsref{sec:stm_common_constructs}, the programmer marks a code segment that should be executed atomically and managed by the \ac{STM} system. As such, the details of how synchronization is achieved are abstracted away. That is, transactions state that synchronization should be applied to a code segment while locking state how synchronization should be applied. The abstraction is however somewhat obstructed by transactions combining poorly with some existing language constructs, such as exceptions and \ac{IO}, as described in \bsref{subsec:stm:side_effects} and \bsref{subsec:stm_irreversible_actions}.

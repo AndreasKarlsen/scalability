@@ -4,7 +4,7 @@
 Motivated by the observation of Moore's law, software should be developed to exploit concurrency to gain run time performance. We have investigated the characteristics and run time performance of different concurrency models, and compared them to give an overview of their strength and weaknesses. To conclude our investigation, we will answer the questions in \bsref{sec:problemstatement}. This will be done by highlighting the noticeable observations made throughout the investigation.
 \label{chap:conclusion}
 \section{Question One}
-The first question in the problem statement was ``Which issues exist with the traditional \ac{TL} concurrency model?''. 
+The first question in the problem statement is ``Which issues exist with the traditional \ac{TL} concurrency model?''. 
 
 To establish common ground the concepts of concurrency, parallelism, threads, processes and shared memory was outlined in \bsref{sec:processes_threads}. A key observation was that threads in the same process shared memory, and how synchronisation could be enforced with atomicity and condition synchronisation.
 
@@ -15,9 +15,37 @@ We evaluated the characteristics of \ac{TL} in \bsref{sec_tl_char}, which summar
 Conclusively, the use of locks in the \ac{TL} model is hard to reason about, and introduces risk to the issues listed above. 
 
 \section{Question Two}
-``What are the characteristics of the selected models? Including their strengths and weaknesses.''
+To answer the second question, ``What are the characteristics of the selected models? Including their strengths and weaknesses'', each of the selected models was evaluated according to the characteristics defined in \bsref{chap:char}. A comparison of their characteristics was summarised and discussed in \bsref{chap:results}. Notable differences in characteristics will be outlined, and afterwards the strengths and weaknesses will be concluded.
+
+\subsection{Characteristics}
+A major difference is, whether the programmer needs to explicitly manage threads and synchronisation mechanisms. This is the case for \ac{TL} and \ac{STM}, but not for the actor model. The actor model is fault restrictive by design, and forces many restrictions on the programmer, e.g. isolated state and message passing for communication. This is in contrast to \ac{TL} that allows fine grained control of low level synchronization details. \ac{STM} is highly expressive, but gives some fault restrictions due to the automated transaction system. 
+
+The models also differ in their approach to handling errors. \ac{STM} will assume everything went well, and roll back if something went wrong. This limits unnecessary waiting caused by synchronisation, but introduces the risk of doing work that must be reversed. \ac{TL} and the actor model is pessimistic, and well enforce synchronization to make sure nothing goes wrong in the first place. 
+
+The use of \ac{STM} combined with other language features such as \ac{IO} or native methods, is not elegant, and introduces complexity and low orthogonality. This is not the case when using \ac{TL}, but difficulty in reasoning about locks makes it even less simple. The actor model introduces three actions, from which concurrency problems can be solved, and is thus the simplest. The composability these constructs gives the highest orthogonality. \ac{TL} has the lowest orthogonality, as combining locks easily produces erroneous implementations.
+
+The implicit relationship between data and synchronisation, and fragmentation of the implementation causes the the readability of \ac{TL} to be low. \ac{STM} suffers from the same, but removes the issue of deadlocks and thus increases the readability. The actor model encapsulates functionality and concurrency related code within an actor. It has the best readability, even though it is still hard to reason about the logic of an entire system, as the logic is divided among the actors.
+
+The abstraction level of the actor model is high, as the programmer can think and implement concurrent problems without having to worry about low-level details. \ac{STM} uses a high abstraction for critical regions, but still uses threads which is considered low-level. \ac{TL} uses threads as well as locks as constructs for critical regions, which is considered low-level.  
+
+\ac{TL} has low expressivity, as the programmer has to work out issues of locking with a low-level construct. \acp{STM} expressivity is higher, as enclosing a block of code in a transaction block will secure it from concurrency issues. Still issues related to integration with existing language concepts lower its potential expressivity. The actor model has the highest expressivity due to its high level constructs which allows a concise expression when solving of concurrency problems.
+
+\ac{TL} is effected by the issues just outlined, which causes the writability to be low. \ac{STM} allows composition and handles synchronisation from a higher level of abstraction than \ac{TL}, which gives a higher writability. The actor model abstracts details away, and provide a high level approach to dealing with concurrency. This gives the highest writability among the three models.
+
+\subsection{Strengths and Weaknesses}
+In \bsref{chap:choosing_con_model} we outlined the strength and weaknesses in each model in order to recommend the right concurrency model for a given problem. To summarize, \ac{TL} is a mature technique which is widely supported. It gives a good performance when used correct and allows for fine grained tuning. It has issues with usability, and requires experience to use. Incorrect use can cause problems such as race conditions and deadlocks. Solutions based on locks is hard to compose, which is a big weakness.
+
+\ac{STM} gives a simple way to resolve race conditions. The programmer must still identify concurrency critical regions, but does not need to specify how to resolve it. It does however not integrate well with a lot of language features, which makes it unusable for certain solutions. The mindset of using \ac{STM} can require some time to get used to, and requires knowledge to understand in depth. \ac{STM} also introduces some uncertainty in run time performance, as transactions optimistically runs calculations, and a conflict results in lose of performance. As conflicts mostly happens in write intensive scenarios, \acp{STM} strength lies in reading intensive scenarios.
+
+The actor model offers a simple concurrency model, which abstracts away from threads and details of synchronisation. It requires a different approach to solving problems, as the communication between actors is solely message based. This is the key to its simplicity but requires adjustments when reasoning about concurrency. In order to use the actor model, all of the logic must be encapsulated in to actors. It is therefore hard to retrofit a program to run concurrently by using actors. Another strength of the message passing used, is the possibility to scale across multiple instances in a distributed environment.
+
+
 \section{Question Three}
 ``How do the selected models handle concurrency issues known from the traditional \ac{TL} approach?''
+
+Race condition, deadlocks, livelocks, priority inversion, starvation.
+
+
 \section{Question Four}
 ``How is the implementation efficiency of the selected models?''
 

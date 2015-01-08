@@ -59,12 +59,12 @@ Each actor must be isolated from one another, only communicating through asynchr
 \subsubsection{Location Transparency}
 Actors know each other only by unique address, often in the form of an actor name, disjointed from the physical location. Location transparency provides an abstraction where the programmer does not have to worry about or specify the actual physical location of the message recipient. An actor can communicate with another actor which exists on the same core, on the same machine or on an entirely different machine across the network\cite[p. 3]{karmani2009actor}. Location transparency gives the ability at runtime to distribute execution across a cluster of machines which eases scaling beyond a single machine.
 
-\section{Concurrency issues}\label{sec:actor_con_issues}
+\section{Concurrency Issues}\label{sec:actor_con_issues}
 In this section we present how the actor model relates to the relevant concurrency issues presented in \bsref{sec:tl_ci}.\toby{Har vi også raceconditions med her hvor jeg referer til?}
 %priority inversion er ikke taget med fordi den ikke er gælende i actors
 %livelock er ikke med, fordi vi (mener) at den ikke er gældende
 
-\subsection{Race conditions}
+\subsection{Race Conditions}
 One of the main differences from other concurrency models, such as \ac{TL} and \ac{STM}, is that there is no notion of shared state in the actor model. Instead each actor has isolated state where only the actor itself is responsible and allowed to modify state. An actor can only affect the state of another actor indirectly by message passing and the receiving actor is then responsible for changing the state. The reason that message passing as the only communication and isolated state is preferable over shared state is that race conditions are avoided by design. To exemplify this imagine two messages sent to an actor that wants to read and modify a state variable of the actor. The actor processes each message in one isolated atomic operation which means that the messages will not interfere with one another, as the messages will be processed one at a time.
 %subsec:race_coditions
 
@@ -141,13 +141,13 @@ An indirect way to share behaviour among actors is to use the features of the la
 %Måske brug den her også
 %Kilde også om inheritance \cite[Chap. 1.2]{agha1986overview}
 
-\subsection{Actor modelling}\label{ssec:actor_modelling}
+\subsection{Actor Modelling}\label{ssec:actor_modelling}
 One of the main properties of the actor model is that an actor processes only a single message at at time. This means that no matter what type of messages that are in the mailbox, they are processed sequentially, which can result in a lower degree of concurrency for several messages only interested in ``reading'' the internal state of an actor. Messages should be fairly coarse-grained so actors can process sufficiently many tasks concurrently without having to spend time waiting for each other\cite[p. 269]{karmani2009actor}. Furthermore as the communication is through message passing it is more attractive to have coarse-grained messages to avoid unnecessary overhead by sending a lot of small messages. However messages should not be too coarse-grained as that will hurt the dynamics among actors in the system e.g. if an actor \bscode{A} is processing a very time consuming message and another actor \bscode{B} needs a simple read of actor \bscode{A's} isolated state to continue, actor \bscode{B} must await until actor \bscode{A} is finished processing.
 %Extra (the essence of it is described above i think)
 	%because actors do not share state and can only communicate through message passing, they are not a suitable choice if you need fine-grained parallelism. (seven models)
 	%not all applications are well-suited for an actor-based model. Actors serve well when we can divide the problem into parts that can run quite independently and need to communicate only sporadically. If frequent interaction is required or the parts or tasks need to coordinate to form a quorum, the actor-based model is not suitable. We may have to mix other concurrency models or consider significant redesign. (jvm mastering bogen)
 
-\subsection{Non-deterministic message order}\label{ssec:nondeter_msg_order}
+\subsection{Non-deterministic Message Order}\label{ssec:nondeter_msg_order}
 The asynchronous message passing is a key source to the non-determinism present in the actor model, as earlier mentioned in \bsref{ssec:mailbox_and_message_order}. That the message order is non-deterministic means that an actor must not rely on a specific message order, however according to \cite[p. 35]{haller2012actors}: \textit{``You can often alleviate reliance on message ordering by refactoring the actor communication, i.e., reworking the messages' contents''}. In some cases that does not suffice and the programmer must prune some of the non-determinism by restricting the order in which messages are processed. For example an actor \bscode{A} requests a stock quote from a broker actor \bscode{B}, then actor \bscode{A} must await the response of actor \bscode{B} to be able to decide whether to buy the stock or not. An illustration of the example is illustrated in \bsref{fig:request_reply_pattern}. The scenario described uses the request-reply pattern which is one of the most common patterns of messaging and synchronization in actor programs\cite[p. 5]{karmani2009actor}.
 
 \begin{figure}[h!]

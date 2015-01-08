@@ -1,13 +1,9 @@
 \makeatletter \@ifundefined{rootpath}{\input{../../setup/preamble.tex}}\makeatother
 \worksheetstart{Summary of Characteristics}{1}{April 24, 2013}{Andreas}{../../}
-This chapter presents a comparison of the selected concurrency models and their characteristics. The comparison leads up to a description of when to apply each of the selected concurrency models.
+This chapter presents a comparison of the selected concurrency models and their characteristics. The comparison will be used in \bsref{chap:choosing_con_model} to assist in guiding when to apply each of the selected concurrency models.
 \label{chap:results}
 
-\andreas[inline]{Actors er svært at bruge hvis der er en eksisterende kodebase, da det kræver en modelering fra bunden. Actors kræver, at hele systemet bliver designet omkring det.}
-\section{Characteristics}
-This section presents a characteristics based comparison of the selected concurrency models.
-
-\subsection{Implicit or Explicit Concurrency}
+\section{Implicit or Explicit Concurrency}
 The placements of the three concurrency models on the implicit to explicit spectrum are shown in \bsref{fig:results_char_impli_expli}.
 
 \ac{TL} and \ac{STM} are both placed high on the explicit end of the scale. They both require the programmer to explicitly manage threads and either use locks or transactions for marking critical regions. The actor model is more implicit than the other models as it hides the concepts of marking critical regions and low level threads. The actor model does however introduce new constructs, in the form of actors and messages, that must be explicitly used for programming concurrent programs.
@@ -19,7 +15,7 @@ The placements of the three concurrency models on the implicit to explicit spect
 \label{fig:results_char_impli_expli}
 \end{figure}
 
-\subsection{Fault Restrictive or Expressive Model}
+\section{Fault Restrictive or Expressive Model}
 \bsref{fig:results_char_fault_expressive} shows how the three concurrency models are placed on the, fault restrictive to expressive, spectrum.
 
 \ac{STM} and \ac{TL} are both placed towards the expressive end of the scale. \ac{TL} forces very few restrictions upon the programmer which gives him freedom in relation to expressing low-level synchronization details. However, this is at the cost of the programmer being left alone in ensuring correct execution. \ac{STM} is more fault restrictive than \ac{TL} as it delegates the low-level synchronization details to the STM system. 
@@ -33,7 +29,7 @@ The actor model on the other hand is towards the fault restrictive end, as it fo
 \label{fig:results_char_fault_expressive}
 \end{figure}
 
-\subsection{Pessimistic or Optimistic Model}
+\section{Pessimistic or Optimistic Model}
 \bsref{fig:results_char_pes_opti} shows the placement of the selected concurrency models on the Pessimistic - Optimistic spectrum. \ac{TL} and the actor model are pessimistic while \ac{STM} is an optimistic concurrency model. \ac{TL} guards against race conditions by providing mutual exclusion and the actor model enforces state encapsulation guarding against race conditions. \ac{STM} attempts to execute its transactions concurrently and retries the transactions if any conflicts occur.
 
 \begin{figure}[htbp]
@@ -43,7 +39,7 @@ The actor model on the other hand is towards the fault restrictive end, as it fo
 \label{fig:results_char_pes_opti}
 \end{figure}
 
-\subsection{Low or High Simplicity}
+\section{Low or High Simplicity}
 \bsref{fig:results_char_simplicity} shows the placement of the selected concurrency models on the low - high simplicity spectrum. The \ac{TL} concurrency model has low simplicity due to the number of concurrency related errors, programmers have to reason about. The implicit relationship between the data to which synchronization is applied and the synchronization itself exacerbates the issues.
 
 \ac{STM} and the actor model are more simple models, but both of the models fail to reach the high simplicity extreme due to a number of concurrency related issues. \ac{STM} suffers from the same implicit relationships between data and synchronization that the \ac{TL} concurrency model had. While \ac{STM} eliminates the issue of deadlocks, problems arises when used with existing language construct such as exceptions and \ac{IO}. As discussed in \bsref{sec:stm_ease_of_use}, studies have shown that the concept of memory transactions can be hard to grasp for novice programmers. The actor model is the most simple of the three selected concurrency models. It does however still have a number of issues reducing its simplicity. Many programmers are used to the school of thought known from imperative \ac{OOP}. The actor model employs a different school of thought that programmers will have to be familiar with in order to create well structured programs. The asynchronous nature of the model can be a problem in scenarios where synchronous would be beneficial.
@@ -55,7 +51,7 @@ The actor model on the other hand is towards the fault restrictive end, as it fo
 \label{fig:results_char_simplicity}
 \end{figure}
 
-\subsection{Low or High Orthogonality}
+\section{Low or High Orthogonality}
 The placements of the three concurrency models on the orthogonality spectrum are shown in \bsref{fig:results_char_orthogonality}. All the models are placed between the middle and high end of the orthogonality spectrum.
 
 The actor model is highly orthogonal as it embodies only the two constructs of actors and messages which can be combined in a large number of ways. There are however some combinations which are only possible indirectly by using additional actors, such as sending a message to multiple actors at the same time. Furthermore some combinations can produce deadlocks which are undesirable, but embracing the non-deterministic nature of asynchronous message passing helps avoid these. The indirect and deadlock combinations keep the model from being truly orthogonal.
@@ -73,7 +69,7 @@ Lastly, \ac{TL} consists of the thread and lock constructs that are also possibl
 \label{fig:results_char_orthogonality}
 \end{figure}
 
-\subsection{Low or High Readability}\label{sec:result_char_readability}
+\section{Low or High Readability}\label{sec:result_char_readability}
 \bsref{fig:results_char_readability} depicts the placement of the selected concurrency models on the low - high readability spectrum. The \ac{TL} has the lowest readability due to its implicit relationship between data and synchronization as well as fragmentation of the implementation. In order to reason about deadlocks the programmer has to reason about every point in which locking is applied as well as how these code segments interact. This has proven to be no easy task, as discussed in \cite[p. 56]{sutter2005software}.
 
 \ac{STM} is placed just to left of the middle on the spectrum. \ac{STM} removes the issues of deadlocks but still suffers from an implicit relationship between data and synchronization as well as code fragmentation. Understanding the concept of transactions can be hard for novice programmers and predicting their performance can be problematic. \ac{STM} handles composability by allowing transactions to be nested. 
@@ -87,7 +83,7 @@ The actor model encapsulates functionality and concurrency related code within a
 \label{fig:results_char_readability}
 \end{figure}
 
-\subsection{Low or High Level of Abstraction}
+\section{Low or High Level of Abstraction}
 The placements of the three concurrency models on the level of abstraction spectrum are shown in \bsref{fig:results_char_level_of_abstraction}.
 
 The actor model is placed on the high end of the spectrum as it allows the programmer to think and model concurrent problems using high-level abstractions, without having to worry about low-level details. It abstracts away low-level threads by using the actor construct and synchronization is accomplished implicitly as a result of actor mailboxes and atomic processing of messages. There are however no abstractions for coordination between actors in the conceptual actor model, but actor implementations often offer useful coordination patterns, such as the request-reply pattern, as discussed in \bsref{ssec:nondeter_msg_order}. This keeps the model from being at the extreme of high level of abstraction.
@@ -103,7 +99,7 @@ The actor model is placed on the high end of the spectrum as it allows the progr
 \label{fig:results_char_level_of_abstraction}
 \end{figure}
 
-\subsection{Low or High Expressivity}
+\section{Low or High Expressivity}
 \bsref{fig:results_char_expressivity} depicts the placement of the selected concurrency models on the low - high expressivity spectrum. \ac{TL} has the lowest expressivity due to the number of concurrency related issues that the programmer has to reason about. Having to consider these issues limits the focus programmers can put into concisely expressing the intended functionality.
 
 \ac{STM} resides just above the middle of the spectrum. As discussed, \ac{STM} eliminates the issues of deadlocks but introduces a number of new issues. While these issues are not directly fatal, they do limit the expressivity of the model as transactions have problems integrating with existing language concepts, such as exceptions and \ac{IO}.
@@ -117,7 +113,7 @@ The actor model has the highest expressivity. It provides high level constructs 
 \label{fig:results_char_expressivity}
 \end{figure}
 
-\subsection{Low or High Writability}
+\section{Low or High Writability}
 \bsref{fig:results_char_writability} shows the placements of the selected concurrency models on the low - high writability spectrum. The \ac{TL} concurrency model is placed towards the low end of the spectrum. As mentioned in \bsref{sec:result_char_readability} the \ac{TL} concurrency model has a number of issues which affect its readability. Similarly these issues also affect its writability. One issue is that synchronization code may be fragmented across multiple code segments, another issue is that deadlocks has to be avoided by the programmer. Furthermore the low level of expressiveness and low level of abstraction of the model negatively impact its writability.
 
 \ac{STM} is placed just above the middle of the spectrum. \ac{STM} removes the issue of deadlocks and allows the \ac{STM} system to handle how synchronization is achieved. \ac{STM} handles composition by allowing transactions to be nested but synchronization may however still be fragmented over multiple code segments. As mentioned previously \ac{STM} combines poorly with some existing language constructs, this negatively effects its writability.
@@ -131,21 +127,21 @@ The actor model abstracts away the low level details that limit the writability 
 \label{fig:results_char_writability}
 \end{figure}
 
-\section{\acl{TL}}
+%\section{\acl{TL}}
 %If performance is critical
 %Has a number of well known issues which require great effort to avoid
 %Fine grained locking is difficult but provides good performance
 %Requires experiensed programmers in order to produce good implementatons when employing fine grained locking
 %Widely support in many languages
 %Limited composablity
-\section{\acl{STM}}
+%\section{\acl{STM}}
 %parallisation of existing code (in the clean format)
 %Good alternative to locks, especially if performance is not the top priority and programmers are familar with the shared memory concurrency and critical regions
 %Currently suffers from not being well integrated in many of the languages popular in the industry 
 %Concept of transactions can be hard to understand for novices
 %Problems with IO and native method calls
-\kasper[inline]{Programming concurrency on the JVM. Side 186}
-\section{The Actor Model}
+%\kasper[inline]{Programming concurrency on the JVM. Side 186}
+%\section{The Actor Model}
 %Distrubuted systems
 %Design of large systems (back ends)
 %Allows desgin of systems on a more high level
@@ -155,9 +151,9 @@ The actor model abstracts away the low level details that limit the writability 
 %Functions well with pipeline processsing of input
 %Context swiching is cheap compared to the other models (thread ring)
 %Problems expressing work where actors are dependant on one another
-\kasper[inline]{Programming concurrency on the JVM. Side 268}
+%\kasper[inline]{Programming concurrency on the JVM. Side 268}
 
-\subsection{Closing Thoughts}
-\kasper[inline]{Combine models instead of competing}
-\kasper[inline]{TL $>$ stm hvis der er meget IO}
+%\subsection{Closing Thoughts}
+%\kasper[inline]{Combine models instead of competing}
+%\kasper[inline]{TL $>$ stm hvis der er meget IO}
 \worksheetend
