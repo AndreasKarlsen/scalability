@@ -57,7 +57,7 @@ Another type of thread is what is called a software thread. Software threads are
 \section{Synchronization}\label{sec:synchronization}
 Threads within the same process are executed concurrently. Synchronization is the act of using language or library constructs to restrict the concurrent execution, in order to remove invalid interleaving of threads\cite[p. 1989]{scott2011sync}.
 
-Two main types of synchronization exists: atomicity and condition synchronization. Atomicity ensures that, the execution of a set of instructions or statements, executed by some thread, is seen as single step, from the point of view of every other thread\cite[p. 1989]{scott2011sync}.
+Two main types of synchronization exists: atomicity and conditional synchronization. Atomicity ensures that, the execution of a set of instructions or statements, executed by some thread, is seen as single step, from the point of view of every other thread\cite[p. 1989]{scott2011sync}.
 
 Conditional synchronization forces the executing thread to wait until some locally observable precondition is true\cite[p. 1989]{scott2011sync}. Conditional synchronization can, for example, be used for waiting on some parallel work to finish, before reading the result.
 
