@@ -1,8 +1,9 @@
 \makeatletter \@ifundefined{rootpath}{\input{../../setup/preamble.tex}}\makeatother
-\worksheetstart{Future work}{1}{April 24, 2013}{Andreas}{../../}
+\worksheetstart{Future Work}{1}{April 24, 2013}{Andreas}{../../}
 This chapter presents a number of possible ideas for extending the work done in this project.
 
 \section{Extended Performance Test}
+\label{sec:extended_performance_test}
 As described in \bsref{sec:reflec_perf_test}, we discovered that the algorithm used for performance testing was parallel which proved somewhat problematic as the focus in this project is on concurrency. Therefore it could be valuable to further extend our performance tests with inherently concurrent problems such as the dining philosopher or santa claus problem\toby{as described in section reflection section}. Additionally it could be interesting to extend our performance tests with a set of problems with great diversity, to see how the individual models performs in the different domains. In \cite{imam2014savina} they propose a benchmark suite for actor oriented programs that ``\textit{range from popular microbenchmarks to classical concurrency problems to applications that demonstrate various styles of parallelism}'', it may be relevant to use some of these benchmarks.
 
 Another interesting factor for extending our performance tests could be to scale up to a higher number of cores. In our tests we have been using 8 logical cores, where 4 of them are physical, as described in \bsref{subsec:hardware}. In \cite{harris2003language}, they experience the scalability of different implementations varied after surpassing 35 cores. It could therefore be especially interesting to employ tests in a setting with above 35 cores.
