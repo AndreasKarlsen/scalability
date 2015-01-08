@@ -197,6 +197,7 @@ As an example, imagine a scheduler that gives threads access to some resource R 
 Starvation can be avoided using a \ac{LIFO} scheduling strategy\cite[p. 459]{tanenbaum2008modern}.
 
 \section{Discussion}
+\label{sec:tl_discussion}
 This section contains a discussion of a number of issues related to \ac{TL} concurrency. Why \ac{TL} concurrency is considered to be hard is discussed in \bsref{subsec:tl_lock_hard}, followed by a discussion of the composability of the \ac{TL} concurrency model in \bsref{subsec:tl_composability}.
 \subsection{Why locks are hard}\label{subsec:tl_lock_hard}
 Concurrency is generally considered to be hard, the same goes for using locks to provide mutual exclusion\cite[p. 56]{sutter2005software}. Several reasons for this exist. One is that in order for locks to work, programmers have to strictly follow a set of conventions. If, for example, the programmer takes locks in the wrong order, it can potentially lead to deadlocks\cite[p. 58]{sutter2005software}. Furthermore the relationship between a lock and the shared data it is protecting is implicit, that is, it is enforced by the programmer. If the programmer misses or leaks a reference to the shared data, mutual exclusion is no longer ensured and race conditions can occur. This is worsened by locking being a global property that requires local handling. That is, data might be shared between many parts of a system, and each part has to locally reason about locking access to the data.
@@ -370,6 +371,7 @@ In order to remove the deadlock one could move the notification of observers in 
 %As an example imagine if that the programmer defined code takes the attempts to acquire the same lock that the framework currently holds.  Because the framework holds the locks 
 
 \section{\acl{TL} Characteristics}
+\label{sec:tl_characteristics}
 This section presents how the \ac{TL} concurrency model relates to the selected characteristics presented in \bsref{chap:char}.
 
 \subsection{Implicit or Explicit Concurrency}
