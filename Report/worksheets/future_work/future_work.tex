@@ -4,9 +4,7 @@ This chapter presents a number of possible ideas for extending the work done in 
 
 \section{Extended Performance Test}
 \label{sec:extended_performance_test}
-%- Se på resultater i forhold til flere kernet maskine end 4 (8 hyper)
-	%- Evt. referer til Test Setup kapitlet der har en refernece til en artikel med over 35 cores
-As described in \bsref{sec:reflec_perf_test}, we discovered that the algorithm used for performance testing was parallel which proved somewhat problematic as the focus in this project is on concurrency. Therefore it could be valuable to further extend our performance tests with inherently concurrent problems such as the dining philosopher or santa claus problem. Additionally it could be interesting to extend our performance tests with a set of problems with great diversity, to see how the individual models performs in the different domains. In \cite{imam2014savina} they propose a benchmark suite for actor oriented programs that ``\textit{range from popular microbenchmarks to classical concurrency problems to applications that demonstrate various styles of parallelism}'', it may be relevant to use some of these benchmarks.
+As described in \bsref{sec:reflec_perf_test}, we discovered that the algorithm used for performance testing was parallel which proved somewhat problematic as the focus in this project is on concurrency. Therefore it could be valuable to further extend our performance tests with inherently concurrent problems such as the dining philosopher or santa claus problem\toby{as described in section reflection section}. Additionally it could be interesting to extend our performance tests with a set of problems with great diversity, to see how the individual models performs in the different domains. In \cite{imam2014savina} they propose a benchmark suite for actor oriented programs that ``\textit{range from popular microbenchmarks to classical concurrency problems to applications that demonstrate various styles of parallelism}'', it may be relevant to use some of these benchmarks.
 
 Another interesting factor for extending our performance tests could be to scale up to a higher number of cores. In our tests we have been using 8 logical cores, where 4 of them are physical, as described in \bsref{subsec:hardware}. In \cite{harris2003language}, they experience the scalability of different implementations varied after surpassing 35 cores. It could therefore be especially interesting to employ tests in a setting with above 35 cores.
 
@@ -16,6 +14,8 @@ Another interesting factor for extending our performance tests could be to scale
 
 \section{Actor Model}
 %- Lave eget actor framework
+	%se på implementations niveau om man kunne lave et bibliotek der var hurtigere end f.eks. akka actors ved at optimere på noget, eller lavet et .net library som kører lige så hurtigt
+	%evt. også i forhold til at overholde semantic properties
 
 %- Lav nogle af følgende koordinerings patterns i forbindelse med udvidelse af en actor framework,e ller vores eget (Tekst fra Why do scala developers mix... s. 319)
 	%To address this problem, prior work has extended the Scala actor library with coordination patterns used in parallel programming, for example joins [12] and divide-and-conquer tasks [15]. More advanced coordination mechanisms for actor systems have also been proposed [4,31,9,27]. However,to the best of our knowledge, none has been integrated with a widely used actor library.
