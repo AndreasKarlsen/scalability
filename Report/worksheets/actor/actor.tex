@@ -174,7 +174,7 @@ The only form of communication in the actor model is message passing. A disadvan
 %another way for developers to manually handle it is to deep copy message contents which may be modified and refernece others (for example large messages)
 %Akka can’t enforce message immutability (yet) so this has to be by convention. (http://doc.akka.io/docs/akka/snapshot/java/untyped-actors.html)
 
-\subsubsection{Unbounded Mailbox}
+\subsubsection{Unbounded Mailbox}\label{sssec:unbounded_mail}
 In the conceptual actor model the mailbox is unbounded, meaning that it is possible to store infinitely many messages in an actors mailbox. However, in an actual actor implementation there exists an upper limit on how many messages that can be stored based on how much physical storage is available. The consequence of an upper limit of messages in a mailbox is that it makes it possible to overflow the mailbox which can cause the system to crash\cite[p. 152]{sevenModels}.
 
 \subsubsection{Actor Framework Limitations}
