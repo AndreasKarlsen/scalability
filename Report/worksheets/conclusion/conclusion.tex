@@ -1,7 +1,36 @@
 \makeatletter \@ifundefined{rootpath}{\input{../../setup/preamble.tex}}\makeatother
 \worksheetstart{Conclusion}{1}{April 24, 2013}{Andreas}{../../}
 %
+Motivated by the observation of Moore's law, software should be developed to exploit concurrency to gain run time performance. We have investigated the characteristics and run time performance of different concurrency models, and compared them to give an overview of their strength and weaknesses. To conclude our investigation, we will answer the questions in \bsref{sec:problemstatement}. This will be done by highlighting the noticeable observations made throughout the investigation.
 \label{chap:conclusion}
+\section{Question One}
+The first question in the problem statement was ``Which issues exist with the traditional \ac{TL} concurrency model?''. 
+
+To establish common ground the concepts of concurrency, parallelism, threads, processes and shared memory was outlined in \bsref{sec:processes_threads}. A key observation was that threads in the same process shared memory, and how synchronisation could be enforced with atomicity and condition synchronisation.
+
+In section \bsref{chap:threads_locks} we presented the key concepts of using threads and shared memory. We outlined, that this approach suffered from race conditions. To remedy this, locks are used to enforce synchronisation at critical regions, and gives mutual exclusion between threads accessing the same memory. Locks come in forms as Mutex, Monitor, and Semaphore, each operating differently but with the same goal, to provide mutual exclusion. By using locks, the programmer risks introducing deadlocks, livelocks, priority inversion, starvation. These issues brings undesirable effects which we covered in \bsref{sec:tl_ci}, and is hard to avoid and discover as discussed in \bsref{subsec:tl_lock_hard}. Another caveat discussed in \bsref{sec:locks_me}, was the incapability of composing different lock based implementations, those prohibiting reuse of existing lock based implementations. 
+
+We evaluated the characteristics of \ac{TL} in \bsref{sec_tl_char}, which summarize reasons why \ac{TL} is hard to use. The explicitness and low expressivity combined with low simplicity leaves the programmer with little help, and a lot of responsibility to, enforce synchronisation correctly. \ac{TL} suffers from low readability, which is caused by fragmented concurrency control leaving a large scope to focus on, and the difficulty of ensuring correctness in concurrent code. The model also suffers from low writability, primarily as a result of the difficulty of reasoning about critical regions.
+
+Conclusively, the use of locks in the \ac{TL} model is hard to reason about, and introduces risk to the issues listed above. 
+
+\section{Question Two}
+``What are the characteristics of the selected models? Including their strengths and weaknesses.''
+\section{Question Three}
+``How do the selected models handle concurrency issues known from the traditional \ac{TL} approach?''
+\section{Question Four}
+``How is the implementation efficiency of the selected models?''
 
 
+Using the knowledge obtained from answering these questions, we will present an overview of the selected concurrency models. Specifically an overview of their characteristics and implementation efficiency, along with a set of suggestions for when to apply each model.
+
+
+
+
+The learning goals are defined as:
+\begin{enumerate}
+\item Learn what concurrency models exist and in what setting they are best applied.
+\item Produce a sample implementation using each of the selected models in order to gain hands-on experience.
+\item Get hands-on experience with the Scala\footnote{\url{http://www.scala-lang.org/}} programming language as it is gaining traction in the area of highly concurrent web services.
+\end{enumerate}
 \worksheetend
