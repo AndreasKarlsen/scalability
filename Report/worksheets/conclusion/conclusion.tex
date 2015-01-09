@@ -6,7 +6,7 @@ Motivated by the observation of Moore's law, software should be developed to exp
 \section{Question One}\label{sec:q_one}
 The first question in the problem statement is ``Which issues exist with the traditional \ac{TL} concurrency model?''. 
 
-To establish common ground the concepts of concurrency, parallelism, threads, processes and shared memory was outlined in \bsref{sec:processes_threads}. A key observation was that threads in the same process shared memory, and how synchronisation could be enforced with atomicity and condition synchronisation.
+%To establish common ground the concepts of concurrency, parallelism, threads, processes and shared memory was outlined in \bsref{sec:processes_threads}. A key observation was that threads in the same process shared memory, and how synchronisation could be enforced with atomicity and condition synchronisation.
 
 In section \bsref{chap:threads_locks} we presented the key concepts of using threads and shared memory. We outlined, that this approach suffered from race conditions. To remedy this, locks are used to enforce synchronisation at critical regions, and gives mutual exclusion between threads accessing the same memory. Locks come in forms as Mutex, Monitor, and Semaphore, each operating differently but with the same goal, to provide mutual exclusion. By using locks, the programmer risks introducing deadlocks, livelocks, priority inversion, starvation. These issues brings undesirable effects which we covered in \bsref{sec:tl_ci}, and is hard to avoid and discover as discussed in \bsref{subsec:tl_lock_hard}. Another caveat discussed in \bsref{sec:locks_me}, was the incapability of composing different lock based implementations, those prohibiting reuse of existing lock based implementations. 
 
