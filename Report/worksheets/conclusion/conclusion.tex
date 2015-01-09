@@ -50,15 +50,18 @@ In \bsref{chap:stm} we outlined how \ac{STM} works, and handles concurrency issu
 We outlined the key concepts of the actor model and its concurrency issues in \bsref{chap:actor}. The actor model avoids race conditions by design, since there is no notion of shared mutable state, instead only isolated mutable state is allowed. The encapsulation actor property, discussed in \bsref{ssec:adhere_actor_prop}, is a key factor in ensuring race conditions are avoided, so the programmer adhere to this property if the actor implementation does not enforce it. The communication between actors is through message passing, and the internal state of an actor can only be altered by the actor itself. The risk of deadlocks still exists in the actor model, although it is reduced by avoiding blocking waits. A scenario where two or more actors are waiting for messages from one another can produce a deadlock. Contrary to a thread busy-waiting, an actor can still send and receive messages from and to other actors, which means other tasks unrelated to the deadlock will keep functioning. 
 Something about livelocks%In terms of livelocks they are very unlikely to occur and the programmer must deliberately model actors to produce one.
 Priority inversion is not present in the actor model as there is no shared state and it is not possible to prioritize actors or their messages.\toby{Hvad siger i til det?}Conceptually starvation does not exist, since fairness is assured as a semantic property of the actor model. That is, a message sent is eventually received. However, it varies whether frameworks adhere this property, which is typically done to simplify the actor implementation or to obtain better performance. The fairness also applies to priority inversion together with that messages are proc
-
 \section{Question Four}
-``How is the implementation efficiency of the selected models?''
+The fourth question is ``How is the runtime performance of the selected models?''.
 
+To measure this, a representative language was selected for each model, running on a common platform to give comparable results. This is explained in further details in \bsref{sec:intro_scope}. In \bsref{chap:performance} we described the design of the performance tests, which outsets in the $k$-means clustering algorithm. To ensure a wide perspective, two different scenarios were tested. A work intensive test, and a synchronisation intensive test. The tests revealed only small differences overall. 
 
-Using the knowledge obtained from answering these questions, we will present an overview of the selected concurrency models. Specifically an overview of their characteristics and implementation efficiency, along with a set of suggestions for when to apply each model.
+In the work intensive test, \ac{TL} and \ac{STM} performed marginally better when scaling the amount of concurrency, up to 5\%, but only 1\% better in average. When scaling the amount of work done concurrently, the actor model performs up to 5\% better than both \ac{TL} and \ac{STM}, but only 1\% and 2\% better on average, respectively.
 
+The synchronisation intensive test showed the biggest difference between the concurrency models. \ac{TL} increasingly outperformed both \ac{STM} and the actor model. The difference increased as the amount of concurrency was scaled, with a maximum of 12\% and average of 6\% speed increase over \ac{STM} and a speed increase of maximum 10\% and average of 5\% over the actor model. When utilising all of the logical cores simultaneously, \ac{TL} performed consistently better, and was in average 4\% faster than \ac{STM} and 6\% faster than the actor model.
 
+Ultimately, we can conclude that the runtime performance difference between the chosen model, is small. In \bsref{chap:choosing_con_model} we discuss the impact of the performance when choosing between the models. Unless performance is a high priority, it should be considered as an insignificant factor.
 
+\section{Learning Goals}
 
 The learning goals are defined as:
 \begin{enumerate}

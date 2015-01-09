@@ -254,7 +254,7 @@ This section will present and analyse the results of the performance tests. The 
 
 \subsection{Work Intensive Tests}
 \kasper[inline]{Akka passes by reference = faster, especially with fast data}
-The goal of test $A$ was to determine how the concurrency models are affected with an increased amount of concurrent work. This was done by having 2,000,000 vectors as data, scaling 1 - 10 mappers, running 100 iterations, and a computational demanding distance measure. The results in \bsref{table:test_results_a} show little to no difference between the models when scaling the mappers. This is visualised in \bsref{fig:tr_scale_mappers_a}. As expected, a greater difference is seen as the amount of mappers are scaled. From 8 to 10 mappers there is some difference between the models. The actor model is slower than the other models, although the difference is small. This difference is visualised in \bsref{fig:test_results_a_iterations}. Conclusively, the models scale almost identically to the amount of concurrency. The average shown in \bsref{fig:value_norm_testa} also confirm this.
+The goal of test $A$ was to determine how the concurrency models are affected with an increased amount of concurrent work. This was done by having 2,000,000 vectors as data, scaling 1 - 10 mappers, running 100 iterations, and a computational demanding distance measure. The results in \bsref{table:test_results_a} show little to no difference between the models when scaling the mappers. This is visualised in \bsref{fig:tr_scale_mappers_a}. As expected, a greater difference is seen as the amount of mappers are scaled. From 8 to 10 mappers there is some difference between the models. The actor model is slower than the other models, although the difference is small. This difference is visualised in \bsref{fig:value_norm_testa}. Conclusively, the models scale almost identically to the amount of concurrency. The average shown in \bsref{fig:value_norm_testa} also confirm this.
 %
 \begin{center}
 \begin{table}[h]
@@ -331,7 +331,7 @@ Mappers & TL     & STM     & Actor     & TL      & STM      & Actor     \\ \hlin
 	\end{axis}
 \end{tikzpicture}
 %\captionsetup{justification=centerlast, margin=10ex, labelfont=bf, textfont=it, format=plain, labelformat=default, labelsep=endash, font=small}
-\caption{Test $A$. Visual representation of results for scaling number of mappers}\label{fig:test_results_a_iterations}
+\caption{Test $A$. Visual representation of results for scaling number of mappers}\label{fig:tr_scale_mappers_a}
 \end{figure}
 %
 \begin{figure}[h]
