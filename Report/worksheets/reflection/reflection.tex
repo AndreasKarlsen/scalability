@@ -1,16 +1,16 @@
 \makeatletter \@ifundefined{rootpath}{\input{../../setup/preamble.tex}}\makeatother
 \worksheetstart{Reflection of Process}{1}{April 24, 2013}{Andreas}{../../}
 This chapter presents a reflection on a number of decisions made throughout the report.
-\lone[inline]{Reflection on choice of concurrency models}
-\lone[inline]{Evaluation of implementation effort}
-\lone[inline]{Reflection on choice of distance measure}
-\lone[inline]{Readability and Wriability as requirements. Tightly coupled to implementation}
+%\lone[inline]{Reflection on choice of concurrency models}
+%\lone[inline]{Evaluation of implementation effort}
+%\lone[inline]{Reflection on choice of distance measure}
+%\lone[inline]{Readability and Wriability as requirements. Tightly coupled to implementation}
 %\lone[inline]{Count clock cycles since STM can perform extra work, where TL waits (wastes no cycles)}
 %\lone[inline]{We wanted to compare the models, but there is variations of the models, which we did not know when we started}
 %\lone[inline]{We using models to be more general about the concepts. But we use a specific implementations. There is a dilemma between not judging on the same implementations in concepts and performance, but also wanting to cover more than a specific implementation}
-\lone[i]{Reflect on the choice of using only Actor model and not CSP}
-\toby[i]{Måske også reflekterer over vores map-reduce valg af i forhold til implementationen - men synes ikke der er så meget at reflektere over}
-\kasper[inline]{Boxing af integers i Java implementation. int[] halverede tid sammenlignet med generic ArrayList Integer}
+%\lone[i]{Reflect on the choice of using only Actor model and not CSP}
+%\toby[i]{Måske også reflekterer over vores map-reduce valg af i forhold til implementationen - men synes ikke der er så meget at reflektere over}
+%\kasper[inline]{Boxing af integers i Java implementation. int[] halverede tid sammenlignet med generic ArrayList Integer}
 
 \section{Comparing Models}
 Choosing to compare concurrency models instead of specific implementations of the models has presented a number of issues. Implementations of the selected concurrency models vary in how they choose to implement the model. Some actor implementations do not support all semantic properties and \ac{STM} implementations vary greatly in their implementation strategies. At times it proved difficult to distinguish what should be included in the descriptions and evaluations. 
@@ -19,7 +19,13 @@ The performance test is based on a single implementation of each concurrency mod
 \kasper[inline]{More!}
 
 \section{Choice of Concurrency Models}
+In order to select concurrency model to investigate further a initial broad examination of concurrency models was conducted in \bsref{chap:intro}. The investigation covered \ac{TL}, the actor model, \ac{Rx}, \ac{STM} and \ac{CSP} of which \ac{TL}, the actor model and \ac{STM} where selected for further investigation.
 
+When the concurrency models where initially selected our estimation was that the \ac{TL} concurrency model and \ac{STM} where somewhat dissimilar. During the course of the project similarities between the two concurrency model became more clear. From the point of view of the programmer the two models handle concurrency very similarly, both utilise shared memory and require the application of synchronization to critical regions in order to avoid race conditions. How synchronization is achieved is however different.
+
+\ac{CSP} is in many ways similar to the actor model, substituting actors message passing with channel based communication. Based on this the actor model was preferred as it has good support in a number of languages.
+
+Including a concurrency model with a vastly different focus could have been of interest. As an example selecting a concurrency model with a focus on super computers, such as that of the language X10\cite{tardieu2014x10} described briefly in \bsref{chap:intro}, could provide a new perspective for the report.
 
 \section{Choice of Characteristics}
 For investigation the characteristics of the selected concurrency model a number of characteristics was selected and discussed in \bsref{chap:char}. Implicit or Explicit Concurrency, Fault Restrictive or Expressive Model and Pessimistic or Optimistic Model where selected as they represent a set of standard characteristics which applies to concurrency models.
