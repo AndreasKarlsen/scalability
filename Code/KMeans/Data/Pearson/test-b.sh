@@ -6,7 +6,6 @@ stm="STM.jar"
 tl="TL.jar"
 actor="ACTOR.jar"
 
-#Scale iterations
 function test {
   for i in {1..5}
   do

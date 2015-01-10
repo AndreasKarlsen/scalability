@@ -6,20 +6,12 @@ stm="STM.jar"
 tl="TL.jar"
 actor="ACTOR.jar"
 
-#Scale iterations
 function test {
   for i in {1..5}
   do
     for j in {1..10}
     do
-      java -jar $1.jar 10000 $j 100000
-    done
-    for j in {1..100000}
-    do
-    if (( $j % 10000 == 0 )) || (( $j == 1 ))
-    then
-      java -jar $1.jar 10000 7 $j
-    fi
+      java -Xmx8g -Xms8g -jar $1.jar 2000000 $j 100
     done
   done
 }
@@ -27,4 +19,3 @@ function test {
 test stm
 test tl
 test actor
-	
