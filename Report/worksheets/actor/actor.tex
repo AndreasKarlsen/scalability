@@ -1,10 +1,16 @@
 \makeatletter \@ifundefined{rootpath}{\input{../../setup/preamble.tex}}\makeatother
 \worksheetstart{The Actor Model}{1}{April 24, 2013}{Tobias}{../../}
-This chapter presents the actor concurrency model by describing the key concepts in \bsref{sec:actor_concepts}. Afterwards in \bsref{sec:actor_con_issues} we present how the actor model relates to the concurrency issues presented in the \ac{TL} model. Hereafter a discussion about the actor model is presented in \bsref{sec:actor_discussion}. Finally in \bsref{sec:actor_charac} we evaluate the actor model using the characteristics previously defined in \bsref{chap:char}.
+This chapter presents the actor concurrency model by describing its key concepts in \bsref{sec:actor_concepts}. Afterwards in \bsref{sec:actor_con_issues} we present how the actor model relates to the concurrency issues presented in the \ac{TL} model. Hereafter a discussion about the actor model is presented in \bsref{sec:actor_discussion}. Finally in \bsref{sec:actor_charac} we evaluate the actor model using the characteristics previously defined in \bsref{chap:char}.
 \label{chap:actor}
 
 \section{Key Concepts}\label{sec:actor_concepts}
-The actor model is an inherently concurrent model where the main abstraction and building block is actors\cite[p. 2]{karmani2009actor}. An actor is an entity that has the following essential elements of computation\cite{actorLangNextVideo}: processing, storage, and communication. The actor is able to process instructions e.g. adding numbers together or concatenating strings. The actor is also able to store data on itself e.g. the result of some processing or some value communicated from another actor. We explain the storage and communication elements in more detail throughout the section.
+The actor model is an inherently concurrent model where the main abstraction and building block is actors\cite[p. 2]{karmani2009actor}. An actor is an entity that has the following essential elements of computation\cite{actorLangNextVideo}:
+\begin{inparaenum}[(1)]
+\item processing
+\item storage and
+\item communication.
+\end{inparaenum} 
+A actor is able to process instructions e.g. adding numbers together or concatenating strings. The actor is also able to store data on itself e.g. the result of some processing or some value communicated from another actor. We explain the storage and communication elements in more detail throughout the section.
 
 Actors are independent concurrently running entities that communicate with each other solely through asynchronous message passing\cite[p. 304]{tasharofi2013scala}. Upon receiving a message the actor examines it and determines how it will react, which can be in a number of ways\cite[p. 2]{hewitt2014actor}:
 \begin{enumerate}
@@ -15,13 +21,13 @@ Actors are independent concurrently running entities that communicate with each 
 An actor can choose to react by doing one or more of the above or none if the actor is not interested in the message it receives. Additionally the actor may also do some processing. We describe each case in more detail in the following three subsections.
 
 \subsection{Send Messages to Known Actors}
-In the first case an actor may send messages to other actors on the premise that is has the address of the actors. It is also allowed for an actor to send messages to itself. Each actor has a unique address which is represented in the actor model by a unique immutable name of an actor\cite[p. 2]{karmani2009actor}. It is then the responsibility of the chosen actor framework to map actor names to more direct addresses such as memory or network addresses, depending on implementation strategy and runtime location\cite[p. 3]{hewitt2014actor}. This facilitates location transparency which is discussed in \bsref{ssec:actor_s_properties}. Addresses cannot be guessed but must be communicated. An actor \bscode{A} can know the address of another actor \bscode{B} if \bscode{A} creates \bscode{B} or receives the address of \bscode{B} as a message from an actor. Typically the exclamation mark (!) is used as the symbol to indicate sending a message. This is shown in the following example where the hello message is sent to actor \bscode{A}:
+In the first case an actor may send messages to other actors on the premise that is has the address of the actors. It is also allowed for an actor to send messages to itself. Each actor has a unique address which is represented in the actor model by a unique immutable name of an actor\cite[p. 2]{karmani2009actor}. It is then the responsibility of the chosen actor framework to map actor names to more direct addresses such as memory or network addresses, depending on implementation strategy and runtime location\cite[p. 3]{hewitt2014actor}. This facilitates location transparency which is discussed in \bsref{ssec:actor_s_properties}. Addresses cannot be guessed but must be communicated. An actor \bscode{A} can know the address of another actor \bscode{B} only if \bscode{A} creates \bscode{B} or receives the address of \bscode{B} as a message from another actor. Typically the exclamation mark (!) is used as the symbol to indicate sending a message. This is shown in the following example where the hello message is sent to actor \bscode{A}:
 \begin{verbatim}
 A ! "hello"
 \end{verbatim}
 
 \subsection{Create New Actors}
-In the second case an actor can choose to create one or more new actors, the new actors will then be child actors of the creating actor. This may be attractive when an actor receives a compute intensive task as it can create a number of new child actors and delegate the work amongst them. \bsref{fig:actor_lifecycle} presents an illustration of the life cycle of an actor. When an actor is created it is typically started also which brings the actor into an active phase. In the active phase an actor awaits messages until it receives a message which it will process and upon completion the actor will again be ready to receive a new message. At some point an actor may be stopped which brings it to an inactive phase where no messages are processed and it will only re-enter the active phase if it is started again.
+In the second case an actor can choose to create one or more new actors, the new actors will then be child actors of the creating actor. This may be attractive when an actor receives a compute intensive task as it can create a number of new child actors and delegate the work amongst them. \bsref{fig:actor_lifecycle} presents an illustration of the life cycle of an actor. When an actor is created it is typically started also which brings the actor into an active phase. In the active phase an actor awaits messages until it receives a message to process. Upon processing completion the actor will again be ready to receive a new message. At some point an actor may be stopped which brings it to an inactive phase where no messages are processed and it will only re-enter the active phase if it is started again.
 
 \begin{figure}[ht!]
 \centering
@@ -34,7 +40,7 @@ In the last case an actor can choose to modify internal state or behaviour. Each
 \subsection{Mailbox and Message Order}\label{ssec:mailbox_and_message_order}
 A single actor may receive many messages in a short time which it must be able to handle without failing. To accommodate this, each actor has an associated mailbox where messages sent to the actor are buffered\cite[Chap. 2.6]{haller2012actors}. Messages can arrive in the mailbox at any time and it will hold the messages until the actor has processed them. An actor will retrieve one message at a time from its mailbox and process it in one atomic step\cite[p. 2]{karmani2009actor}.
 
-The arrival order of messages to an actor is non-deterministic due to the asynchronous message passing communication between actors\cite[p. 2]{karmani2011actors}. Messages may take arbitrary long time to arrive because of arbitrary communication delays on the network. The actor model assumes a notion of fairness which means that messages sent are eventually received by the target actor and no actor is starved\cite[Chap. 2.5]{haller2012actors}\cite[p. 3]{karmani2009actor}. This makes reasoning about actor programs easier\cite{tasharofi2013scala}. However, in a real system there are many reasons why a message can be lost, e.g. a computer may crash resulting in lost messages which means the target actor will never receive these messages. It is up to the individual actor framework to adhere to the actor models principle of reliable message passing, often accomplished through redundancy and replication\cite[Chap. 2.5]{haller2012actors}. Another reason that message arrival is non-deterministic is that there can be many concurrently running actors which may send messages in between two messages from an actor as in the following example:
+The arrival order of messages to an actor is non-deterministic due to the asynchronous message passing between actors\cite[p. 2]{karmani2011actors}. Messages may take arbitrary long time to arrive because of arbitrary communication delays on the network. The actor model assumes a notion of fairness which means that messages sent are eventually received by the target actor and no actor is starved\cite[Chap. 2.5]{haller2012actors}\cite[p. 3]{karmani2009actor}. This makes reasoning about actor programs easier\cite{tasharofi2013scala}. However, in a real system there are many reasons why a message can be lost, e.g. a computer may crash resulting in lost messages which means the target actor will never receive these messages. It is up to the individual actor framework to adhere to the actor models principle of reliable message passing, often accomplished through redundancy and replication\cite[Chap. 2.5]{haller2012actors}. Another reason that message arrival is non-deterministic is that there can be many concurrently running actors which may send messages in between two messages from an actor as in the following example:
 \begin{verbatim}
 B ! "hello"
 B ! "there"
@@ -42,7 +48,7 @@ B ! "there"
 Suppose an actor \bscode{A} sends the two messages ``hello'' and ``there'' to an actor \bscode{B}. Another concurrently running actor \bscode{C} may then send a message in-between the ``hello'' and ``there'' messages to actor \bscode{B} thereby changing the message order. We will talk about the implications of a non-deterministic message order later in \bsref{ssec:nondeter_msg_order}.
 
 \subsection{Example of an Actor system}
-An actor system consists of a collection of actors. \bsref{fig:actor_overview} presents an illustration of the life cycle within an actor system. Each actor has an associated mailbox, isolated state and a number of behaviour methods. Actor \bscode{A} starts by sending a message to actor \bscode{B}, stored in the mailbox associated to actor \bscode{B}. Then at some point when actor \bscode{B} is ready it retrieves the message send by actor \bscode{A} from his mailbox and processes it based on which behaviour method the message corresponds to. In this case it corresponds to a behaviour method which creates a new actor, namely actor \bscode{C}. Actor \bscode{C} is now live and running with the other two actors awaiting messages. This is just a small view of what may happen in an actor system, meanwhile there may be other different actors concurrently running, sending messages, modifying isolated state and processing.
+An actor system consists of a collection of actors. \bsref{fig:actor_overview} presents an illustration of the life cycle within an actor system. Each actor has an associated mailbox, isolated state and a number of behaviour methods. Actor \bscode{A} starts by sending a message to actor \bscode{B}, stored in the mailbox associated to actor \bscode{B}. Then at some point when actor \bscode{B} is ready it retrieves the message send by actor \bscode{A} from its mailbox and processes it based on which behaviour method the message corresponds to. In this case it corresponds to a behaviour method which creates a new actor, namely actor \bscode{C}. Actor \bscode{C} is now live and running with the other two actors awaiting messages. This is just a small view of what may happen in an actor system, meanwhile there may be other actors running concurrently, sending messages, modifying isolated state and creating new actors.
 
 \begin{figure}[h!]
 \centering
@@ -54,22 +60,103 @@ An actor system consists of a collection of actors. \bsref{fig:actor_overview} p
 The actor model has several important semantic properties some of which we have already covered, namely atomic processing of messages and fairness, additionally we will now look further at encapsulation and location transparency which we have only briefly described until now\cite{karmani2011actors}.
 
 \subsubsection{Encapsulation}
-Each actor must be isolated from one another, only communicating through asynchronous message passing. An actor can therefore only modify the state and behaviour methods belonging to itself. Furthermore message passing must adhere to the principle of encapsulation by not sharing state between actors, so message passing should have call by value semantics, often done by making a deep copy of the message contents\cite[p. 2]{karmani2009actor}. Encapsulation makes it easier to reason about programs modelled with the actor model\cite[p. 3]{karmani2009actor} and reduces concurrency issues which we look at in \bsref{sec:actor_con_issues}. Another benefit of encapsulation is that it eases testing of actor programs because actors can be tested in isolation. However it is on the premise that the tests must use the same types of messages and expected message order as the live environment\cite[p. 151]{sevenModels}.
+Each actor must be isolated from one another, only allowing communicating through asynchronous message passing. An actor can therefore only modify the state and behaviour methods belonging to itself. Furthermore message passing must adhere to the principle of encapsulation by not sharing state between actors, so message passing should have call by value semantics, often done by making a deep copy of the message contents\cite[p. 2]{karmani2009actor}. Encapsulation makes it easier to reason about programs modelled with the actor model\cite[p. 3]{karmani2009actor} and reduces concurrency issues which we look at in \bsref{sec:actor_con_issues}. Another benefit of encapsulation is that it eases testing of actor programs because actors can be tested in isolation. However it is on the premise that the tests must use the same types of messages and expected message order as the live environment\cite[p. 151]{sevenModels}.
 
 \subsubsection{Location Transparency}
-Actors know each other only by unique address, often in the form of an actor name, disjointed from the physical location. Location transparency provides an abstraction where the programmer does not have to worry about or specify the actual physical location of the message recipient. An actor can communicate with another actor which exists on the same core, on the same machine or on an entirely different machine across the network\cite[p. 3]{karmani2009actor}. Location transparency gives the ability at runtime to distribute execution across a cluster of machines which eases scaling beyond a single machine.
+Actors know each other only by a unique address, often in the form of an actor name, disjointed from the physical location. Location transparency provides an abstraction where the programmer does not have to worry about or specify the actual physical location of the message recipient. An actor can communicate with another actor which exists on the same core, on the same machine or on an entirely different machine across the network using the same approach\cite[p. 3]{karmani2009actor}. Location transparency gives the ability to distribute execution across a cluster of machines at runtime, which eases scaling beyond a single machine.
 
 \section{Concurrency Issues}\label{sec:actor_con_issues}
-In this section we present how the actor model relates to the relevant concurrency issues presented in \bsref{sec:tl_ci}.\toby{Har vi også raceconditions med her hvor jeg referer til?}
+In this section we present how the actor model relates to the relevant concurrency issues presented in \bsref{subsec:race_coditions} and \bsref{sec:tl_ci}.
 %priority inversion er ikke taget med fordi den ikke er gælende i actors
 %livelock er ikke med, fordi vi (mener) at den ikke er gældende
 
 \subsection{Race Conditions}
-One of the main differences from other concurrency models, such as \ac{TL} and \ac{STM}, is that there is no notion of shared state in the actor model. Instead each actor has isolated state where only the actor itself is responsible and allowed to modify state. An actor can only affect the state of another actor indirectly by message passing and the receiving actor is then responsible for changing the state. The reason that message passing as the only communication and isolated state is preferable over shared state is that race conditions are avoided by design. To exemplify this imagine two messages sent to an actor that wants to read and modify a state variable of the actor. The actor processes each message in one isolated atomic operation which means that the messages will not interfere with one another, as the messages will be processed one at a time.
-%subsec:race_coditions
+One of the main differences from other selected concurrency models, such as \ac{TL} and \ac{STM}, is that there is no notion of shared state in the actor model. Instead each actor has isolated state where only the actor itself is responsible and allowed to modify state. An actor can only affect the state of another actor indirectly by message passing and the receiving actor is then responsible for changing the state. Employing message passing as the only means of communication as well as isolated state is preferable over shared state as that race conditions are avoided by design. To exemplify this imagine two messages sent to an actor that wants to read and modify a state variable of the actor. The actor processes each message in one isolated atomic operation which means that the messages will not interfere with one another, as the messages will be processed one at a time.
+%subsec:race_coditionsa 
 
-\subsection{Deadlocks}\label{ssec:actor_deadlock}
-The concurrency issue of deadlocks is still a problem in the actor model. The actor model limits the communication to asynchronous message passing only. This helps avoid blocking waits which thereby helps to keep the program free of deadlocks\cite[p. 304]{tasharofi2013scala}. However, asynchronous message passing introduces non-determinism which in some cases is undesirable e.g. an actor buying stocks would like to know the stock quote from an actor broker before deciding whether to buy a stock or not. We will discuss non-deterministic message order further in \bsref{ssec:nondeter_msg_order}. One way to prune this non-determinism is by implementing actors by busy-waiting for the response from another actor. An example of such a busy-waiting actor program is shown in \bsref{lst:actor_busywait}. On line 5 there is an isolated integer state variable for the \bscode{BusyActor} while the behaviour methods are defined on lines 7-20. There are three different behaviour methods for the Start, Wait and Value messages. The \bscode{BusyActor} desires to busy-wait for the \bscode{OtherActor} which it does by sending 
+\subsection{Cyclic Dependencies}
+Cyclic Dependencies can be produced using the actor model. A simple example is shown in \bsref{fig:actor_cyclic}.
+
+\begin{figure}[ht!]
+\centering
+\includegraphics[scale=0.5]{\rootpath/worksheets/actor/figures/actor_deadlock}
+\caption{Example of a clyclic dependencies between two Actors}\label{fig:actor_cyclic}
+\end{figure}
+
+Actor \bscode{A} sends messages to actor \bscode{B} which sends messages to actor \bscode{A}. As such message \bscode{A} depends on messages from actor \bscode{B} and \bscode{B} depends on messages from actor \bscode{A}. 
+
+A consequence of cyclic dependencies between actors is livelocks. If the actors \bscode{A} and \bscode{B} are performing computations that are dependent upon one another then actor \bscode{A} may send a messages to \bscode{B} requesting it to returns the result of its computation. Actor \bscode{B} may then send a messages to actor \bscode{A} requesting the result of its computation as it is required in order to complete actors \bscode{B}'s computation creating a livelock, where this process will continue until resolved. In a larger actor system the livelock may be less apparent as many actors may be involved in a cyclic dependency.
+
+Actors part of a cyclic dependency can still process messages not part of the dependency. If actor \bscode{A} is able to process other types of messages than those send by actor \bscode{B} then these messages can continue to be processed as is the only the cyclic dependant computation which becomes livelocked and not the actors. Consider the example presented in \bsref{fig:actor_cyclic2}.
+
+\begin{figure}[ht!]
+\centering
+\includegraphics[scale=0.5]{\rootpath/worksheets/actor/figures/actor_cylic2}
+\caption{Example of a messages proccessing in clyclic dependency}\label{fig:actor_cyclic2}
+\end{figure}
+
+While the computation between actors \bscode{A} and \bscode{B} is running actor \bscode{A} receives a messages from actor \bscode{C}. Since actor \bscode{A} keeps processing messages from its mailbox the messages from actor \bscode{C} will eventually be processed.
+
+%\subsection{Deadlock}\label{ssec:actor_deadlock}
+%The concurrency issue of deadlocks is still a problem in the actor model. The actor model limits the communication to asynchronous message passing only. This helps avoid blocking waits which thereby helps to keep the program free of deadlocks\cite[p. 304]{tasharofi2013scala}. However, asynchronous message passing introduces non-determinism which in some cases is undesirable e.g. an actor buying stocks would like to know the stock quote from an actor broker before deciding whether to buy a stock or not. We will discuss non-deterministic message order further in \bsref{ssec:nondeter_msg_order}. One way to prune this non-determinism is by implementing actors by busy-waiting for the response from another actor. An example of such a busy-waiting actor program is shown in \bsref{lst:actor_busywait}. On line 5 there is an isolated integer state variable for the \bscode{BusyActor} while the behaviour methods are defined on lines 7-20. There are three different behaviour methods for the Start, Wait and Value messages. The \bscode{BusyActor} desires to busy-wait for the \bscode{OtherActor} which it does by sending 
+%
+%The \bscode{BusyActor} starts by sending a message to the \bscode{OtherActor} and starts the busy-waiting by sending the \bscode{Wait} message to itself. The behaviour method for \bscode{Wait} on line 11-17 shows that the actor will print the result if it has received the result from the \bscode{OtherActor}, otherwise it will again send itself a \bscode{Wait} message. This behaviour continues until the \bscode{BusyActor} receives the \bscode{Value} message from the \bscode{OtherActor}. 
+%
+%\begin{lstlisting}[label=lst:actor_busywait,
+%  caption={Busy-waiting actor program written in the Scala Akka actor framework.},
+%  language=Scala,  
+%  showspaces=false,
+%  showtabs=false,
+%  breaklines=true,
+%  showstringspaces=false,
+%  breakatwhitespace=true,
+%  commentstyle=\color{greencomments},
+%  keywordstyle=\color{bluekeywords},
+%  stringstyle=\color{redstrings}]  % Start your code-block
+%	
+%	import akka.actor._
+%	
+%	class BusyActor extends Actor {
+%		//State
+%		var result : int  = 0;
+%		//Behaviour methods
+%		def receive = {
+%			case Start =>
+%				OtherActor ! Calc
+%				self ! Wait
+%			case Wait =>
+%				if(result > 0){
+%					println(result)
+%				}
+%				else{
+%					self ! Wait
+%				}	
+%			case Value(i: int) =>
+%				result = i
+%		}
+%	}
+%\end{lstlisting}
+%It is possible to obtain a deadlock by two or more actors awaiting messages from one another. An illustration of a deadlock between two actors is shown \bsref{fig:actor_deadlock}.
+%
+%\begin{figure}[ht!]
+%\centering
+%\includegraphics[scale=0.5]{\rootpath/worksheets/actor/figures/actor_deadlock}
+%\caption{Example of a deadlock between two Actors}\label{fig:actor_deadlock}
+%\end{figure}
+%
+%A deadlock with busy-waiting actors does however still enable other actors, unrelated to the deadlock, to send and receive messages to and from a deadlocked actor. This is illustrated on \bsref{fig:actor_deadlock_otheractor} where \bscode{Actor C} sends an \bscode{Other} message in-between \bscode{Actor A's} infinite busy-waiting messages. This means that even when a deadlock occurs the rest of the actor system, unrelated to the deadlock, will still be able to run.
+%
+%\begin{figure}[ht!]
+%\centering
+%\includegraphics[scale=0.5]{\rootpath/worksheets/actor/figures/actor_deadlock_otheractor}
+%\caption{Example of an actor C, unrelated to the deadlock, that sends a message to a deadlocked actor A. The message will will be retrived and reacted on by Actor A.}\label{fig:actor_deadlock_otheractor}
+%\end{figure}
+
+%not as fatal as a deadlock in TL?
+\subsection{Starvartion}
+The fairness semantic property of the actor model, presented in \bsref{sec:actor_concepts}, assumes that a message sent is eventually received by the target actor and that no actor is permanently starved. This means that in the actor model there is no starvation concurrency issues. However in some actor implementations starvation is present, one reason is that it may not be possible to adhere to the fairness property in an actor framework for an existing language. We will discuss more about adhering to actor properties in \bsref{ssec:adhere_actor_prop}.
+
+Consider the example of the busy-waiting actor program, potentially causing starvation, shown in \bsref{lst:actor_busywait}. On line 5 there is an isolated integer state variable for the \bscode{BusyActor} while the behaviour methods are defined on lines 7-20. There are three different behaviour methods for the Start, Wait and Value messages. The \bscode{BusyActor} desires to busy-wait for the \bscode{OtherActor} which it does by sending 
 
 The \bscode{BusyActor} starts by sending a message to the \bscode{OtherActor} and starts the busy-waiting by sending the \bscode{Wait} message to itself. The behaviour method for \bscode{Wait} on line 11-17 shows that the actor will print the result if it has received the result from the \bscode{OtherActor}, otherwise it will again send itself a \bscode{Wait} message. This behaviour continues until the \bscode{BusyActor} receives the \bscode{Value} message from the \bscode{OtherActor}. 
 
@@ -107,37 +194,20 @@ The \bscode{BusyActor} starts by sending a message to the \bscode{OtherActor} an
 		}
 	}
 \end{lstlisting}
-It is possible to obtain a deadlock by two or more actors awaiting messages from one another. An illustration of a deadlock between two actors is shown \bsref{fig:actor_deadlock}.
 
-\begin{figure}[ht!]
-\centering
-\includegraphics[scale=0.5]{\rootpath/worksheets/actor/figures/actor_deadlock}
-\caption{Example of a deadlock between two Actors}\label{fig:actor_deadlock}
-\end{figure}
-
-A deadlock with busy-waiting actors does however still enable other actors, unrelated to the deadlock, to send and receive messages from a deadlocked actor. This is illustrated on \bsref{fig:actor_deadlock_otheractor} where \bscode{Actor C} sends an \bscode{Other} message in-between \bscode{Actor A's} infinite busy-waiting messages. This means that even when a deadlock occurs the rest of the actor system, unrelated to the deadlock, will still be able to run.
-
-\begin{figure}[ht!]
-\centering
-\includegraphics[scale=0.5]{\rootpath/worksheets/actor/figures/actor_deadlock_otheractor}
-\caption{Example of an actor C, unrelated to the deadlock, that sends a message to a deadlocked actor A. The message will will be retrived and reacted on by Actor A.}\label{fig:actor_deadlock_otheractor}
-\end{figure}
-
-%not as fatal as a deadlock in TL?
-\subsection{Starvartion}
-The fairness semantic property of the actor model, presented in \bsref{sec:actor_concepts}, assumes that a message sent is eventually received by the target actor and that no actor is permanently starved. This means that in the actor model there is no starvation concurrency issues. However in some actor implementations starvation is present, one reason is that it may not be possible to adhere to the fairness property in an actor framework for an existing language. We will discuss more about adhering to actor properties in \bsref{ssec:adhere_actor_prop}.
+The busy waiting actor presented in \bsref{lst:actor_busywait} presents a possible cause of starvation in actor systems not adhering to the fairness property. By sending wait messages to it self the \bscode{BusyActor} may occupy a native thread. In the absence of fairness the \bscode{OtherActor} may never be scheduled and thereby starved. In such a scenario the actor \bscode{BusyActor} is regarded as a non-cooperative actor eg. the cause of starvation\cite{karmani2009actor}.
 %Evt. referer til busy-wait eksmeplet og forklar hvordan det er muligt at have starvation deri
 \section{Discussion}\label{sec:actor_discussion}
-This section discusses a number of issues and weaknesses related to the actor model. Behaviour sharing in the actor model is discussed in \bsref{ssec:share_behaviour}, followed by a discussion of actor modelling in \bsref{ssec:actor_modelling}. Hereafter we look at the non-deterministic message order present in the actor model in \bsref{ssec:nondeter_msg_order}. The last two sections are more actor implementation oriented where we first in \bsref{ssec:abstraction_over_threads} describe the relation between actors and threads and lastly in \bsref{ssec:adhere_actor_prop} discuss adherence to actor properties in actor implementations.\toby{Hvis der kommer flere sektioner, indsæt her.}
+This section discusses a number of issues and weaknesses related to the actor model. Behaviour sharing in the actor model is discussed in \bsref{ssec:share_behaviour}, followed by a discussion of actor modelling in \bsref{ssec:actor_modelling}. Hereafter we look at the non-deterministic message order present in the actor model in \bsref{ssec:nondeter_msg_order}. The last two sections are more actor implementation oriented where we first in \bsref{ssec:abstraction_over_threads} describe the relation between actors and threads and lastly in \bsref{ssec:adhere_actor_prop} discuss adherence to actor properties in actor implementations.
 
 \subsection{Sharing Behaviour Among Actors}\label{ssec:share_behaviour}
-Inheritance is a popular and valuable mechanism often used in object-oriented programming which allows sharing of the same behaviour inside one class across multiple classes\cite{kafura1989inheritance}. So if two classes have some common functionality, it can be written only once in a super class that they both inherit from. Sharing of behaviour avoids code duplication and code reuse which also improves maintainability as the functionality should only be maintained in a single place.
+Inheritance is a popular and valuable mechanism often used in \ac{OOP} which allows sharing of the same behaviour inside one class across multiple classes\cite{kafura1989inheritance}. So if two classes have some common functionality, it can be written only once in a super class that they both inherit from. Sharing of behaviour avoids code duplication and code reuse which also improves maintainability as the functionality should only be maintained in a single place.
 
-In the actor model there is no direct notion of inheritance\cite{mackay1997has}. This means that it is not possible to share behaviour among actors which hurts code reuse, maintainability and makes it more time consuming to write actor programs with common behaviour. The problem of inheritance in the actor model is that actors may change behaviour over time so it is difficult to locate or copy methods at run-time in systems without shared memory\cite{kafura1989inheritance}.\toby{kig på evt. på "inheritance in actor based concurrency object-oriented lanuages" de mener der er et mere fundamentalt problem, se afsnit "4. the actor-inheritane problem" - jeg forstår det dog ikke helt - måske en anden skal se om de kan forstå det. (de har også en mulig løsning - som dog har en limitation)}
+In the actor model there is no direct notion of inheritance\cite{mackay1997has}. This means that it is not possible to share behaviour among actors which hurts code reuse, maintainability and makes it more time consuming to write actor programs with common behaviour. The problem of inheritance in the actor model is that actors may change behaviour over time so it is difficult to locate or copy methods at run-time in systems without shared memory\cite{kafura1989inheritance}.
 
 In some specific implementations of the actor model it is possible to use inheritance in combination with actors e.g. \cite{kafura1989inheritance} presents a possible solution in their ACT++ language. However in ACT++ they do not adhere to the fundamental principle of the actor model that an actor can change behaviour over time. 
 
-An indirect way to share behaviour among actors is to use the features of the language an actor framework is implemented in e.g. in an actor framework for Scala it is possible to use the object-oriented features such as traits to share behaviour among actors.\toby{Ved ikke om jeg bare skal lade være med at nævne dette. Jeg tænker på eksempler fra dette link: http://stackoverflow.com/questions/17383827/how-do-i-best-share-behavior-among-akka-actors}
+An indirect way to share behaviour among actors is to use the features of the language an actor framework is implemented in e.g. in an actor framework for Scala it is possible to use the object-oriented features such as traits to share behaviour among actors. Another option is to rely on delegation instead of inheritance.
 %Måske brug den her også
 %Kilde også om inheritance \cite[Chap. 1.2]{agha1986overview}
 
@@ -148,7 +218,7 @@ One of the main properties of the actor model is that an actor processes only a 
 	%not all applications are well-suited for an actor-based model. Actors serve well when we can divide the problem into parts that can run quite independently and need to communicate only sporadically. If frequent interaction is required or the parts or tasks need to coordinate to form a quorum, the actor-based model is not suitable. We may have to mix other concurrency models or consider significant redesign. (jvm mastering bogen)
 
 \subsection{Non-deterministic Message Order}\label{ssec:nondeter_msg_order}
-The asynchronous message passing is a key source to the non-determinism present in the actor model, as earlier mentioned in \bsref{ssec:mailbox_and_message_order}. That the message order is non-deterministic means that an actor must not rely on a specific message order, however according to \cite[p. 35]{haller2012actors}: \textit{``You can often alleviate reliance on message ordering by refactoring the actor communication, i.e., reworking the messages' contents''}. In some cases that does not suffice and the programmer must prune some of the non-determinism by restricting the order in which messages are processed. For example an actor \bscode{A} requests a stock quote from a broker actor \bscode{B}, then actor \bscode{A} must await the response of actor \bscode{B} to be able to decide whether to buy the stock or not. An illustration of the example is illustrated in \bsref{fig:request_reply_pattern}. The scenario described uses the request-reply pattern which is one of the most common patterns of messaging and synchronization in actor programs\cite[p. 5]{karmani2009actor}.
+The asynchronous message passing is a key source of non-determinism in the actor model, as mentioned earlier in \bsref{ssec:mailbox_and_message_order}. That the message order is non-deterministic means that an actor must not rely on a specific message order, however according to \cite[p. 35]{haller2012actors}: \textit{``You can often alleviate reliance on message ordering by refactoring the actor communication, i.e., reworking the messages' contents''}. In some cases that does not suffice and the programmer must prune some of the non-determinism by restricting the order in which messages are processed. For example an actor \bscode{A} requests a stock quote from a broker actor \bscode{B}, then actor \bscode{A} must await the response of actor \bscode{B} to be able to decide whether to buy the stock or not. An illustration of the example is illustrated in \bsref{fig:request_reply_pattern}. The scenario described uses the request-reply pattern which is one of the most common patterns of messaging and synchronization in actor programs\cite[p. 5]{karmani2009actor}.
 
 \begin{figure}[h!]
 \centering

@@ -1,12 +1,12 @@
 \makeatletter \@ifundefined{rootpath}{\input{../../setup/preamble.tex}}\makeatother
 \worksheetstart{Summary of Characteristics}{1}{April 24, 2013}{Andreas}{../../}
-This chapter presents a comparison of the selected concurrency models and their characteristics. The comparison will be used in \bsref{chap:choosing_con_model} to assist in guiding when to apply each of the selected concurrency models.
+This chapter presents a comparison of the characteristics of the selected concurrency models. The comparison will be used in \bsref{chap:choosing_con_model} to assist guiding when to apply each of the models.
 \label{chap:results}
 
 \section{Implicit or Explicit Concurrency}
 The placements of the three concurrency models on the implicit to explicit spectrum are shown in \bsref{fig:results_char_impli_expli}.
 
-\ac{TL} and \ac{STM} are both placed high on the explicit end of the scale. They both require the programmer to explicitly manage threads and either use locks or transactions for marking critical regions. The actor model is more implicit than the other models as it hides the concepts of marking critical regions and low level threads. The actor model does however introduce new constructs, in the form of actors and messages, that must be explicitly used for programming concurrent programs.
+\ac{TL} and \ac{STM} are both placed high on the explicit end of the spectrum. They both require the programmer to explicitly manage threads and either use locks or transactions for marking critical regions. The actor model is more implicit than the other models as it hides the concepts of marking critical regions and low level threads. The actor model does however introduce new constructs, in the form of actors and messages, that must be explicitly used for programming concurrent programs.
 
 \begin{figure}[htbp]
 \centering
@@ -18,7 +18,7 @@ The placements of the three concurrency models on the implicit to explicit spect
 \section{Fault Restrictive or Expressive Model}
 \bsref{fig:results_char_fault_expressive} shows how the three concurrency models are placed on the, fault restrictive to expressive, spectrum.
 
-\ac{STM} and \ac{TL} are both placed towards the expressive end of the scale. \ac{TL} forces very few restrictions upon the programmer which gives him freedom in relation to expressing low-level synchronization details. However, this is at the cost of the programmer being left alone in ensuring correct execution. \ac{STM} is more fault restrictive than \ac{TL} as it delegates the low-level synchronization details to the STM system. 
+\ac{STM} and \ac{TL} are both placed towards the expressive end of the spectrum. \ac{TL} forces very few restrictions upon the programmer which gives him freedom in relation to expressing low-level synchronization details. However, this is at the cost of the programmer being left alone in ensuring correct execution. \ac{STM} is more fault restrictive than \ac{TL} as it delegates the low-level synchronization details to the STM system. 
 
 The actor model on the other hand is towards the fault restrictive end, as it forces many restrictions on the programmer. It allows only isolated state and communication is limited to asynchronous message passing. Furthermore the design of the model disallows multiple read operations to happen simultaneously. Lastly, it is not possible to use threads directly, the programmer can only model concurrency with actors and messages.
 
@@ -56,9 +56,7 @@ The placements of the three concurrency models on the orthogonality spectrum are
 
 The actor model is highly orthogonal as it embodies only the two constructs of actors and messages which can be combined in a large number of ways. There are however some combinations which are only possible indirectly by using additional actors, such as sending a message to multiple actors at the same time. Furthermore some combinations can produce deadlocks which are undesirable, but embracing the non-deterministic nature of asynchronous message passing helps avoid these. The indirect and deadlock combinations keep the model from being truly orthogonal.
 
-\ac{STM} consists of the thread and transaction constructs\toby{Skal vi snakke om at de kommunikere gennem shared memory og synkroniserer over transaktioner?} that can be combined in a number of ways. However, transactions have problems
-composing with existing programming concepts such as IO, exceptions and
-native method calls which result in the placement on the spectrum between middle and high orthogonality.
+\ac{STM} consists of the thread and transaction constructs that can be combined in a number of ways. However, transactions have problems composing with existing programming concepts such as \ac{IO}, exceptions and native method calls which result in the placement on the spectrum between middle and high orthogonality.
 
 Lastly, \ac{TL} consists of the thread and lock constructs that are also possible to combine in a number of ways. However the model makes it fairly easy to mistakenly produce combinations that can lead to program errors, such as deadlocks, which are hard to detect and recover from. This has a high negative impact on the orthogonality and is the reason why \ac{TL} has been placed lowest on the orthogonality spectrum of the three models.
 
@@ -86,7 +84,7 @@ The actor model encapsulates functionality and concurrency related code within a
 \section{Low or High Level of Abstraction}
 The placements of the three concurrency models on the level of abstraction spectrum are shown in \bsref{fig:results_char_level_of_abstraction}.
 
-The actor model is placed on the high end of the spectrum as it allows the programmer to think and model concurrent problems using high-level abstractions, without having to worry about low-level details. It abstracts away low-level threads by using the actor construct and synchronization is accomplished implicitly as a result of actor mailboxes and atomic processing of messages. There are however no abstractions for coordination between actors in the conceptual actor model, but actor implementations often offer useful coordination patterns, such as the request-reply pattern, as discussed in \bsref{ssec:nondeter_msg_order}. This keeps the model from being at the extreme of high level of abstraction.
+The actor model is placed on the high end of the spectrum as it allows the programmer to think and model concurrent problems using high-level abstractions, without having to worry about low-level details. It abstracts away low-level threads by using the actor construct. Internal synchronization in an actor is accomplished implicitly as a result of actor mailboxes and atomic processing of messages. There are however no abstractions for coordination between actors in the conceptual actor model, but actor implementations often offer useful coordination patterns, such as the request-reply pattern, as discussed in \bsref{ssec:nondeter_msg_order}. This keeps the model from being at the extreme of high level of abstraction.
 
 \ac{STM} resides slightly towards the low end of the level of abstraction spectrum as it uses a high-level transaction abstraction for synchronization, but also low-level threads. Using transactions, the details of how synchronization is achieved are abstracted away. 
 
@@ -118,7 +116,7 @@ The actor model has the highest expressivity. It provides high level constructs 
 
 \ac{STM} is placed just above the middle of the spectrum. \ac{STM} removes the issue of deadlocks and allows the \ac{STM} system to handle how synchronization is achieved. \ac{STM} handles composition by allowing transactions to be nested but synchronization may however still be fragmented over multiple code segments. As mentioned previously \ac{STM} combines poorly with some existing language constructs, this negatively effects its writability.
 
-The actor model abstracts away the low level details that limit the writability of the \ac{TL} and \ac{STM} concurrency models. It does however introduce new constructs which have to be managed by the programmer. Actors have to be created and a fitting message passing structure has to be designed. As such the modelling of low level constructs is replaced with the modelling of more high level constructs. For programmers not familiar with the actor model this can be a barrier to writing concise implementations. In order to write efficient systems using the actor model, the programmer has to reason about issues such as message sizes and actor granularity. Furthermore implementations of the actor model has issues, such as mailbox overflow, which are not covered by the model itself.
+The actor model abstracts away the low level details that limit the writability of the \ac{TL} and \ac{STM} concurrency models. It does however introduce new constructs which have to be managed by the programmer. Actors have to be created and a fitting message passing structure has to be designed. As such the modelling of low level constructs is replaced with the modelling of more high level constructs. For programmers not familiar with the actor model this can be a barrier for problem solving. In order to write efficient systems using the actor model, the programmer has to reason about issues such as message sizes and actor granularity. Furthermore implementations of the actor model has issues, such as mailbox overflow, which are not covered by the model itself.
 
 \begin{figure}[htbp]
 \centering
