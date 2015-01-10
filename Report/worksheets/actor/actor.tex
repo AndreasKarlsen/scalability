@@ -225,9 +225,9 @@ The asynchronous message passing is a key source of non-determinism in the actor
 \caption{Request-reply pattern where actor \bscode{A} blocks until it recevies the response from actor \bscode{B}. Other messages received while blocking is saved for later processing.}\label{fig:request_reply_pattern}
 \end{figure}
 
-To implement the request-reply pattern the programmer has to explicitly program the following steps: an actor send request, wait for reply to arrive and for each incoming message check if it is a reply to the request or another message. If the request-reply pattern is used numerous times within one program it will quickly result in unnecessary code duplication which is why the pattern is almost universally supported as a programming abstraction in actor implementations\cite[p. 5]{karmani2009actor}.
+To implement the request-reply pattern the programmer has to explicitly program the following steps: an actor send request, wait for the reply to arrive and for each incoming message check if it is a reply to the request or another message. If the request-reply pattern is used numerous times within one program it will quickly result in unnecessary code duplication which is why the pattern is almost universally supported as a programming abstraction in actor implementations\cite[p. 5]{karmani2009actor}.
 
-The request reply pattern can lead to deadlocks as no other messages are processed while a actor waits on the reply. Consider the example presented in \bsref{fig:actor_deadlock_request_reply}.
+The request reply pattern can lead to deadlocks, as no other messages are processed while an actor waits on the reply. Consider the example presented in \bsref{fig:actor_deadlock_request_reply}.
 
 \begin{figure}[ht!]
 \centering
@@ -235,7 +235,7 @@ The request reply pattern can lead to deadlocks as no other messages are process
 \caption{Example of a request reply deadlock}\label{fig:actor_deadlock_request_reply}
 \end{figure}
 
-Actor \bscode{A} sends a message to actor \bscode{B} and waits for the reply. In response actor \bscode{B} sends a messages to \bscode{A} and waits for the reply. As neither actor can now process any other messages than the expected replies a deadlock is created. The deadlock does not have to be directly between two actors. Instead the deadlock can be the result of actor \bscode{A} sending a request-reply to some actor which eventually results in actor \bscode{B} receiving a messages and sending a request reply messages to actor \bscode{A}. As actor run concurrently a deadlock can even arise from actors \bscode{C} and \bscode{D} sending a request reply messages to one another, either directly or indirectly, as a result of two unconnected computations.
+Actor \bscode{A} sends a message to actor \bscode{B} and waits for the reply. In response actor \bscode{B} sends a messages to \bscode{A} and waits for the reply. As neither actor can now process any other messages than the expected replies, a deadlock is created. The deadlock does not have to be directly between two actors. Instead the deadlock can be the result of actor \bscode{A} sending a request-reply to some actor which eventually results in actor \bscode{B} receiving a message and sending a request reply message to actor \bscode{A}. As actors run concurrently a deadlock can even arise from actors \bscode{C} and \bscode{D} sending a request reply messages to one another, either directly or indirectly, as a result of two unconnected computations.
 
 There exists a number of other different programming abstractions for communication and synchronization in actor programs which differ depending on the choice of actor implementation\cite[p. 6]{karmani2009actor}. An alternative to request-reply is local synchronization constraints which enables the programmer to postpone the processing of a message until it receives some sequence of messages or until a condition on the actors state is met.
 
