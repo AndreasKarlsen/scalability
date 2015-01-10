@@ -443,11 +443,11 @@ For the reasons described in \bsref{subsec:tl_charac_read_and_write} the evaluat
 \label{subsec:stm_char_simplicity}
 While \ac{STM} builds upon the shared memory also present in the \ac{TL} concurrency model it substitutes locking with memory transactions. \ac{STM} avoids the issue of deadlocks, contributing positively to its simplicity. The programmer does however still have to explicitly state when transactions are to be applied.
 
-In \bsref{sec:stm_ease_of_use} two studies two studies into the ease of use of \ac{STM} were discussed. The first study shows that students make fewer errors using \ac{STM} than with fine grained locking. Students did however find \ac{STM} to be slightly easier than fine grained locking. Rossbach et al. note that students found the concept of transactions difficult to understand at first. The second study shows that students had a hard time predicting the performance of transactions and as a result had a hard time tuning performance.
+In \bsref{sec:stm_ease_of_use} two studies into the ease of use of \ac{STM} were discussed. The first study shows that students make fewer errors using \ac{STM} than with fine grained locking. Students did however find \ac{STM} to be slightly easier than fine grained locking. Rossbach et al. note that students found the concept of transactions difficult to understand at first. The second study shows that students had a hard time predicting the performance of transactions and as a result had a hard time tuning performance.
 
 As discussed in \bsref{subsec:stm:side_effects} and \bsref{subsec:stm_irreversible_actions}, transactions have problems composing with existing programming concepts such as \ac{IO}, exceptions and native method calls. Additional strain is put on the programmer when combining these constructs with transactions, reducing the simplicity of the model.
 
-Based on these observations we say that \ac{STM} resides towards the high simplicity end of the low - high simplicity spectrum. While \ac{STM} addresses many of the issues that plague the \ac{TL} concurrency model, it introduces a number of new issues. These issues along with the findings in the studies discussed in \bsref{sec:stm_ease_of_use} keep \ac{STM} from having high simplicity. The exact position on low - high simplicity spectrum is depicted in \bsref{fig:stm_char_simplicity}.
+Based on these observations we say that \ac{STM} resides towards the high simplicity end of the low - high simplicity spectrum. While \ac{STM} addresses many of the issues that plague the \ac{TL} concurrency model, it introduces a number of new issues. These issues along with the findings in the studies discussed in \bsref{sec:stm_ease_of_use} keep \ac{STM} from having high simplicity. The exact position on the low - high simplicity spectrum is depicted in \bsref{fig:stm_char_simplicity}.
 
 \begin{figure}[htbp]
 \centering
@@ -458,12 +458,9 @@ Based on these observations we say that \ac{STM} resides towards the high simpli
 
 \subsubsection{Low or High Orthogonality}\label{sec:stm_orthogonality}
 \label{subsec:stm_orthogonality}
-The \ac{STM} concurrency model consists of a few well defined\andreas{Depends, do we count retry, and orElse?} constructs: threads, communication through shared memory and synchronization using transactions. These constructs can be combined to produce concurrent implementations. As discussed in \bsref{sec:stm_composability} \ac{STM} transactions can be nested, allowing the composition of code segments employing transactions. Nested transactions allow programmers to compose large transactions from smaller transactions, much as a function can be composed from other functions.
+The \ac{STM} concurrency model consists of a few well defined constructs: threads, communication through shared memory and synchronization using transactions. These constructs can be combined to produce concurrent implementations. As discussed in \bsref{sec:stm_composability} \ac{STM} transactions can be nested, allowing the composition of code segments employing transactions. Nested transactions allow ther programmer to compose large transactions from smaller transactions, much as a function can be composed from other functions.
 
 As discussed in \bsref{subsec:stm:side_effects} and \bsref{subsec:stm_irreversible_actions}, transactions have problems composing with existing programming concepts such as \ac{IO}, exceptions and native method calls. This reduces the orthogonality of \ac{STM}.
-
-\kasper[inline]{Retry/orElse}
-%In order to handle conditional synchronization the \bscode{retry} and \bscode{orElse} constructs. 
 
 Based on these observations we say that \ac{STM} has high orthogonality limited by poor composition with some existing constructs. The position of \ac{STM} on the low - high orthogonality spectrum is shown in \bsref{fig:char_stm_orthogonality}.
 
