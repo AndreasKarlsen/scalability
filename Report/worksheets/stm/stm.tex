@@ -472,14 +472,13 @@ Based on these observations we say that \ac{STM} has high orthogonality limited 
 \end{figure}
 
 \subsubsection{Low or High Readability}
-\kasper[inline]{Issue med numerering af referenced sektioner}
 As described in \bsref{subsec:stm_char_simplicity} the simplicity of the \ac{STM} concurrency model resides towards the high simplicity end of the low - high simplicity spectrum. In \bsref{subsec:stm_orthogonality} we say that the orthogonality resides towards high end of the spectrum, limited by poor composition with existing language constructs. These results directly influence the readability of the \ac{STM} concurrency model.
 
 The \ac{STM} concurrency model often separates the introduction of concurrency from the application of synchronization in the form of transactions. Such separation makes it harder for the programmer to reason about the implementations. However, by employing transactions the reader does not have to reason about lock ordering, which as discussed in \bsref{subsec:tl_char_readability} requires the programmer to reason about every code segment in which locks are employed.
 
 The studies by Rossbach et al. and Pankratius et al., discussed in \bsref{sec:stm_ease_of_use}, show that the concept of transactions can be hard to understand at first, especially when estimating and predicting performance. Understanding the concepts of transactions is key to reasoning about synchronization using \ac{STM}, particularly when also considering the \bscode{retry} and \bscode{orElse} constructs discussed in \bsref{subsec:stm_conditional_synchronization}.
 
-Considering these observations as well as the evaluation of simplicity and orthogonality, we say that the \ac{STM} concurrency model is slightly towards the high end of the low - high readability spectrum. While \ac{STM} addresses many of the more pressing issues found in the \ac{TL} concurrency model, it still relies on shared memory concurrency and applying synchronization to critical regions. Such a approach is prone to code fragmentation and error in identifying critical regions. Ultimately this, along with the other observations, keeps \ac{STM} from obtaining a high readability score. The exact placement of \ac{STM} on the readability spectrum is depicted in \bsref{fig:char_stm_readability}.
+Considering these observations as well as the evaluation of simplicity and orthogonality, we say that the \ac{STM} concurrency model is slightly towards the low end of the low - high readability spectrum. While \ac{STM} addresses many of the more pressing issues found in the \ac{TL} concurrency model, it still relies on shared memory concurrency and applying synchronization to critical regions. Such an approach is prone to code fragmentation and error in identifying critical regions. Ultimately this, along with the other observations, keeps \ac{STM} from obtaining a high readability score. The exact placement of \ac{STM} on the readability spectrum is depicted in \bsref{fig:char_stm_readability}.
 
 \begin{figure}[htbp]
 \centering
