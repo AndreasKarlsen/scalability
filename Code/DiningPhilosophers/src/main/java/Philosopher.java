@@ -22,7 +22,7 @@ public class Philosopher implements Runnable {
 
     }
 
-    private void Think() throws InterruptedException {
+    private void think() throws InterruptedException {
         Thread.sleep(100);
     }
 
@@ -39,7 +39,7 @@ public class Philosopher implements Runnable {
                         leftFork.putDown();
                     }
                 }
-                Think();
+                think();
             }
         } catch (InterruptedException ex) {
 
