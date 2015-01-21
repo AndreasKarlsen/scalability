@@ -30,8 +30,8 @@ public class Philosopher implements Runnable {
     public void run() {
         try {
             while (plate.hasFood()) {
-                if (leftFork.pickUp(10)) {
-                    if (rightFork.pickUp(10)) {
+                if (leftFork.pickUp(100)) {
+                    if (rightFork.pickUp(100)) {
                         eat();
                         rightFork.putDown();
                         leftFork.putDown();
