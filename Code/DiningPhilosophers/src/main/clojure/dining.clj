@@ -42,12 +42,12 @@
           (handle-forks id :take)
           (alter rounds dec)
           (send-off logger debug id "ate      " @rounds)
-          (Thread/sleep 100)
           (handle-forks id :release))
         (do
-          (send-off logger debug id "thinks   " @rounds)
-          (Thread/sleep 100)))
-      (send-off *agent* behave id)))) ; Repeat above
+          (send-off logger debug id "thinks   " @rounds))
+        )))
+  (Thread/sleep 100)
+  (send-off *agent* behave id)) ; Repeat above
 
 (defn start []
   (doseq [i (range (count philosophers))]
