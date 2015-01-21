@@ -22,13 +22,12 @@ public class Philosopher implements Runnable {
         plate.takeFood();
     }
 
-
     @Override
     public void run() {
         try {
             while (plate.hasFood()) {
                 int timeout = timeoutTimer.getTimeout();
-                System.out.println("Timeout: " + timeout);
+                System.out.println(name + " Timeout: " + timeout);
                 if (leftFork.pickUp(timeout)) {
                     if (rightFork.pickUp(timeout)) {
                         Thread.sleep(100);
