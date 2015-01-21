@@ -19,7 +19,7 @@ public class Philosopher implements Runnable {
     private void eat() throws InterruptedException {
         System.out.println(name.concat("  Eating"));
         plate.takeFood();
-
+        Thread.sleep(100);
     }
 
     private void think() throws InterruptedException {
