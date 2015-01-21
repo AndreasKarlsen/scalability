@@ -36,7 +36,7 @@
 (defn behave [a id]
   (dosync ; Initiate transaction
     (when (more-food?) ; Is there more food?
-      ;(if (> 5 (rand-int 10))        ; Do I want to eat or think?
+      ;(if (> 5 (rand-int 10))        ; Do I want to takeFood or think?
       (if (got-forks? id) ; Are both of my forks available?
         (do
           (handle-forks id :take)
