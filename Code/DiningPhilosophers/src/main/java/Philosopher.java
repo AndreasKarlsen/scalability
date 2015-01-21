@@ -3,7 +3,6 @@
  */
 public class Philosopher implements Runnable {
 
-    private final TimeoutTimer timeoutTimer = new TimeoutTimer(10);
 
     private Fork leftFork;
     private Fork rightFork;
@@ -17,28 +16,30 @@ public class Philosopher implements Runnable {
         this.plate = plate;
     }
 
-    private void eat() {
+    private void eat() throws InterruptedException {
         System.out.println(name.concat("  Eating"));
         plate.takeFood();
+
+    }
+
+    private void Think() throws InterruptedException {
+        Thread.sleep(100);
     }
 
     @Override
     public void run() {
         try {
             while (plate.hasFood()) {
-                int timeout = timeoutTimer.getTimeout();
-                System.out.println(name + " Timeout: " + timeout);
-                if (leftFork.pickUp(timeout)) {
-                    if (rightFork.pickUp(timeout)) {
-                        Thread.sleep(100);
+                if (leftFork.pickUp(10)) {
+                    if (rightFork.pickUp(10)) {
                         eat();
                         rightFork.putDown();
                         leftFork.putDown();
-                        timeoutTimer.reset();
                     } else {
                         leftFork.putDown();
                     }
                 }
+                Think();
             }
         } catch (InterruptedException ex) {
 
