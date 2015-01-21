@@ -55,11 +55,11 @@ object DiningScala extends App {
     }
 
     def leftForkPos(phil_pos: Int) : Int = {
-      phil_pos
+      (phil_pos + 1) % 5 //5 = number of forks
     }
 
     def rightForkPos(phil_pos: Int) = {
-      (phil_pos + 1) % 5 //5 = number of forks
+      phil_pos
     }
 
     def receive = {
