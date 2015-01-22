@@ -3,6 +3,14 @@
            (com.google.common.base Stopwatch))
   (:gen-class))
 
+(defmacro spy-dosync [& body]
+  `(let [retries# (atom -1)
+         result# (dosync
+                   (swap! retries# inc)
+                   ~@body)]
+     (send-off logger debug "" "retries count:" @retries#)
+     result#))
+
 (def rounds (ref 200)) ;ref due to being a shared resource
 (def philosophers (doall (map #(agent %) (repeat 5 0)))) ;agents due to being uncoordinated async
 (def forks (doall (map #(ref [% true]) (range (count philosophers))))) ;ref due to being a shared resource
@@ -20,7 +28,7 @@
   (flush))
 
 (defn print-stopwatch [_ time]
-  (println time)
+  (println "Elapsed time: " time)
   (shutdown-agents))
 
 
@@ -43,21 +51,21 @@
       false)))
 
 (defn behave [a id left right]
-  (dosync ; Initiate transaction
-    (when (more-food?) ; Is there more food?
-      ;(if (> 5 (rand-int 10))        ; Do I want to takeFood or think?
-      (when (and @left @right) ; Are both of my forks available?
-        (do
-          (ref-set left false)
-          (ref-set right false)
-          (Thread/sleep 100)
-          ;(handle-forks id :take)
-          (alter rounds dec)
-          (send-off logger debug id "ate      " @rounds)
-          ;(handle-forks id :release)
-          (ref-set left true)
-          (ref-set right true))
-        )))
+  (spy-dosync (more-food?)) ; Initiate transaction
+  (spy-dosync
+    ;(when (more-food?)
+    (when (and @left @right) ; Are both of my forks available?
+      (do
+        (ref-set left false)
+        (ref-set right false)
+        (Thread/sleep 100)
+        ;(handle-forks id :take)
+        (commute rounds dec)
+        (send-off logger debug id "ate      " @rounds)
+        ;(handle-forks id :release)
+        (ref-set left true)
+        (ref-set right true)
+      )))
   (Thread/sleep 100)
   (send-off *agent* behave id left right)) ; Repeat above
 

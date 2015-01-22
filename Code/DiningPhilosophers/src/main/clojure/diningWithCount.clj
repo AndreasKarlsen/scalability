@@ -1,4 +1,4 @@
-(ns dining
+(ns diningWithCount
   (:import (java.util.concurrent TimeUnit)
            (com.google.common.base Stopwatch))
   (:gen-class))
@@ -8,7 +8,7 @@
          result# (dosync
                    (swap! retries# inc)
                    ~@body)]
-     (println "retries count:" @retries#)
+     (send-off logger debug "" "retries count:" @retries#)
      result#))
 
 (def rounds (ref 200)) ;ref due to being a shared resource
@@ -51,7 +51,7 @@
       false)))
 
 (defn behave [a id left right]
-  (spy-dosync ; Initiate transaction
+  (dosync ; Initiate transaction
     (when (more-food?) ; Is there more food?
       ;(if (> 5 (rand-int 10))        ; Do I want to takeFood or think?
       (when (and @left @right) ; Are both of my forks available?

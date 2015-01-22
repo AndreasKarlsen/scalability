@@ -1,4 +1,4 @@
-(ns dining
+(ns diningfuture
   (:import (java.util.concurrent TimeUnit)
            (com.google.common.base Stopwatch))
   (:gen-class))
