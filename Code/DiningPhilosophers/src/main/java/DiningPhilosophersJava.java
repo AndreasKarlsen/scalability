@@ -21,6 +21,7 @@ public class DiningPhilosophersJava {
         Thread t4 = new Thread(new Philosopher(f4,f5, "Voltaire", plate));
         Thread t5 = new Thread(new Philosopher(f5,f1, "Descartes", plate));
 
+        System.out.println("Started...");
         Stopwatch stopwatch = Stopwatch.createStarted();
         t1.start();
         t2.start();

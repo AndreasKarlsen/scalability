@@ -10,7 +10,8 @@ public class Fork {
     private final Lock lock = new ReentrantLock();
 
     public boolean pickUp() throws InterruptedException {
-        return  pickUp(10);
+        lock.lock();
+        return true;
     }
 
     public boolean pickUp(int waitTime) throws InterruptedException {

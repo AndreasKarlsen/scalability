@@ -17,7 +17,7 @@ public class Philosopher implements Runnable {
     }
 
     private void eat() throws InterruptedException {
-        System.out.println(name.concat("  Eating"));
+        //System.out.println(name.concat("  Eating"));
         plate.takeFood();
         Thread.sleep(100);
     }
@@ -34,10 +34,8 @@ public class Philosopher implements Runnable {
                     if (rightFork.pickUp(100)) {
                         eat();
                         rightFork.putDown();
-                        leftFork.putDown();
-                    } else {
-                        leftFork.putDown();
                     }
+                    leftFork.putDown();
                 }
                 think();
             }
