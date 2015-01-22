@@ -133,20 +133,18 @@ object DiningScalaFork extends App {
       case PhilBegin =>
         left ! Pickup
       case ForkAquired =>
-        if(!hasLeft){
-          hasLeft = true
-          right ! Pickup
-        }else{
+        if(hasLeft){
           eat()
           think()
+        }else{
+          hasLeft = true
+          right ! Pickup
         }
       case ForkBusy =>
-        if(!hasLeft){
-          think()
-        }else{
+        if(hasLeft){
           left ! PutDown
-          think();
         }
+        think()
     }
   }
 }
