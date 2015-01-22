@@ -3,7 +3,7 @@
            (com.google.common.base Stopwatch))
   (:gen-class))
 
-(def rounds (ref 200)) ;ref due to being a shared resource
+(def rounds (ref 20)) ;ref due to being a shared resource
 (def philosophers (doall (map #(agent %) (repeat 5 0)))) ;agents due to being uncoordinated async
 (def forks (doall (map #(ref [% true]) (range (count philosophers))))) ;ref due to being a shared resource
 (def logger (agent 0))
@@ -12,6 +12,10 @@
 (defn debug [_ id msg r]
   (println id \space msg "(" r ")")
   (flush))
+
+(defn print-stopwatch [_ time]
+  (println time)
+  (shutdown-agents))
 
 
 (defn my-forks [id]
@@ -28,25 +32,23 @@
   (if (pos? (ensure rounds))
     true
     (do
-      (println (. stopwatch
-                 (stop)
-                 (elapsed (. TimeUnit MILLISECONDS))))
-      (shutdown-agents))))
+      (. stopwatch (stop))
+      (send logger print-stopwatch (. stopwatch (elapsed (. TimeUnit MILLISECONDS))))
+      false)))
 
 (defn behave [a id]
   (dosync ; Initiate transaction
     (when (more-food?) ; Is there more food?
       ;(if (> 5 (rand-int 10))        ; Do I want to takeFood or think?
-      (if (got-forks? id) ; Are both of my forks available?
+      (when (got-forks? id) ; Are both of my forks available?
         (do
           (handle-forks id :take)
           (alter rounds dec)
-          (send-off logger debug id "ate      " @rounds)
-          (handle-forks id :release))
-        (do
-          (send-off logger debug id "thinks   " @rounds))
-        )))
-  (Thread/sleep 100)
+          (Thread/sleep 100)
+          ;(send-off logger debug id "ate      " @rounds)
+          (println (str id " ate " @rounds))
+          (handle-forks id :release)))))
+  ;(Thread/sleep 100)
   (send-off *agent* behave id)) ; Repeat above
 
 (defn start []
