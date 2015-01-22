@@ -9,6 +9,12 @@
 (def logger (agent 0))
 (def stopwatch (. Stopwatch (createStarted)))
 
+(def fork1 (ref true))
+(def fork2 (ref true))
+(def fork3 (ref true))
+(def fork4 (ref true))
+(def fork5 (ref true))
+
 (defn debug [_ id msg r]
   (println id \space msg "(" r ")")
   (flush))
@@ -33,26 +39,33 @@
                  (elapsed (. TimeUnit MILLISECONDS))))
       (shutdown-agents))))
 
-(defn behave [a id]
+(defn behave [a id left right]
   (dosync ; Initiate transaction
     (when (more-food?) ; Is there more food?
       ;(if (> 5 (rand-int 10))        ; Do I want to takeFood or think?
-      (if (got-forks? id) ; Are both of my forks available?
+      (if (and @left @right) ; Are both of my forks available?
         (do
-          (handle-forks id :take)
+          (ref-set left false)
+          (ref-set right false)
+          ;(handle-forks id :take)
           (alter rounds dec)
           (send-off logger debug id "ate      " @rounds)
-          (handle-forks id :release))
+          ;(handle-forks id :release)
+          (ref-set left true)
+          (ref-set right true))
         (do
           (send-off logger debug id "thinks   " @rounds))
         )))
   (Thread/sleep 100)
-  (send-off *agent* behave id)) ; Repeat above
+  (send-off *agent* behave id left right)) ; Repeat above
 
 (defn start []
-  (doseq [i (range (count philosophers))]
-    (send logger debug i "being sent off to dinner" @rounds)
-    (send-off (nth philosophers i) behave i)))
+  (do
+    (send-off (nth philosophers 0) behave 0 fork1 fork2)
+    (send-off (nth philosophers 1) behave 1 fork2 fork3)
+    (send-off (nth philosophers 2) behave 2 fork3 fork4)
+    (send-off (nth philosophers 3) behave 3 fork4 fork5)
+    (send-off (nth philosophers 4) behave 4 fork5 fork1)))
 
 
 (defn -main [& args]
